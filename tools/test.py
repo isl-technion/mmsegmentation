@@ -16,6 +16,7 @@ from mmcv.utils import DictAction
 from mmseg.apis import multi_gpu_test, single_gpu_test
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.models import build_segmentor
+from mmseg.utils import setup_multi_processes
 
 
 def parse_args():
@@ -49,6 +50,12 @@ def parse_args():
         '--gpu-collect',
         action='store_true',
         help='whether to use gpu to collect results.')
+    parser.add_argument(
+        '--gpu-id',
+        type=int,
+        default=0,
+        help='id of gpu to use '
+        '(only applicable to non-distributed testing)')
     parser.add_argument(
         '--tmpdir',
         help='tmp directory used for collecting results from multiple '
@@ -109,7 +116,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-
     assert args.out or args.eval or args.format_only or args.show \
         or args.show_dir, \
         ('Please specify at least one operation (save/eval/format/show the '
@@ -125,6 +131,10 @@ def main():
     cfg = mmcv.Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
+
+    # set multi-process settings
+    setup_multi_processes(cfg)
+
     # set cudnn_benchmark
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
@@ -136,6 +146,8 @@ def main():
         cfg.data.test.pipeline[1].flip = True
     cfg.model.pretrained = None
     cfg.data.test.test_mode = True
+
+    cfg.gpu_ids = [args.gpu_id]
 
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
@@ -149,7 +161,23 @@ def main():
     if args.work_dir is not None and rank == 0:
         mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
         timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
-        json_file = osp.join(args.work_dir, f'eval_{timestamp}.json')
+        if args.aug_test:
+            json_file = osp.join(args.work_dir,
+                                 f'eval_multi_scale_{timestamp}.json')
+        else:
+            json_file = osp.join(args.work_dir,
+                                 f'eval_single_scale_{timestamp}.json')
+    elif rank == 0:
+        work_dir = osp.join('./work_dirs',
+                            osp.splitext(osp.basename(args.config))[0])
+        mmcv.mkdir_or_exist(osp.abspath(work_dir))
+        timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
+        if args.aug_test:
+            json_file = osp.join(work_dir,
+                                 f'eval_multi_scale_{timestamp}.json')
+        else:
+            json_file = osp.join(work_dir,
+                                 f'eval_single_scale_{timestamp}.json')
 
     # build the dataloader
     # TODO: support multiple images per gpu (only minor changes are needed)
@@ -248,8 +276,7 @@ def main():
             eval_kwargs.update(metric=args.eval)
             metric = dataset.evaluate(results, **eval_kwargs)
             metric_dict = dict(config=args.config, metric=metric)
-            if args.work_dir is not None and rank == 0:
-                mmcv.dump(metric_dict, json_file, indent=4)
+            mmcv.dump(metric_dict, json_file, indent=4)
             if tmpdir is not None and eval_on_format_results:
                 # remove tmp dir when cityscapes evaluation
                 shutil.rmtree(tmpdir)
