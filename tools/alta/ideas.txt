@@ -1,0 +1,4 @@
+* Use 'inter_area' instead of 'bilinear' interpolation
+* Freeze some layers to reduce overfitting
+* Display softmax score
+* Show difference between cnn and transformer using the mis-annotated image
