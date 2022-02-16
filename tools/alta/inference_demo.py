@@ -1,4 +1,5 @@
-from mmseg.apis import inference_segmentor, init_segmentor
+# from mmseg.apis import inference_segmentor, init_segmentor
+from mmseg.apis.inference_alta import inference_segmentor, init_segmentor
 import mmcv
 import os
 
@@ -12,8 +13,8 @@ elif 0:  # Segformer - PathA, reweighted (also fixed DJI_149)
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_loadfrom_cityscapes_reweighted1/segformer_mit-b0_pathA_pathA_loadfrom_cityscapes_reweighted1.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_loadfrom_cityscapes_reweighted1/iter_10000.pth'
 else:  # Segformer - PathA->PathB, reweighted (also fixed DJI_149)
-    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_loadfrom_cityscapes_reweighted1/segformer_mit-b0_pathA_pathA_loadfrom_cityscapes_reweighted1.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathB_loadfrom_cityscapes_reweighted1/iter_20000.pth'
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathB_loadfrom_cityscapes_reweighted1/segformer_mit-b0_pathA_pathB_loadfrom_cityscapes_reweighted1.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathB_loadfrom_cityscapes_reweighted1/iter_5000.pth'
 
 
 # build the model from a config file and a checkpoint file
@@ -23,12 +24,14 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0001'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0005'
 images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
-# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/30'
+# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
 images_list = os.listdir(images_path)
 images_list.sort()
 
 results_path = os.path.join(checkpoint_file.split('.')[0], os.path.split(images_path)[-1])
 interval = 3
+return_scores = True
+score_th = 0.8
 if 'Descend' not in images_path:
     interval = 1
     results_path = os.path.join(os.path.split(results_path)[0], images_path.split('Agamim/')[-1].replace('/', '_'))
@@ -43,12 +46,18 @@ for imgname in images_list[::interval]:
     # img = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/70/DJI_0118.JPG'  #or img = mmcv.imread(img), which will only load it once
 
     out_file = os.path.join(results_path, os.path.split(imgname_full)[-1])
-    result = inference_segmentor(model, imgname_full)
+    result = inference_segmentor(model, imgname_full, return_scores=return_scores)
     # visualize the results in a new window
     # model.show_result(img, result, show=True)
     # or save the visualization results to image files
     # you can change the opacity of the painted segmentation map in (0, 1].
-    model.show_result(imgname_full, result, out_file=out_file, opacity=1)
+    if return_scores:
+        out_file_score = os.path.join(results_path, 'scores_map', os.path.split(imgname_full)[-1])
+        model.show_result(imgname_full, result[0], out_file=out_file, opacity=1)
+        conf_map = (result[1][0] - score_th) / (1-score_th)
+        mmcv.imwrite(conf_map * 255, out_file_score)
+    else:
+        model.show_result(imgname_full, result, out_file=out_file, opacity=1)
     aaa=1
 
 # conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch

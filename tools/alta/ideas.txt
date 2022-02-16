@@ -1,4 +1,20 @@
-* Use 'inter_area' instead of 'bilinear' interpolation
-* Freeze some layers to reduce overfitting
-* Display softmax score
+* Prepare API with input image and output oracle score + Understand ROS
+* How to use results from previous heights???
+* Use 'inter_area' instead of 'bilinear' interpolation, or an explicit antialiasing filter
+* Freeze some layers to reduce overfitting. Some nets don't have this option yet (e.g. segformer)
+* Use more datasets to improve generalization (either pretrain or mix with Alta). List of relevant datasets exists in folder AI_datasets and also in a
+document in my drive.
+* Change class weights
+* Label smoothing - either uniform, or according to semantic closeness
+* Display softmax score. It seems that smaller scores are obtained in the vicinity of edge pixels,
+hence it can be used to eliminate small objects in high altitude!!!
+It also depends on the decoder interpolation, and probably on the patch size (in transformers)
 * Show difference between cnn and transformer using the mis-annotated image
+
+* 15/02/2022
+* Metaformer - according to the paper, it's slightly better than pvt (on ADE dataset), which is much worse than
+segformer, with similar speed. Maybe it's due to the segformer's decoder?
+* Using antialiasing filter during inference only, the small columns disappear only at 15+ filter size (at 100m),
+ and results overall decrease markedly.
+* Using antialiasing filter during training and inference, ...?
+* Showing the softmax output, it seems that some of the wrong predictions have also lowish score (<0.9). But certainly not all.
