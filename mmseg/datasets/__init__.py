@@ -27,7 +27,7 @@ __all__ = [
     'PascalVOCDataset', 'ADE20KDataset', 'PascalContextDataset',
     'PascalContextDataset59', 'ChaseDB1Dataset', 'DRIVEDataset', 'HRFDataset',
     'STAREDataset', 'DarkZurichDataset', 'NightDrivingDataset',
-    'COCOStuffDataset', 'LoveDADataset', 'RELLIS3DDataset', 'AltaDataset'
+    'RELLIS3DDataset', 'AltaDataset'
     'COCOStuffDataset', 'LoveDADataset', 'MultiImageMixDataset',
     'iSAIDDataset', 'ISPRSDataset', 'PotsdamDataset'
 ]
