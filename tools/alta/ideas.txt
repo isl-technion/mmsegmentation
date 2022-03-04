@@ -1,28 +1,35 @@
 * Prepare API with input image and output oracle score + Understand ROS
+* Train segformer with no reweighting and compare to convnets (PSPnet, BiSEnet, FCN, Unet)
 * How to use results from previous heights???
-* Use 'inter_area' instead of 'bilinear' interpolation, or an explicit antialiasing filter? It doesn't help...
 * Freeze some layers to reduce overfitting. Some nets don't have this option yet (e.g. segformer)
 * Use more datasets to improve generalization (either pretrain or mix with Alta). List of relevant datasets exists in folder AI_datasets and also in a
-document in my drive.
-* Change class weights
+document in my drive. Here you already have 'iSaid' dataset.
 * Label smoothing - either uniform, or according to semantic closeness
 * Display softmax score. It seems that smaller scores are obtained in the vicinity of edge pixels,
 hence it can be used to eliminate small objects in high altitude!!!
-It mainly depends on the decoder interpolation, and probably on the patch size (in transformers)
+It mainly depends on the decoder interpolation interval (psp-d8 - 8, segformer - 4)
 In addition, some wrongly classified areas (e.g. inside buildings), also get low scores
+* Change class weights? It might be unnecessary now, since results on training set are almost perfect, even with PSPnet.
+* Use 'inter_area' instead of 'bilinear' interpolation, or an explicit antialiasing filter? It doesn't seem to help...
 
-* 15/02/2022
+* 29/02/2022
 * Metaformer - according to the paper, it's slightly better than pvt (on ADE dataset), which is much worse than
 segformer, with similar speed. Maybe it's due to the segformer's decoder?
 * Using antialiasing filter during inference only, the small columns disappear only at 15+ filter size (at 100m),
  and results overall decrease markedly.
 * Using antialiasing filter during training and inference, ...?
-* Showing the softmax output, it seems that some of the wrong predictions have also lowish score (<0.9). But certainly not all.
+* Showing the softmax output, or valuse above a certain threshold.
+It seems that some of the wrong predictions have also lowish score (<0.9). But certainly not all.
+But anyway, the score near edges are lower.
+We should think how to use them...
 
 * For my presentation
 * Show presentation about the project as a whole
 * Show the AirSim simulation
-* Explain about Alta, how it was collected and annotated.
+* Explain about Alta, how it was collected and annotated
 * Explain about the annotation problems (both technical and essential)
 * Explain about the mmsegmentation package
 * Show difference between cnn and transformer using the mis-annotated image
+* Students project to implement and optimise on Jetson AGX
+* Yarin Gal paper on DDU in semantic segmentation? Ask for the specific code they used
+... Will it help to use more than one Gaussian per class?
