@@ -12,6 +12,15 @@ In addition, some wrongly classified areas (e.g. inside buildings), also get low
 * Change class weights? It might be unnecessary now, since results on training set are almost perfect, even with PSPnet.
 * Use 'inter_area' instead of 'bilinear' interpolation, or an explicit antialiasing filter? It doesn't seem to help...
 
+* 07/03/2022
+* After resolution reduction *1/8 (approx.), finally the small columns aren't detected at high altitudes.
+* DDU - Deterministic Deep Uncertainty - encouraging each class to behave like a Gaussian in the feature space, using
+spectral normalization, Leaky-RELU and average pooling.
+* There exist code for classification. I asked for the code for Segmentation, didn't get a response yet.
+* Possible improvements: Relative Maha-distance; Near and Far OOD separation;
+* Students project?
+* Chaim Baskin
+
 * 29/02/2022
 * Metaformer - according to the paper, it's slightly better than pvt (on ADE dataset), which is much worse than
 segformer, with similar speed. Maybe it's due to the segformer's decoder?
@@ -33,3 +42,23 @@ We should think how to use them...
 * Students project to implement and optimise on Jetson AGX
 * Yarin Gal paper on DDU in semantic segmentation? Ask for the specific code they used
 ... Will it help to use more than one Gaussian per class?
+
+
+** on ISL15 RTX3090 you should install torch using (although there's only cuda10.2 installed!)
+ pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
+
+
+# For meeting with Haim Baskin
+* Yaniv Romano - know his work!
+* Yarin Gal paper on DDU in semantic segmentation?
+* Out Of Distribution Detection and Generation using Soft Brownian Offset Sampling and AutoEncoders
+* VOS - Virtual Outliers Sampling.
+In my opinion the Gaussian assumption is flawed. Also the optimization certainly can't converge, because new outliers change the loss!
+* My idea (won't work) - same as VOS, only a more sophisticated outlier synthesis
+ 1) low-dim histogram sampling in random directions. Maybe it enables starting the loss training earlier
+ 2) A different uncertainty loss function. I don't fully understand why this works...
+ 3) Incorporate in other layers, since now the Gaussian assumption isn't needed
+ 4) What prevents getting a large value of (-energy) even after employing the method???
+* My best idea thus far - measure the loss between the 1d pdf (or cdf), which requires only a small number of samples, with a
+Gaussian pdf (or cdf) with the same mean and std. The sample pdf can be implemented using several sigmoid functions.
+In each iteration, one can choose one dimension (random or cyclical), or several, or all - per class.

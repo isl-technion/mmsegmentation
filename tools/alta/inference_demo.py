@@ -4,7 +4,7 @@ import mmcv
 import os
 import numpy as np
 
-if 1:  # PSPnet - PathA
+if 0:  # PSPnet - PathA
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/pspnet_r18-d8_pathA_pathA/pspnet_r18-d8_pathA_pathA.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/pspnet_r18-d8_pathA_pathA/iter_20000.pth'
 elif 0:  # PSPnet - PathA - mislabeled DJI_0149
@@ -16,9 +16,12 @@ elif 0:  # Segformer - PathA - mislabeled DJI_0149
 elif 0:  # Segformer - PathA, reweighted (also fixed DJI_149)
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_loadfrom_cityscapes_reweighted1/segformer_mit-b0_pathA_pathA_loadfrom_cityscapes_reweighted1.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_loadfrom_cityscapes_reweighted1/iter_10000.pth'
-else:  # Segformer - PathA->PathB, reweighted (also fixed DJI_149)
+elif 0:  # Segformer - PathA->PathB, reweighted (also fixed DJI_149)
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathB_loadfrom_cityscapes_reweighted1/segformer_mit-b0_pathA_pathB_loadfrom_cityscapes_reweighted1.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathB_loadfrom_cityscapes_reweighted1/iter_20000.pth'
+else:  # Segformer - PathA, reweighted (also fixed DJI_149), resized to 672*448
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_reweighted1_672_448/segformer_mit-b0_pathA_pathA_reweighted1_672_448.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_reweighted1_672_448/iter_20000.pth'
 
 
 # build the model from a config file and a checkpoint file
@@ -27,9 +30,9 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0001'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0005'
-# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
+images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/50'
-images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
+# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
 images_list = os.listdir(images_path)
 images_list.sort()
 
