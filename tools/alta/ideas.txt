@@ -55,6 +55,7 @@ We should think how to use them...
 * Yarin Gal paper on DDU in semantic segmentation?
  - using Spectral Normalization, Leaky Relu and Average Pooling in the Residual connections.
 * Out Of Distribution Detection and Generation using Soft Brownian Offset Sampling and AutoEncoders
+* Yaniv Romano - know his work!
 * VOS - Virtual Outliers Sampling.
 In my opinion the Gaussian assumption is flawed. Also the optimization certainly can't converge, because new outliers change the loss!
 * My idea (won't work) - same as VOS, only a more sophisticated outlier synthesis
@@ -66,7 +67,6 @@ In my opinion the Gaussian assumption is flawed. Also the optimization certainly
 Gaussian pdf (or cdf) with the same mean and std. The sample pdf can be implemented using several sigmoid functions.
 In each iteration, one can choose one dimension (random or cyclical), or several, or all - per class.
 We can also choose
-* Yaniv Romano - know his work!
 
 
 ###### put in inference_alta?
@@ -74,3 +74,14 @@ if not isinstance(results['img'], torch.Tensor):
     img = mmcv.imread(results['img'])
 else:
     img = results['img']
+
+# TODO:
+* fix resize_size, crop_size, check them in testing \ inference
+* Then rerun segformer 672*448 training
+* allow var_sample to train? or at least try various values?
+* check the hist-loss without actually using it (by multiplying with 0) - does it help?
+* implement random directions (should be easy)
+* to find OOD - save mean and covariance
+* more bins
+* Laplacian? Generalized Gaussian? ...
+* implement for batch size > 1
