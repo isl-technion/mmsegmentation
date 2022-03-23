@@ -47,6 +47,25 @@ class AltaDataset(CustomDataset):
         [255, 50, 204],  # 15
     ]
 
+    class_scores = [
+        0,  # 'background',  # 0
+        0,  # 'bicycle',  # 1
+        0,  # 'building',  # 2
+        0,  # 'fence',  # 3
+        0,  # 'other objects',  # 4
+        0,  # 'person',  # 5
+        0,  # 'pole',  # 6
+        0.3,  # 'rough terrain',  # 7
+        0,  # 'shed',  # 8
+        1,  # 'soft terrain',  # 9
+        0,  # 'stairs',  # 10
+        0,  # 'transportation terrain',  # 11
+        0,  # 'vegetation',  # 12
+        0,  # 'vehicle',  # 13
+        0.8,  # 'walking terrain',  # 14
+        0,  # 'water',  # 15
+    ]
+
     # PALETTE = [
     #     [0, 0, 0],  # 0
     #     [255, 127, 50],  # 2

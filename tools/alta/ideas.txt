@@ -49,8 +49,11 @@ We should think how to use them...
 
 
 # For meeting with Haim Baskin
-* Yaniv Romano - know his work!
+* My aim: Develop a real-time OOD detector (epistemic uncertainty), which does not require external datasets.
+ - Unlike Monte-Carlo Dropout and Deep Ensembles, which are not real time
+ - Unlike many other methods which use external datasets for training and calibration.
 * Yarin Gal paper on DDU in semantic segmentation?
+ - using Spectral Normalization, Leaky Relu and Average Pooling in the Residual connections.
 * Out Of Distribution Detection and Generation using Soft Brownian Offset Sampling and AutoEncoders
 * VOS - Virtual Outliers Sampling.
 In my opinion the Gaussian assumption is flawed. Also the optimization certainly can't converge, because new outliers change the loss!
@@ -62,3 +65,12 @@ In my opinion the Gaussian assumption is flawed. Also the optimization certainly
 * My best idea thus far - measure the loss between the 1d pdf (or cdf), which requires only a small number of samples, with a
 Gaussian pdf (or cdf) with the same mean and std. The sample pdf can be implemented using several sigmoid functions.
 In each iteration, one can choose one dimension (random or cyclical), or several, or all - per class.
+We can also choose
+* Yaniv Romano - know his work!
+
+
+###### put in inference_alta?
+if not isinstance(results['img'], torch.Tensor):
+    img = mmcv.imread(results['img'])
+else:
+    img = results['img']

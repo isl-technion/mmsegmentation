@@ -1,5 +1,5 @@
 # from mmseg.apis import inference_segmentor, init_segmentor
-from mmseg.apis.inference_alta import inference_segmentor, init_segmentor
+from mmseg.apis.alta.inference_alta import inference_segmentor, init_segmentor
 import mmcv
 import os
 import numpy as np
