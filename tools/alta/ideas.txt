@@ -76,18 +76,19 @@ else:
     img = results['img']
 
 # TODO:
-* fix resize_size, crop_size, check them in testing \ inference
-* Then rerun segformer 672*448 training
-* Download corrected annotation of AgamimPathA30\100
+* Try on a different Dataset
+* Don't update AgamimPathA100 (as of 24/3/2022) - it's wrong !!!!!!!!!!!
+* fix resize_size, crop_size, check them in testing \ inference, then rerun segformer 672*448 training (even without histloss)
 * allow var_sample to train? or at least try various values?
-* check the hist-loss without actually using it (by multiplying with 0) - does it help?
+* check the hist-loss without actually using it (by multiplying with 0) - does it help? Absolutely (-:
 * implement random directions (should be easy)
-* to find OOD - save mean and covariance
+* to find OOD - save mean and covariance (or variances)
 * more bins
 * Laplacian? Generalized Gaussian? ...
 * implement for batch size > 1
-* disallow calculation for class 0 (background)
+* disallow calculation for class 0 (as long as the background class exists)
 * can the hist loss be used alone - instead of CE???
 * can the method be used to improve transfer learning
-* no need to calculate target values for all classes - it's the same vector!!!
-* organize the parameters order in my scripts (and remove gt_semantic_seg during testing!)
+* no need to calculate target values for all classes - it's the same vector!!! Or is it?
+* measure Gaussianity after training
+* Distance measures - KL? L1smooth? MSE?

@@ -4,6 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
+from scipy.stats import ortho_group # Requires version 0.18 of scipy
+
 from ...builder import LOSSES
 from ..utils import get_class_weight, weight_reduce_loss
 
@@ -58,7 +60,14 @@ class HistogramLoss(nn.Module):
             label = label[:,0,:,:]
 
         # TODO: Handle batch size > 1  !!!
+        batch_size = feature.shape[0]
         feature_dim = feature.shape[1]
+        height = feature.shape[2]
+        width = feature.shape[3]
+        if feature.requires_grad:  # Indication of training rather than validation.  TODO: improve this indication
+            ortho_mat = torch.tensor(ortho_group.rvs(dim=feature_dim), device='cuda').to(torch.float)
+            feature = torch.matmul(ortho_mat, feature.view((feature_dim, -1))).view((batch_size, feature_dim, height, width))
+
         feature_upscaled = torch.nn.functional.interpolate(feature, (label.shape[1], label.shape[2]))
 
         miu_all = torch.zeros((feature_dim, self.num_classes), device='cuda')
@@ -92,7 +101,7 @@ class HistogramLoss(nn.Module):
                     std = var.sqrt()
                     var_sample = var / 25
 
-                    bins = [miu + k*std for k in range (-3, 4, 1)]
+                    bins = [miu + k*std for k in [-3., -2.5, -2., -1.5, -1., -0.5, 0., 0.5, 1., 1.5, 2., 2.5, 3.]]
                     target_values = torch.zeros((feature_dim, len(bins)), device='cuda')
                     sample_values = torch.zeros((feature_dim, len(bins)), device='cuda')
                     for ind, bin in enumerate(bins):
@@ -106,7 +115,7 @@ class HistogramLoss(nn.Module):
                     hist_values = sample_values / sample_values.sum(dim=1).unsqueeze(dim=1)
                     target_values = target_values / target_values.sum(dim=1).unsqueeze(dim=1)
 
-                    loss_hist += F.smooth_l1_loss(hist_values, target_values)
+                    loss_hist += self.loss_weight * F.smooth_l1_loss(hist_values, target_values)
 
             miu_all[:, c] = miu_unnormalized
             moment2_all[:, c] = moment2_unnormalized
@@ -121,9 +130,9 @@ class HistogramLoss(nn.Module):
         loss_hist /= active_classes_num
         feat_mean = feature.mean()
         feat_std = torch.sqrt((feature**2).mean() - feat_mean**2)
-        print('loss_hist = {}, mean = {}, std = {}'.format(loss_hist*1000, feat_mean, feat_std))
+        print('loss_hist = {}, mean = {}, std = {}'.format(loss_hist, feat_mean, feat_std))
 
-        return self.loss_weight * loss_hist
+        return loss_hist
 
     @property
     def loss_name(self):
