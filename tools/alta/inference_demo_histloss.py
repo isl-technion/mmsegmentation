@@ -3,6 +3,7 @@ from mmseg.apis.alta.inference_alta import inference_segmentor, init_segmentor
 import mmcv
 import os
 import numpy as np
+import torch
 
 if 0:  # PSPnet - PathA
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/pspnet_r18-d8_pathA_pathA/pspnet_r18-d8_pathA_pathA.py'
@@ -29,6 +30,10 @@ elif 1:  # Segformer - PathA, resized to 672*448, with histogramm loss (256 dims
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_672_448_histloss_1000_feat256/segformer_mit-b0_pathA_pathA_672_448_histloss_1000_feat256.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_672_448_histloss_1000_feat256/epoch_100.pth'
 
+hist_model = None
+hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0])
+if os.path.isfile(hist_model_path):
+    hist_model = torch.load(hist_model_path)
 
 # build the model from a config file and a checkpoint file
 model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
@@ -37,8 +42,9 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0001'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0005'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
-images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/50'
+# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/50'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
+images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Ir yamim/50'
 images_list = os.listdir(images_path)
 images_list.sort()
 
@@ -61,12 +67,15 @@ for imgname in images_list[::interval]:
     # img = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/70/DJI_0118.JPG'  #or img = mmcv.imread(img), which will only load it once
 
     out_file = os.path.join(results_path, os.path.split(imgname_full)[-1])
-    result = inference_segmentor(model, imgname_full, return_scores=return_scores)
+    result = inference_segmentor(model, imgname_full, return_scores=return_scores, hist_model=hist_model)
     # visualize the results in a new window
     # model.show_result(img, result, show=True)
     # or save the visualization results to image files
     # you can change the opacity of the painted segmentation map in (0, 1].
     if return_scores:
+        if hist_model is not None:
+            vals = np.sort(result[1][0], axis=None)
+            score_th2 = vals[int(len(vals)*0.05)]
         out_file_score = os.path.join(results_path, 'scores_map', os.path.split(imgname_full)[-1])
         model.show_result(imgname_full, result[0], out_file=out_file, opacity=1)
         conf_map = (result[1][0] - score_th1) / (1-score_th1)
@@ -75,7 +84,8 @@ for imgname in images_list[::interval]:
         conf_mask = result[1][0] < score_th2
         indices = np.nonzero(conf_mask)
         img[indices[0], indices[1], :] = 0
-        out_file_combined = os.path.join(results_path, 'combined_{}'.format(score_th2), os.path.split(imgname_full)[-1])
+        # out_file_combined = os.path.join(results_path, 'combined_{}'.format(score_th2), os.path.split(imgname_full)[-1])
+        out_file_combined = os.path.join(results_path, 'combined', os.path.split(imgname_full)[-1])
         mmcv.imwrite(img, out_file_combined)
     else:
         model.show_result(imgname_full, result, out_file=out_file, opacity=1)

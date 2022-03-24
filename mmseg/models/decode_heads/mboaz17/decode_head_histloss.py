@@ -211,7 +211,7 @@ class BaseDecodeHead(BaseModule, metaclass=ABCMeta):
         losses[self.loss_hist.loss_name] = loss_hist_val
         return losses
 
-    def forward_test(self, inputs, img_metas, test_cfg):
+    def forward_test(self, inputs, img_metas, test_cfg, hist_model=None):
         """Forward function for testing.
 
         Args:
@@ -226,7 +226,7 @@ class BaseDecodeHead(BaseModule, metaclass=ABCMeta):
         Returns:
             Tensor: Output segmentation map.
         """
-        return self.forward(inputs)
+        return self.forward(inputs, hist_model=hist_model)
 
     def cls_seg(self, feat):
         """Classify each pixel."""

@@ -67,7 +67,7 @@ class LoadImage:
         return results
 
 
-def inference_segmentor(model, img, return_scores=False):
+def inference_segmentor(model, img, return_scores=False, hist_model=None):
     """Inference image(s) with the segmentor.
 
     Args:
@@ -82,6 +82,14 @@ def inference_segmentor(model, img, return_scores=False):
     device = next(model.parameters()).device  # model device
     # build the data pipeline
     test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
+    if 'LoadAnnotations' in str(test_pipeline[1]):  # dismiss LoadAnnotations from pipeline (if exist)
+        test_pipeline = [LoadImage()] + cfg.data.test.pipeline[2:]
+        try:
+            if test_pipeline[-1]['transforms'][-1]['keys'][1] == 'gt_semantic_seg':
+                test_pipeline[-1]['transforms'][-1]['keys'].pop(1)
+        except:
+            pass
+
     test_pipeline = Compose(test_pipeline)
     # prepare data
     data = dict(img=img)
@@ -95,7 +103,7 @@ def inference_segmentor(model, img, return_scores=False):
 
     # forward the model
     with torch.no_grad():
-        result = model(return_loss=False, rescale=True, **data, return_scores=return_scores)
+        result = model(return_loss=False, rescale=True, **data, return_scores=return_scores, hist_model=hist_model)
     return result
 
 

@@ -96,6 +96,25 @@ class AltaDataset(CustomDataset):
         self.label_map = {0: 0, 1: 4, 2: 2, 3: 4, 4: 4, 5: 4, 6: 4, 7: 7, 8: 4, 9: 9, 10: 4, 11: 11, 12: 12, 13: 13, 14: 14, 15: 4}
         assert osp.exists(self.img_dir)
 
+    # def prepare_test_img(self, idx):  # uncomment if LoadAnnotations is needed during testing...
+    #     """Get testing data after pipeline.
+    #
+    #     Args:
+    #         idx (int): Index of data.
+    #
+    #     Returns:
+    #         dict: Testing data after pipeline with new keys introduced by
+    #             pipeline.
+    #     """
+    #
+    #     img_info = self.img_infos[idx]
+    #
+    #     # results = dict(img_info=img_info)
+    #     ann_info = self.get_ann_info(idx)
+    #     results = dict(img_info=img_info, ann_info=ann_info)
+    #
+    #     self.pre_pipeline(results)
+    #     return self.pipeline(results)
 
 # Implement sub-sampling per class
 # Implement merging of several classes

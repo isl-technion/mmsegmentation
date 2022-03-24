@@ -78,6 +78,7 @@ else:
 # TODO:
 * fix resize_size, crop_size, check them in testing \ inference
 * Then rerun segformer 672*448 training
+* Download corrected annotation of AgamimPathA30\100
 * allow var_sample to train? or at least try various values?
 * check the hist-loss without actually using it (by multiplying with 0) - does it help?
 * implement random directions (should be easy)
@@ -85,3 +86,8 @@ else:
 * more bins
 * Laplacian? Generalized Gaussian? ...
 * implement for batch size > 1
+* disallow calculation for class 0 (background)
+* can the hist loss be used alone - instead of CE???
+* can the method be used to improve transfer learning
+* no need to calculate target values for all classes - it's the same vector!!!
+* organize the parameters order in my scripts (and remove gt_semantic_seg during testing!)
