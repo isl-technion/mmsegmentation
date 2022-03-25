@@ -48,4 +48,4 @@ class HistLossHook(Hook):
         self.moment2_all /= (self.samples_num_all.unsqueeze(dim=0)+1e-12)
         self.var_all = self.moment2_all - self.miu_all**2 + 1e-12
 
-        torch.save(self, os.path.join(self.save_folder, 'epoch_{}'.format(runner.epoch)))
+        torch.save(self, os.path.join(self.save_folder, 'epoch_{}'.format(runner.epoch)))   # TODO: Should it be runner.epoch-1???

@@ -17,7 +17,7 @@ model = dict(
                      loss_decode=dict(
                          type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
                      loss_hist=dict(
-                         type='HistogramLoss', loss_weight=5000.0),
+                         type='HistogramLoss', loss_weight=20000.0),
                      ),
     test_cfg=dict(mode='whole', crop_size=crop_size))
     # test_cfg=dict(mode='slide', crop_size=(1024, 1024), stride=(768, 768)))

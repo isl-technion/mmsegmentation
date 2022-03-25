@@ -39,6 +39,7 @@ class HistogramLoss(nn.Module):
         self.features_num = 256  # 16
         self.miu_all = torch.zeros((self.features_num, self.num_classes), device='cuda')  # For in-epoch calculations
         self.moment2_all = torch.zeros((self.features_num, self.num_classes), device='cuda')  # For in-epoch calculations
+        # self.cov_all = torch.zeros((self.features_num, self.features_num, self.num_classes), device='cuda')  # For in-epoch calculations
         self.samples_num_all = torch.zeros(self.num_classes, device='cuda')  # cumulated samples number of each class over the current epoch
         # self.active_classes_num = torch.tensor(0, device='cuda')
 
@@ -72,6 +73,7 @@ class HistogramLoss(nn.Module):
 
         miu_all = torch.zeros((feature_dim, self.num_classes), device='cuda')
         moment2_all = torch.zeros((feature_dim, self.num_classes), device='cuda')
+        # cov_all = torch.zeros((self.features_num, self.features_num, self.num_classes), device='cuda')  # For in-epoch calculations
         samples_num_all = torch.zeros(self.num_classes, device='cuda')
 
         class_interval = 1

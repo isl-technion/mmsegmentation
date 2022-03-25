@@ -76,6 +76,8 @@ else:
     img = results['img']
 
 # TODO:
+* covariance instead of variance + ignore log(det(cov))?
+* Make sure the hook epoch and the model epock are the same!!!!!!!
 * Try on a different Dataset
 * Don't update AgamimPathA100 (as of 24/3/2022) - it's wrong !!!!!!!!!!!
 * fix resize_size, crop_size, check them in testing \ inference, then rerun segformer 672*448 training (even without histloss)
