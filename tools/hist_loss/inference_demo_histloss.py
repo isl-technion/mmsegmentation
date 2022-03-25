@@ -3,16 +3,18 @@ from mmseg.apis.alta.inference_alta import inference_segmentor, init_segmentor
 import mmcv
 import os
 import numpy as np
-import torch
+import pickle
 
+use_hist_model = False
 if 1:  # Segformer - PathA, resized to 672*448, with histogramm loss (256 dims)
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_30_50_pathA_30_50_672_448_HL5000/segformer_mit-b0_pathA_30_50_pathA_30_50_672_448_HL5000.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_30_50_pathA_30_50_672_448_HL5000/epoch_100.pth'
 
 hist_model = None
-hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0])
-if os.path.isfile(hist_model_path):
-    hist_model = torch.load(hist_model_path)
+hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0]+'.pickle')
+if use_hist_model and os.path.isfile(hist_model_path):
+    with open(hist_model_path, 'rb') as handle:
+        hist_model = pickle.load(handle)
 
 # build the model from a config file and a checkpoint file
 model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
@@ -52,9 +54,9 @@ for imgname in images_list[::interval]:
     # or save the visualization results to image files
     # you can change the opacity of the painted segmentation map in (0, 1].
     if return_scores:
-        if hist_model is not None:
+        if hist_model:
             vals = np.sort(result[1][0], axis=None)
-            score_th2 = vals[int(len(vals)*0.05)]
+            score_th2 = vals[int(len(vals)*0.1)]
         out_file_score = os.path.join(results_path, 'scores_map', os.path.split(imgname_full)[-1])
         model.show_result(imgname_full, result[0], out_file=out_file, opacity=1)
         conf_map = (result[1][0] - score_th1) / (1-score_th1)
@@ -63,8 +65,10 @@ for imgname in images_list[::interval]:
         conf_mask = result[1][0] < score_th2
         indices = np.nonzero(conf_mask)
         img[indices[0], indices[1], :] = 0
-        # out_file_combined = os.path.join(results_path, 'combined_{}'.format(score_th2), os.path.split(imgname_full)[-1])
-        out_file_combined = os.path.join(results_path, 'combined', os.path.split(imgname_full)[-1])
+        if hist_model:
+            out_file_combined = os.path.join(results_path, 'combined', os.path.split(imgname_full)[-1])
+        else:
+            out_file_combined = os.path.join(results_path, 'combined_{}'.format(score_th2), os.path.split(imgname_full)[-1])
         mmcv.imwrite(img, out_file_combined)
     else:
         model.show_result(imgname_full, result, out_file=out_file, opacity=1)

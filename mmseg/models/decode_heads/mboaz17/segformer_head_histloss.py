@@ -8,6 +8,7 @@ from mmseg.models.decode_heads.mboaz17.decode_head_histloss import BaseDecodeHea
 from mmseg.ops import resize
 
 from mmseg.models.losses.mboaz17.histogram_loss import HistogramLoss
+import numpy as np
 
 @HEADS.register_module()
 class SegformerHeadHistLoss(BaseDecodeHead):
@@ -66,12 +67,25 @@ class SegformerHeadHistLoss(BaseDecodeHead):
             loss = self.loss_hist(out, label)
 
         if hist_model is not None:
-            prob_scores = torch.zeros((out.shape[0], hist_model.num_classes, out.shape[2], out.shape[3]), device='cuda')
+            batch_size = out.shape[0]
+            feature_dim = out.shape[1]
+            height = out.shape[2]
+            width = out.shape[3]
+            prob_scores = torch.zeros((batch_size, hist_model.num_classes, height, width), device='cuda')
             for c in range(0, hist_model.num_classes):
-                miu_curr = hist_model.miu_all[:,c].unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
-                var_curr = hist_model.var_all[:,c].unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
-                maha_dist = ((out - miu_curr)**2 / var_curr).sum(dim=1)
-                log_prob = -0.5 * (maha_dist + torch.log(var_curr.prod(dim=1)) + out.shape[1]*torch.log(2*torch.tensor(torch.pi)))
+                miu_curr = torch.tensor(hist_model.miu_all[:,c], device='cuda').clone().detach().\
+                    unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
+                if 0:  # use variance
+                    var_curr = torch.tensor(hist_model.var_all[:, c], device='cuda').clone().detach().\
+                        unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
+                    maha_dist = ((out - miu_curr)**2 / var_curr).sum(dim=1)
+                    # log_prob = -0.5 * (maha_dist + torch.log(var_curr.prod()) + out.shape[1]*torch.log(2*torch.tensor(torch.pi)))
+                    log_prob = -0.5 * maha_dist
+                else:  # use covariance
+                    covinv_curr = torch.tensor(hist_model.covinv_mat_all[:, :, c], device='cuda').clone().detach()
+                    diff = (out - miu_curr).view((feature_dim, -1))
+                    maha_dist = (diff * torch.matmul(covinv_curr, diff)).sum(dim=0).view((1, height, width))
+                    log_prob = -0.5 * maha_dist
                 prob_scores[0, c] = log_prob[0]
 
             prob_scores[prob_scores.isinf()] = -1e6

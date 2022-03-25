@@ -116,9 +116,9 @@ lr_config = dict(
 # runtime settings
 runner = dict(type='EpochBasedRunner', max_epochs=100)
 checkpoint_config = dict(by_epoch=True, interval=5)
-evaluation = dict(interval=10, metric='mIoU', pre_eval=True)
+evaluation = dict(interval=5, metric='mIoU', pre_eval=True)
 
-workflow = [('train', 1), ('val', 1)]
+workflow = [('train', 5), ('val', 1)]
 
 load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
 

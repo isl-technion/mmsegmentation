@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 from mmcv.runner.hooks import HOOKS, Hook
-from torch import nn
-import torch
+import numpy as np
+import pickle
 
 from mmseg.models.losses.mboaz17.histogram_loss import HistogramLoss
 import datetime;
@@ -18,11 +18,13 @@ class HistLossHook(Hook):
         self.features_num = features_num
         self.save_folder = ''  # will be determined later
 
-        self.miu_all = torch.zeros((self.features_num, self.num_classes), device='cuda')
-        self.moment2_all = torch.zeros((self.features_num, self.num_classes), device='cuda')
-        self.samples_num_all = torch.zeros(self.num_classes, device='cuda')
-        # self.active_classes_num = torch.tensor(0, device='cuda')
-        self.var_all = torch.zeros((self.features_num, self.num_classes), device='cuda')
+        self.miu_all = np.zeros((self.features_num, self.num_classes))
+        self.moment2_all = np.zeros((self.features_num, self.num_classes))
+        self.moment2_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))  # For in-epoch calculations
+        self.cov_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))  # For in-epoch calculations
+        self.covinv_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))  # For in-epoch calculations
+        self.samples_num_all = np.zeros(self.num_classes)
+        self.var_all = np.zeros((self.features_num, self.num_classes))
         self.iter = 0
 
     def before_val_epoch(self, runner):
@@ -32,20 +34,30 @@ class HistLossHook(Hook):
 
         self.miu_all[:] = 0
         self.moment2_all[:] = 0
+        self.moment2_mat_all[:] = 0
         self.samples_num_all[:] = 0
         self.iter = 0
 
     def after_val_iter(self, runner):
         self.miu_all += runner.model.module.decode_head.loss_hist.miu_all
         self.moment2_all += runner.model.module.decode_head.loss_hist.moment2_all
+        self.moment2_mat_all += runner.model.module.decode_head.loss_hist.moment2_mat_all
         self.samples_num_all += runner.model.module.decode_head.loss_hist.samples_num_all
         self.iter += 1
 
     def after_val_epoch(self, runner):
         """Synchronizing norm."""
 
-        self.miu_all /= (self.samples_num_all.unsqueeze(dim=0)+1e-12)
-        self.moment2_all /= (self.samples_num_all.unsqueeze(dim=0)+1e-12)
+        self.miu_all /= (np.expand_dims(self.samples_num_all, axis=0)+1e-12)
+        self.moment2_all /= (np.expand_dims(self.samples_num_all, axis=0)+1e-12)
+        self.moment2_mat_all /= (np.expand_dims(self.samples_num_all, axis=(0,1))+1e-12)
         self.var_all = self.moment2_all - self.miu_all**2 + 1e-12
+        for c in range(0, self.num_classes):
+            self.cov_mat_all[:, :, c] = self.moment2_mat_all[:, :, c] - \
+                                        np.matmul(self.miu_all[:, c:c+1], self.miu_all[:, c:c+1].T) + \
+                                        1e-12*np.eye(self.features_num)
+            self.covinv_mat_all[:, :, c] = np.linalg.inv(self.cov_mat_all[:, :, c])
 
-        torch.save(self, os.path.join(self.save_folder, 'epoch_{}'.format(runner.epoch)))   # TODO: Should it be runner.epoch-1???
+        filename = os.path.join(self.save_folder, 'epoch_{}'.format(runner.epoch)+'.pickle')
+        with open(filename, 'wb') as handle:
+            pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
