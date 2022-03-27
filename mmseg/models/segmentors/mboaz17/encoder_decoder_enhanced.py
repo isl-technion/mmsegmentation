@@ -9,9 +9,10 @@ from ... import builder
 from ...builder import SEGMENTORS
 from ..base import BaseSegmentor
 
+from mmseg.models.decode_heads.mboaz17.segformer_head_histloss import SegformerHeadHistLoss
 
 @SEGMENTORS.register_module()
-class EncoderDecoderEnahnced(BaseSegmentor):
+class EncoderDecoderEnhanced(BaseSegmentor):
     """Encoder Decoder segmentors.
 
     EncoderDecoder typically consists of backbone, decode_head, auxiliary_head.
@@ -28,7 +29,7 @@ class EncoderDecoderEnahnced(BaseSegmentor):
                  test_cfg=None,
                  pretrained=None,
                  init_cfg=None):
-        super(EncoderDecoderEnahnced, self).__init__(init_cfg)
+        super(EncoderDecoderEnhanced, self).__init__(init_cfg)
         if pretrained is not None:
             assert backbone.get('pretrained') is None, \
                 'both backbone and segmentor set pretrained weight'
@@ -93,7 +94,10 @@ class EncoderDecoderEnahnced(BaseSegmentor):
     def _decode_head_forward_test(self, x, img_metas, hist_model=None):
         """Run forward function and calculate loss for decode head in
         inference."""
-        seg_logits = self.decode_head.forward_test(x, img_metas, self.test_cfg, hist_model=hist_model)
+        if isinstance(self.decode_head, SegformerHeadHistLoss):
+            seg_logits = self.decode_head.forward_test(x, img_metas, self.test_cfg, hist_model=hist_model)
+        else:
+            seg_logits = self.decode_head.forward_test(x, img_metas, self.test_cfg)
         return seg_logits
 
     def _auxiliary_head_forward_train(self, x, img_metas, gt_semantic_seg):
