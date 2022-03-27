@@ -5,13 +5,13 @@ import torch.nn.functional as F
 
 from mmseg.core import add_prefix
 from mmseg.ops import resize
-from .. import builder
-from ..builder import SEGMENTORS
-from .base import BaseSegmentor
+from ... import builder
+from ...builder import SEGMENTORS
+from ..base import BaseSegmentor
 
 
 @SEGMENTORS.register_module()
-class EncoderDecoder(BaseSegmentor):
+class EncoderDecoderEnahnced(BaseSegmentor):
     """Encoder Decoder segmentors.
 
     EncoderDecoder typically consists of backbone, decode_head, auxiliary_head.
@@ -28,7 +28,7 @@ class EncoderDecoder(BaseSegmentor):
                  test_cfg=None,
                  pretrained=None,
                  init_cfg=None):
-        super(EncoderDecoder, self).__init__(init_cfg)
+        super(EncoderDecoderEnahnced, self).__init__(init_cfg)
         if pretrained is not None:
             assert backbone.get('pretrained') is None, \
                 'both backbone and segmentor set pretrained weight'
@@ -67,11 +67,11 @@ class EncoderDecoder(BaseSegmentor):
             x = self.neck(x)
         return x
 
-    def encode_decode(self, img, img_metas):
+    def encode_decode(self, img, img_metas, hist_model=None):
         """Encode images with backbone and decode into a semantic segmentation
         map of the same size as input."""
         x = self.extract_feat(img)
-        out = self._decode_head_forward_test(x, img_metas)
+        out = self._decode_head_forward_test(x, img_metas, hist_model=hist_model)
         out = resize(
             input=out,
             size=img.shape[2:],
@@ -90,10 +90,10 @@ class EncoderDecoder(BaseSegmentor):
         losses.update(add_prefix(loss_decode, 'decode'))
         return losses
 
-    def _decode_head_forward_test(self, x, img_metas):
+    def _decode_head_forward_test(self, x, img_metas, hist_model=None):
         """Run forward function and calculate loss for decode head in
         inference."""
-        seg_logits = self.decode_head.forward_test(x, img_metas, self.test_cfg)
+        seg_logits = self.decode_head.forward_test(x, img_metas, self.test_cfg, hist_model=hist_model)
         return seg_logits
 
     def _auxiliary_head_forward_train(self, x, img_metas, gt_semantic_seg):
@@ -152,7 +152,7 @@ class EncoderDecoder(BaseSegmentor):
         return losses
 
     # TODO refactor
-    def slide_inference(self, img, img_meta, rescale):
+    def slide_inference(self, img, img_meta, rescale, hist_model=None):
         """Inference by sliding-window with overlap.
 
         If h_crop > h_img or w_crop > w_img, the small patch will be used to
@@ -176,7 +176,7 @@ class EncoderDecoder(BaseSegmentor):
                 y1 = max(y2 - h_crop, 0)
                 x1 = max(x2 - w_crop, 0)
                 crop_img = img[:, :, y1:y2, x1:x2]
-                crop_seg_logit = self.encode_decode(crop_img, img_meta)
+                crop_seg_logit = self.encode_decode(crop_img, img_meta, hist_model=hist_model)
                 preds += F.pad(crop_seg_logit,
                                (int(x1), int(preds.shape[3] - x2), int(y1),
                                 int(preds.shape[2] - y2)))
@@ -197,10 +197,10 @@ class EncoderDecoder(BaseSegmentor):
                 warning=False)
         return preds
 
-    def whole_inference(self, img, img_meta, rescale):
+    def whole_inference(self, img, img_meta, rescale, hist_model=None):
         """Inference with full image."""
 
-        seg_logit = self.encode_decode(img, img_meta)
+        seg_logit = self.encode_decode(img, img_meta, hist_model=hist_model)
         if rescale:
             # support dynamic shape for onnx
             if torch.onnx.is_in_onnx_export():
@@ -216,7 +216,7 @@ class EncoderDecoder(BaseSegmentor):
 
         return seg_logit
 
-    def inference(self, img, img_meta, rescale):
+    def inference(self, img, img_meta, rescale, hist_model=None):
         """Inference with slide/whole style.
 
         Args:
@@ -236,10 +236,13 @@ class EncoderDecoder(BaseSegmentor):
         ori_shape = img_meta[0]['ori_shape']
         assert all(_['ori_shape'] == ori_shape for _ in img_meta)
         if self.test_cfg.mode == 'slide':
-            seg_logit = self.slide_inference(img, img_meta, rescale)
+            seg_logit = self.slide_inference(img, img_meta, rescale, hist_model=hist_model)
         else:
-            seg_logit = self.whole_inference(img, img_meta, rescale)
-        output = F.softmax(seg_logit, dim=1)
+            seg_logit = self.whole_inference(img, img_meta, rescale, hist_model=hist_model)
+        if hist_model is not None:
+            output = seg_logit
+        else:
+            output = F.softmax(seg_logit, dim=1)
         flip = img_meta[0]['flip']
         if flip:
             flip_direction = img_meta[0]['flip_direction']
@@ -251,9 +254,9 @@ class EncoderDecoder(BaseSegmentor):
 
         return output
 
-    def simple_test(self, img, img_meta, rescale=True):
+    def simple_test(self, img, img_meta, rescale=True, return_scores=False, hist_model=None):
         """Simple test with single image."""
-        seg_logit = self.inference(img, img_meta, rescale)
+        seg_logit = self.inference(img, img_meta, rescale, hist_model=hist_model)
         seg_pred = seg_logit.argmax(dim=1)
         if torch.onnx.is_in_onnx_export():
             # our inference backend only support 4D output
@@ -262,6 +265,10 @@ class EncoderDecoder(BaseSegmentor):
         seg_pred = seg_pred.cpu().numpy()
         # unravel batch dim
         seg_pred = list(seg_pred)
+        if return_scores:
+            seg_score = torch.max(seg_logit, dim=1)[0].cpu().numpy()
+            seg_score = list(seg_score)
+            return seg_pred, seg_score
         return seg_pred
 
     def aug_test(self, imgs, img_metas, rescale=True):
