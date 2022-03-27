@@ -5,7 +5,7 @@ _base_ = [
 ]
 
 num_classes=16
-class_weight = [0, 0, 0.1, 0, 5, 0, 0, 1, 0, 10, 0, 0.1, 1, 1, 1, 0]
+class_weight = [0, 0, 1, 0, 5, 0, 0, 1, 0, 10, 0, 0.1, 1, 1, 1, 0]
 resize_size = (672, 448)  # (1440, 1088)
 crop_size = resize_size[::-1]
 
@@ -15,9 +15,9 @@ model = dict(
     decode_head=dict(type='SegformerHeadHistLoss',
                      num_classes=num_classes,
                      loss_decode=dict(
-                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),
                      loss_hist=dict(
-                         type='HistogramLoss', loss_weight=2000.0),
+                         type='HistogramLoss', loss_weight=5000.0),
                      ),
     test_cfg=dict(mode='whole', crop_size=crop_size))
     # test_cfg=dict(mode='slide', crop_size=(1024, 1024), stride=(768, 768)))
@@ -70,20 +70,20 @@ data = dict(
     train=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir=pathA_scenarios_img,
-        ann_dir=pathA_scenarios_ann,
+        img_dir=pathA_scenarios_img[:2],
+        ann_dir=pathA_scenarios_ann[:2],
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir=pathA_scenarios_img,
-        ann_dir=pathA_scenarios_ann,
+        img_dir=pathA_scenarios_img[:2],
+        ann_dir=pathA_scenarios_ann[:2],
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir=pathA_scenarios_img,
-        ann_dir=pathA_scenarios_ann,
+        img_dir=pathA_scenarios_img[:2],
+        ann_dir=pathA_scenarios_ann[:2],
         pipeline=test_pipeline))
 
 
@@ -114,9 +114,9 @@ lr_config = dict(
 
 
 # runtime settings
-runner = dict(type='EpochBasedRunner', max_epochs=150)
+runner = dict(type='EpochBasedRunner', max_epochs=100)
 checkpoint_config = dict(by_epoch=True, interval=5)
-evaluation = dict(interval=10, metric='mIoU', pre_eval=True)
+evaluation = dict(interval=5, metric='mIoU', pre_eval=True)
 
 workflow = [('train', 5), ('val', 1)]
 

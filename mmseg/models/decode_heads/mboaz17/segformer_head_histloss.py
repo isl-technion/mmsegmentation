@@ -78,13 +78,13 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                 if 0:  # use variance
                     var_curr = torch.tensor(hist_model.var_all[:, c], device='cuda').clone().detach().\
                         unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
-                    maha_dist = ((out - miu_curr)**2 / var_curr).sum(dim=1)
+                    maha_dist = ((out - miu_curr)**2 / var_curr).mean(dim=1)
                     # log_prob = -0.5 * (maha_dist + torch.log(var_curr.prod()) + out.shape[1]*torch.log(2*torch.tensor(torch.pi)))
                     log_prob = -0.5 * maha_dist
                 else:  # use covariance
                     covinv_curr = torch.tensor(hist_model.covinv_mat_all[:, :, c], device='cuda').clone().detach()
                     diff = (out - miu_curr).view((feature_dim, -1))
-                    maha_dist = (diff * torch.matmul(covinv_curr, diff)).sum(dim=0).view((1, height, width))
+                    maha_dist = (diff * torch.matmul(covinv_curr, diff)).mean(dim=0).view((1, height, width))
                     log_prob = -0.5 * maha_dist
                 prob_scores[0, c] = log_prob[0]
 

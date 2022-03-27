@@ -76,21 +76,29 @@ else:
     img = results['img']
 
 # TODO:
+* Decimation of the label map instead of interpolation, for speed and memory
+* no need to calculate target values for all classes - it's the same vector (after normalizing to 1)
 * Try on a different Dataset. Maybe PascalVoc2012, as in the paper DDU for semantic seg...
 * Did they use (in DDU) the a-priori probabilities for each class in the final decision? And what about log(det(cov))?
+Look at the DDU github...
+* Can the method be used to improve transfer learning? Representation learning?
 * fix resize_size, crop_size, check them in testing \ inference, then rerun segformer 672*448 training (even without histloss)
 * allow var_sample to train? or at least try various values?
+* For Gaussian dist., maybe eliminate ~5% of the outliers, both for std estimation and for
+fitting the model.
 * Laplacian? Generalized Gaussian? ...
+* After finishing training, check the fit of the data to the model. Maybe use the model only
+im certain dimensions?
+* When drawing from the exact model's dist., what is the resulting histogram?
 * Distance measures - KL? L1smooth? MSE?
 * implement for batch size > 1?
 * disallow calculation for class 0 \ remove the zero label
 * can the hist loss be used alone - instead of CE???
-* can the method be used to improve transfer learning?
-* no need to calculate target values for all classes - it's the same vector (after normalizing to 1)
 * measure Gaussianity after training
 * penalize diff(PxPy, Pxy), for any two random directions x,y. It shouldn't matter when using the full covariance matrix(?)...
 * It seems that ~0.1/5000 is the minimum obtainable hist-loss (per class, for L1smooth, Alta, Segformer, penultimate layer).
 Deducted from segformer_mit-b0_pathA_30_50_pathA_30_50_672_448_HL5000\20000
+* Refactor - use mboaz17 folders, reverse changes from their code ...
 
 # Done:
 * covariance instead of variance + ignore log(det(cov))?
