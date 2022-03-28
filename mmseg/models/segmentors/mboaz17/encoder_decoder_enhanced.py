@@ -270,7 +270,7 @@ class EncoderDecoderEnhanced(BaseSegmentor):
         # unravel batch dim
         seg_pred = list(seg_pred)
         if return_scores:
-            seg_score = torch.max(seg_logit, dim=1)[0].cpu().numpy()
+            seg_score = seg_logit
             seg_score = list(seg_score)
             return seg_pred, seg_score
         return seg_pred

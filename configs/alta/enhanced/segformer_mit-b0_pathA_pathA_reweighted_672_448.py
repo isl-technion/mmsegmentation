@@ -27,7 +27,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations'),
-    dict(type='Resize', img_scale=crop_size, keep_ratio=False),  # ratio_range=(0.25, 0.3)), img_scale=(2048, 1024)
+    dict(type='Resize', img_scale=resize_size, keep_ratio=False),  # ratio_range=(0.25, 0.3)), img_scale=(2048, 1024)
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),  ###
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
@@ -40,11 +40,11 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=crop_size,
+        img_scale=resize_size,
         # img_ratios=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
         flip=False,
         transforms=[
-            dict(type='Resize', img_scale=crop_size, keep_ratio=False),  ###  keep_ratio=True
+            dict(type='Resize', img_scale=resize_size, keep_ratio=False),  ###  keep_ratio=True
             # dict(type='RandomFlip'),  ###
             dict(type='Normalize', **img_norm_cfg),
             dict(type='ImageToTensor', keys=['img']),
@@ -61,7 +61,7 @@ pathA_scenarios_img = [
 pathA_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathA_scenarios_img]
 
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=1,
     workers_per_gpu=1,
     train=dict(
         type=dataset_type,
@@ -82,7 +82,47 @@ data = dict(
         ann_dir=pathA_scenarios_ann,
         pipeline=test_pipeline))
 
-## runtime settings
+
+# optimizer
+optimizer = dict(
+    _delete_=True,
+    type='AdamW',
+    lr=0.00006,
+    betas=(0.9, 0.999),
+    weight_decay=0.01,
+    paramwise_cfg=dict(
+        custom_keys={
+            'pos_block': dict(decay_mult=0.),
+            'norm': dict(decay_mult=0.),
+            'head': dict(lr_mult=10.)
+        }))
+
+# learning policy
+lr_config = dict(
+    _delete_=True,
+    policy='poly',
+    warmup='linear',
+    warmup_iters=1500,
+    warmup_ratio=1e-6,
+    power=1.0,
+    min_lr=0.0,
+    by_epoch=False)
+
+
+# runtime settings
+# runner = dict(type='IterBasedRunner', max_iters=10000)
+# checkpoint_config = dict(by_epoch=False, interval=500)
+# evaluation = dict(interval=500, metric='mIoU', pre_eval=True)
+# workflow = [('train', int(480)), ('val', int(96))]
+
+runner = dict(type='EpochBasedRunner', max_epochs=100)
+checkpoint_config = dict(by_epoch=True, interval=5)
+evaluation = dict(interval=5, metric='mIoU', pre_eval=True)
+workflow = [('train', int(5)), ('val', int(1))]
+
 load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
 
-runner = dict(type='EpochBasedRunner', max_epochs=50)
+# custom_hooks = [
+#     dict(type='HistLossHook', num_classes=num_classes, features_num=256)
+# ]
+# custom_imports = dict(imports=['tools.alta.histloss_hook'], allow_failed_imports=False)

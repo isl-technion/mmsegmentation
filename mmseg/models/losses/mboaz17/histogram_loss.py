@@ -107,18 +107,19 @@ class HistogramLoss(nn.Module):
                     var_sample_t = var_t / 25
 
                     bins = [miu_t + k*std_t for k in [-3., -2.5, -2., -1.5, -1., -0.5, 0., 0.5, 1., 1.5, 2., 2.5, 3.]]
-                    target_values = torch.zeros((feature_dim, len(bins)), device='cuda')
+                    target_values = torch.zeros((1, len(bins)), device='cuda')
                     sample_values = torch.zeros((feature_dim, len(bins)), device='cuda')
                     for ind, bin in enumerate(bins):
                         with torch.no_grad():
-                            target_values[:, ind] = torch.exp( -0.5 * (bin - miu_t)**2 / var_t) * \
-                                            (1/torch.sqrt(2*torch.pi*var_t))
+                            target_values[0, ind] = torch.exp( -0.5 * (bin[0] - miu_t[0])**2 / var_t[0]) * \
+                                            (1/torch.sqrt(2*torch.pi*var_t[0]))
 
                         sample_values[:, ind] = torch.sum(torch.exp( -0.5 * (bin.unsqueeze(dim=1) - feat_vecs_curr) ** 2 / var_sample_t.unsqueeze(dim=1)) \
                                       * (1 / torch.sqrt(2 * torch.pi * var_sample_t.unsqueeze(dim=1))), dim=1)
 
                     hist_values = sample_values / sample_values.sum(dim=1).unsqueeze(dim=1)
-                    target_values = target_values / target_values.sum(dim=1).unsqueeze(dim=1)
+                    target_values = target_values / target_values.sum()
+                    target_values = target_values.expand(feature_dim, -1)
 
                     loss_hist += self.loss_weight * F.smooth_l1_loss(hist_values, target_values)
 

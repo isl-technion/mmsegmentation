@@ -1,29 +1,28 @@
 _base_ = [
     '../../_base_/models/segformer_mit-b0.py',
     '../../_base_/datasets/cityscapes_1024x1024.py',
-    '../../_base_/default_runtime.py', 'schedule_160k.py'
+    'runtime_schedule_segformer.py'
 ]
 
+## model settings
 num_classes=16
-class_weight = [0, 0, 1, 0, 5, 0, 0, 1, 0, 10, 0, 0.1, 1, 1, 1, 0]
+class_weight = [0, 0, 0.1, 0, 5, 0, 0, 1, 0, 10, 0, 0.1, 1, 1, 1, 0]
 resize_size = (672, 448)  # (1440, 1088)
 crop_size = resize_size[::-1]
 
 model = dict(
     type='EncoderDecoderEnhanced',
-    # backbone=dict(init_cfg=dict(type='Pretrained', checkpoint='/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/mit_b0.pth')),
     decode_head=dict(type='SegformerHeadHistLoss',
                      num_classes=num_classes,
                      loss_decode=dict(
                          type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),
                      loss_hist=dict(
-                         type='HistogramLoss', loss_weight=5000.0),
+                         type='HistogramLoss', loss_weight=0.0),
                      ),
     test_cfg=dict(mode='whole', crop_size=crop_size))
-    # test_cfg=dict(mode='slide', crop_size=(1024, 1024), stride=(768, 768)))
 
 
-# dataset settings
+## dataset settings
 dataset_type = 'AltaDataset'
 data_root = '/media/isl12/Alta/'
 img_norm_cfg = dict(
@@ -65,25 +64,25 @@ pathA_scenarios_img = [
 pathA_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathA_scenarios_img]
 
 data = dict(
-    samples_per_gpu=1,  ###
-    workers_per_gpu=1,  ###
+    samples_per_gpu=1,
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir=pathA_scenarios_img[:2],
-        ann_dir=pathA_scenarios_ann[:2],
+        img_dir=pathA_scenarios_img,
+        ann_dir=pathA_scenarios_ann,
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir=pathA_scenarios_img[:2],
-        ann_dir=pathA_scenarios_ann[:2],
+        img_dir=pathA_scenarios_img,
+        ann_dir=pathA_scenarios_ann,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir=pathA_scenarios_img[:2],
-        ann_dir=pathA_scenarios_ann[:2],
+        img_dir=pathA_scenarios_img,
+        ann_dir=pathA_scenarios_ann,
         pipeline=test_pipeline))
 
 
@@ -114,16 +113,19 @@ lr_config = dict(
 
 
 # runtime settings
+# runner = dict(type='IterBasedRunner', max_iters=10000)
+# checkpoint_config = dict(by_epoch=False, interval=500)
+# evaluation = dict(interval=500, metric='mIoU', pre_eval=True)
+# workflow = [('train', int(480)), ('val', int(96))]
+
 runner = dict(type='EpochBasedRunner', max_epochs=100)
 checkpoint_config = dict(by_epoch=True, interval=5)
 evaluation = dict(interval=5, metric='mIoU', pre_eval=True)
-
-workflow = [('train', 5), ('val', 1)]
+workflow = [('train', int(5)), ('val', int(1))]
 
 load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
 
 custom_hooks = [
     dict(type='HistLossHook', num_classes=num_classes, features_num=256)
 ]
-
 custom_imports = dict(imports=['tools.alta.histloss_hook'], allow_failed_imports=False)
