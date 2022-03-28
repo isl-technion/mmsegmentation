@@ -54,11 +54,6 @@ class HistogramLoss(nn.Module):
         else:
             class_weight = None
 
-        if isinstance(label, list):  # TODO: remove?
-            label = label[0]
-        if len(label.shape) > 3:
-            label = label[:,0,:,:]
-
         self.miu_all[:] = 0
         self.moment2_all[:] = 0
         self.moment2_mat_all[:] = 0
@@ -72,8 +67,7 @@ class HistogramLoss(nn.Module):
         if feature.requires_grad:  # TODO: Improve this indication of training vs. validation.
             ortho_mat = torch.tensor(ortho_group.rvs(dim=feature_dim), device='cuda').to(torch.float)
             feature = torch.matmul(ortho_mat, feature.view((feature_dim, -1))).view((batch_size, feature_dim, height, width))
-
-        feature_upscaled = torch.nn.functional.interpolate(feature, (label.shape[1], label.shape[2]))
+        label_downscaled = torch.nn.functional.interpolate(label.to(torch.float32), (height, width)).to(torch.long)
 
         class_interval = 1
         active_classes_num = 0
@@ -82,14 +76,12 @@ class HistogramLoss(nn.Module):
             miu_unnormalized = np.zeros(feature_dim)
             moment2_unnormalized = np.zeros(feature_dim)
             moment2_mat_unnormalized = np.zeros((feature_dim, feature_dim))
-            class_indices = (label[0, :, :] == torch.tensor(c, device='cuda')).nonzero()
+            class_indices = (label_downscaled[0, 0, :, :] == torch.tensor(c, device='cuda')).nonzero()
             sampled_indices = torch.linspace(0, len(class_indices) - 1,
                                              np.int32(len(class_indices) / class_interval)).long()
             samples_num = len(sampled_indices)
             if samples_num:    # if class_indices.size(0):
-                active_classes_num += 1
-
-                feat_vecs_curr = feature_upscaled[0, :, class_indices[sampled_indices, 0], class_indices[sampled_indices, 1]]
+                feat_vecs_curr = feature[0, :, class_indices[sampled_indices, 0], class_indices[sampled_indices, 1]]
                 miu_unnormalized = torch.sum(feat_vecs_curr, dim=1).detach().cpu()
                 miu = miu_unnormalized / samples_num
                 moment2_unnormalized = torch.sum(feat_vecs_curr**2, dim=1).detach().cpu()
@@ -100,26 +92,24 @@ class HistogramLoss(nn.Module):
                     var[:] = 1e-12
                     continue
 
-                if samples_num >= 1000:  # compare histograms only when enough samples exist
+                if samples_num >= 200:  # compare histograms only when enough samples exist
+                    active_classes_num += 1
                     miu_t = torch.tensor(miu, device='cuda')
                     var_t = torch.tensor(var, device='cuda')
                     std_t = var_t.sqrt()
                     var_sample_t = var_t / 25
 
-                    bins = [miu_t + k*std_t for k in [-3., -2.5, -2., -1.5, -1., -0.5, 0., 0.5, 1., 1.5, 2., 2.5, 3.]]
-                    target_values = torch.zeros((1, len(bins)), device='cuda')
-                    sample_values = torch.zeros((feature_dim, len(bins)), device='cuda')
-                    for ind, bin in enumerate(bins):
-                        with torch.no_grad():
-                            target_values[0, ind] = torch.exp( -0.5 * (bin[0] - miu_t[0])**2 / var_t[0]) * \
-                                            (1/torch.sqrt(2*torch.pi*var_t[0]))
-
-                        sample_values[:, ind] = torch.sum(torch.exp( -0.5 * (bin.unsqueeze(dim=1) - feat_vecs_curr) ** 2 / var_sample_t.unsqueeze(dim=1)) \
+                    std_sample_points = torch.linspace(-3, 3, 13).to('cuda')
+                    bins = miu_t.unsqueeze(dim=1) + std_t.unsqueeze(dim=1) * std_sample_points
+                    target_values_gaussian = torch.exp(-0.5 * std_sample_points**2) / torch.sqrt(2 * torch.tensor(torch.pi))
+                    sample_values = torch.zeros((feature_dim, len(std_sample_points)), device='cuda')
+                    for ind in range(len(std_sample_points)):
+                        sample_values[:, ind] = torch.sum(torch.exp( -0.5 * (bins[:, ind:ind+1] - feat_vecs_curr) ** 2 / var_sample_t.unsqueeze(dim=1)) \
                                       * (1 / torch.sqrt(2 * torch.pi * var_sample_t.unsqueeze(dim=1))), dim=1)
 
                     hist_values = sample_values / sample_values.sum(dim=1).unsqueeze(dim=1)
-                    target_values = target_values / target_values.sum()
-                    target_values = target_values.expand(feature_dim, -1)
+                    target_values_gaussian = target_values_gaussian / target_values_gaussian.sum()
+                    target_values = target_values_gaussian.expand(feature_dim, -1)
 
                     loss_hist += self.loss_weight * F.smooth_l1_loss(hist_values, target_values)
 
@@ -128,9 +118,8 @@ class HistogramLoss(nn.Module):
             self.moment2_mat_all[:, :, c] = moment2_mat_unnormalized
             self.samples_num_all[c] = samples_num
 
-        assert (active_classes_num > 0)
-        loss_hist /= active_classes_num
-        print('loss_hist = {}'.format(loss_hist))
+        loss_hist /= (active_classes_num + 1e-12)
+        print('loss_hist = {}, active_classes_num = {}'.format(loss_hist, active_classes_num))
 
         return loss_hist
 
