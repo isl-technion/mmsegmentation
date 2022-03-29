@@ -37,10 +37,15 @@ class HistogramLoss(nn.Module):
         self._loss_name = loss_name
 
         self.features_num = 256  # 16
-        self.miu_all = np.zeros((self.features_num, self.num_classes))  # For in-epoch calculations
-        self.moment2_all = np.zeros((self.features_num, self.num_classes))  # For in-epoch calculations
-        self.moment2_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))  # For in-epoch calculations
-        self.samples_num_all = np.zeros(self.num_classes)  # cumulated samples number of each class over the current epoch
+        self.miu_all = np.zeros((self.features_num, self.num_classes))
+        self.moment2_all = np.zeros((self.features_num, self.num_classes))
+        self.moment2_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
+        self.samples_num_all = np.zeros(self.num_classes)
+
+        self.alpha_hist = 0.995
+        self.bins_num = 51
+        self.bins_vals = np.linspace(-5, 5, self.bins_num)
+        self.hist_values = np.ones((self.features_num, self.bins_num, self.num_classes)) / self.bins_num
 
     def forward(self,
                 feature,
@@ -54,21 +59,18 @@ class HistogramLoss(nn.Module):
         else:
             class_weight = None
 
-        self.miu_all[:] = 0
-        self.moment2_all[:] = 0
-        self.moment2_mat_all[:] = 0
-        self.samples_num_all[:] = 0
-
         # TODO: Handle batch size > 1  !!!
         batch_size = feature.shape[0]
         feature_dim = feature.shape[1]
         height = feature.shape[2]
         width = feature.shape[3]
-        if feature.requires_grad:  # TODO: Improve this indication of training vs. validation.
-            ortho_mat = torch.tensor(ortho_group.rvs(dim=feature_dim), device='cuda').to(torch.float)
-            feature = torch.matmul(ortho_mat, feature.view((feature_dim, -1))).view((batch_size, feature_dim, height, width))
+        # if feature.requires_grad:  # TODO: Improve this indication of training vs. validation.
+        #     ortho_mat = torch.tensor(ortho_group.rvs(dim=feature_dim), device='cuda').to(torch.float)
+        #     feature = torch.matmul(ortho_mat, feature.view((feature_dim, -1))).view((batch_size, feature_dim, height, width))
         label_downscaled = torch.nn.functional.interpolate(label.to(torch.float32), (height, width)).to(torch.long)
 
+        val_low = 0
+        val_high = 0
         class_interval = 1
         active_classes_num = 0
         loss_hist = torch.tensor(0.0, device='cuda')
@@ -82,44 +84,57 @@ class HistogramLoss(nn.Module):
             samples_num = len(sampled_indices)
             if samples_num:    # if class_indices.size(0):
                 feat_vecs_curr = feature[0, :, class_indices[sampled_indices, 0], class_indices[sampled_indices, 1]]
-                miu_unnormalized = torch.sum(feat_vecs_curr, dim=1).detach().cpu()
+                miu_unnormalized = torch.sum(feat_vecs_curr, dim=1).detach().cpu().numpy()
                 miu = miu_unnormalized / samples_num
-                moment2_unnormalized = torch.sum(feat_vecs_curr**2, dim=1).detach().cpu()
-                moment2_mat_unnormalized = torch.matmul(feat_vecs_curr, feat_vecs_curr.T).detach().cpu()
+                moment2_unnormalized = torch.sum(feat_vecs_curr**2, dim=1).detach().cpu().numpy()
                 moment2 = moment2_unnormalized / samples_num
-                var = moment2 - miu**2 + 1e-12  # torch.mean((feat_vecs_curr-miu.unsqueeze(dim=1))**2, dim=1) + 1e-12
-                if c == 0:  # TODO: remove this after removing the background from the classes list
-                    var[:] = 1e-12
-                    continue
+                moment2_mat_unnormalized = torch.matmul(feat_vecs_curr, feat_vecs_curr.T).detach().cpu().numpy()
+                moment2_mat = moment2_mat_unnormalized / samples_num
 
-                if samples_num >= 200:  # compare histograms only when enough samples exist
+                if self.samples_num_all[c]:
+                    self.miu_all[:, c] = self.alpha_hist * self.miu_all[:, c] + (1-self.alpha_hist) * miu
+                    self.moment2_all[:, c] = self.alpha_hist * self.moment2_all[:, c] + (1-self.alpha_hist) * moment2
+                    self.moment2_mat_all[:, :, c] = self.alpha_hist * self.moment2_mat_all[:, :, c] + (1-self.alpha_hist) * moment2_mat
+                else:
+                    self.miu_all[:, c] = miu
+                    self.moment2_all[:, c] = moment2
+                    self.moment2_mat_all[:, :, c] = moment2_mat
+
+                var = np.maximum(self.moment2_all[:, c] - self.miu_all[:, c]**2, 1e-12)
+                miu_t = torch.tensor(self.miu_all[:,c], device='cuda').detach().clone()
+                var_t = torch.tensor(var, device='cuda').detach().clone()
+                std_t = var_t.sqrt()
+                var_sample_t = var_t / 25
+
+                target_values = torch.zeros((feature_dim, self.bins_num), device='cuda')
+                sample_values = torch.zeros((feature_dim, self.bins_num), device='cuda')
+                for ind, bin in enumerate(self.bins_vals):
+                    with torch.no_grad():
+                        target_values[:, ind] = torch.exp( -0.5 * (torch.tensor(bin - self.miu_all[:, c], device='cuda'))**2 / var_t) * \
+                                        (1/torch.sqrt(2*torch.pi*var_t))
+                    sample_values[:, ind] = torch.sum(torch.exp( -0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t.unsqueeze(dim=1)) \
+                                  * (1 / torch.sqrt(2 * torch.pi * var_sample_t.unsqueeze(dim=1))), dim=1)
+
+                hist_values = sample_values / sample_values.sum(dim=1).unsqueeze(dim=1)
+                target_values = target_values / target_values.sum(dim=1).unsqueeze(dim=1)
+
+                if c > 0:  # TODO: remove this after removing the background from the classes list
                     active_classes_num += 1
-                    miu_t = torch.tensor(miu, device='cuda')
-                    var_t = torch.tensor(var, device='cuda')
-                    std_t = var_t.sqrt()
-                    var_sample_t = var_t / 25
+                    if self.samples_num_all[c]:
+                        hist_values_filtered = self.alpha_hist * torch.tensor(self.hist_values[:, :, c], device='cuda') + (1 - self.alpha_hist) * hist_values
+                    else:
+                        hist_values_filtered = hist_values
+                    loss_hist += self.loss_weight * F.smooth_l1_loss(hist_values_filtered, target_values)
+                    self.hist_values[:, :, c] =  hist_values_filtered.detach().cpu().numpy()
 
-                    std_sample_points = torch.linspace(-3, 3, 13).to('cuda')
-                    bins = miu_t.unsqueeze(dim=1) + std_t.unsqueeze(dim=1) * std_sample_points
-                    target_values_gaussian = torch.exp(-0.5 * std_sample_points**2) / torch.sqrt(2 * torch.tensor(torch.pi))
-                    sample_values = torch.zeros((feature_dim, len(std_sample_points)), device='cuda')
-                    for ind in range(len(std_sample_points)):
-                        sample_values[:, ind] = torch.sum(torch.exp( -0.5 * (bins[:, ind:ind+1] - feat_vecs_curr) ** 2 / var_sample_t.unsqueeze(dim=1)) \
-                                      * (1 / torch.sqrt(2 * torch.pi * var_sample_t.unsqueeze(dim=1))), dim=1)
+                    if c == 2:  # buildings
+                        val_low = (miu_t - 3*std_t).min()
+                        val_high = (miu_t + 3*std_t).max()
 
-                    hist_values = sample_values / sample_values.sum(dim=1).unsqueeze(dim=1)
-                    target_values_gaussian = target_values_gaussian / target_values_gaussian.sum()
-                    target_values = target_values_gaussian.expand(feature_dim, -1)
-
-                    loss_hist += self.loss_weight * F.smooth_l1_loss(hist_values, target_values)
-
-            self.miu_all[:, c] = miu_unnormalized
-            self.moment2_all[:, c] = moment2_unnormalized
-            self.moment2_mat_all[:, :, c] = moment2_mat_unnormalized
-            self.samples_num_all[c] = samples_num
+                self.samples_num_all[c] += samples_num
 
         loss_hist /= (active_classes_num + 1e-12)
-        print('loss_hist = {}, active_classes_num = {}'.format(loss_hist, active_classes_num))
+        print('loss_hist = {}, val_low = {}, val_high = {}, active = {}'.format(loss_hist, val_low, val_high, active_classes_num))
 
         return loss_hist
 
