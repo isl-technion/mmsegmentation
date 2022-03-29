@@ -70,6 +70,12 @@ We can also choose
 
 
 # TODO:
+* The whole method shuold be changed:
+1) During a training epoch, do nothing, because the net's weights keep changing.
+2) During a validation epoch, continuously gather mean, cov (as in now), and also estimate the histogram at many bins as possible
+3) Once the epoch ends, make a few GD on the hist-loss alone.
+
+* can the hist loss be used alone - instead of CE??? Only if the statistics are continuously updated during training (IIR)!
 * implement for batch size > 1, to increase sample size
 * For Gaussian dist., maybe eliminate ~5-10% of the outliers, both for std estimation and for fitting the model.
 * Related to the previous point, decrease importance of farthest bins
@@ -79,15 +85,15 @@ We can also choose
 Look at the DDU github...
 * Can the method be used to improve transfer learning? Representation learning?
 * allow var_sample to train? or at least try various values?
-* After finishing training, check the fit of the data to the model. Maybe use the model only
-in certain dimensions?
+* After finishing training, check the fit to the model. Maybe use the model only in certain dimensions,
+where the data fits the model well?
 * When drawing from the exact model's dist., what is the resulting histogram?
 * measure Gaussianity after training
 * Distance measures - KL? L1smooth? MSE?
 * disallow calculation for class 0 \ remove the zero label
-* can the hist loss be used alone - instead of CE???
 * penalize diff(PxPy, Pxy), for any two random directions x,y. It shouldn't matter when using the full covariance matrix(?)...
 * Refactor - use mboaz17 folders, reverse changes from their code ...
+* Add the revision number to the folder name
 
 # Done:
 * fix resize_size, crop_size, check them in testing \ inference, then rerun segformer 672*448 training (even without histloss)
