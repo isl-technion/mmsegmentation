@@ -41,6 +41,10 @@ class HistogramLoss(nn.Module):
         self.moment2_all = np.zeros((self.features_num, self.num_classes))
         self.moment2_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
         self.samples_num_all = np.zeros(self.num_classes)
+        self.miu_all_curr_batch = np.zeros((self.features_num, self.num_classes))
+        self.moment2_all_curr_batch = np.zeros((self.features_num, self.num_classes))
+        self.moment2_mat_all_curr_batch = np.zeros((self.features_num, self.features_num, self.num_classes))
+        self.samples_num_all_curr_batch = np.zeros(self.num_classes)
 
         self.alpha_hist = 0.995
         self.bins_num = 51
@@ -59,6 +63,11 @@ class HistogramLoss(nn.Module):
         else:
             class_weight = None
 
+        self.miu_all_curr_batch[:] = 0
+        self.moment2_all_curr_batch[:] = 0
+        self.moment2_mat_all_curr_batch[:] = 0
+        self.samples_num_all_curr_batch[:] = 0
+
         # TODO: Handle batch size > 1  !!!
         batch_size = feature.shape[0]
         feature_dim = feature.shape[1]
@@ -69,8 +78,8 @@ class HistogramLoss(nn.Module):
         #     feature = torch.matmul(ortho_mat, feature.view((feature_dim, -1))).view((batch_size, feature_dim, height, width))
         label_downscaled = torch.nn.functional.interpolate(label.to(torch.float32), (height, width)).to(torch.long)
 
-        val_low = 0
-        val_high = 0
+        val_low = 1e3
+        val_high = -1e3
         class_interval = 1
         active_classes_num = 0
         loss_hist = torch.tensor(0.0, device='cuda')
@@ -127,11 +136,15 @@ class HistogramLoss(nn.Module):
                     loss_hist += self.loss_weight * F.smooth_l1_loss(hist_values_filtered, target_values)
                     self.hist_values[:, :, c] =  hist_values_filtered.detach().cpu().numpy()
 
-                    if c == 2:  # buildings
-                        val_low = (miu_t - 3*std_t).min()
-                        val_high = (miu_t + 3*std_t).max()
+                    val_low = np.minimum(val_low, (miu_t - 3*std_t).min().detach().cpu().numpy())
+                    val_high = np.maximum(val_high, (miu_t + 3*std_t).max().detach().cpu().numpy())
 
                 self.samples_num_all[c] += samples_num
+
+            self.miu_all_curr_batch[:, c] = miu_unnormalized
+            self.moment2_all_curr_batch[:, c] = moment2_unnormalized
+            self.moment2_mat_all_curr_batch[:, :, c] = moment2_mat_unnormalized
+            self.samples_num_all_curr_batch[c] = samples_num
 
         loss_hist /= (active_classes_num + 1e-12)
         print('loss_hist = {}, val_low = {}, val_high = {}, active = {}'.format(loss_hist, val_low, val_high, active_classes_num))

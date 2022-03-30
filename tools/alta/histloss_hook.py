@@ -39,10 +39,10 @@ class HistLossHook(Hook):
         self.iter = 0
 
     def after_val_iter(self, runner):
-        self.miu_all += runner.model.module.decode_head.loss_hist.miu_all
-        self.moment2_all += runner.model.module.decode_head.loss_hist.moment2_all
-        self.moment2_mat_all += runner.model.module.decode_head.loss_hist.moment2_mat_all
-        self.samples_num_all += runner.model.module.decode_head.loss_hist.samples_num_all
+        self.miu_all += runner.model.module.decode_head.loss_hist.miu_all_curr_batch
+        self.moment2_all += runner.model.module.decode_head.loss_hist.moment2_all_curr_batch
+        self.moment2_mat_all += runner.model.module.decode_head.loss_hist.moment2_mat_all_curr_batch
+        self.samples_num_all += runner.model.module.decode_head.loss_hist.samples_num_all_curr_batch
         self.iter += 1
 
     def after_val_epoch(self, runner):
@@ -51,7 +51,7 @@ class HistLossHook(Hook):
         self.miu_all /= (np.expand_dims(self.samples_num_all, axis=0)+1e-12)
         self.moment2_all /= (np.expand_dims(self.samples_num_all, axis=0)+1e-12)
         self.moment2_mat_all /= (np.expand_dims(self.samples_num_all, axis=(0,1))+1e-12)
-        self.var_all = self.moment2_all - self.miu_all**2 + 1e-12
+        self.var_all = np.maximum(self.moment2_all - self.miu_all**2, 1e-12)
         for c in range(0, self.num_classes):
             self.cov_mat_all[:, :, c] = self.moment2_mat_all[:, :, c] - \
                                         np.matmul(self.miu_all[:, c:c+1], self.miu_all[:, c:c+1].T) + \

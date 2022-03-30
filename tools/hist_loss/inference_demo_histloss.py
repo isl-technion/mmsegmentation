@@ -7,10 +7,13 @@ import numpy as np
 import pickle
 
 return_scores = True
-use_hist_model = False
-if 1:  # Segformer - PathA, resized to 672*448, without histogramm loss (256 dims)
+use_hist_model = True
+if 0:  # Segformer - PathA, resized to 672*448, without histogramm loss (256 dims)
     config_file='/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/segformer_mit-b0_pathA_pathA_reweighted_672_448.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/epoch_50.pth'
+elif 1:
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL50000/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL50000.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL50000/epoch_100.pth'
 
 hist_model = None
 hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0]+'.pickle')
@@ -24,8 +27,8 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0001'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0005'
-images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
-# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/50'
+# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
+images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/30'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Ir yamim/50'
 # images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/CamVid/train'
@@ -63,7 +66,7 @@ for imgname in images_list[::interval]:
         # conf_map = (result[1][0] - score_th1) / (1-score_th1)
         # mmcv.imwrite(conf_map * 255, out_file_score)
         img = mmcv.imread(out_file)
-        conf_mask = torch.max(result[1][0], dim=0)[0].detach().cpu() < score_th2
+        conf_mask = torch.max(result[1][0], dim=0)[0].detach().cpu().numpy() < score_th2
         indices = np.nonzero(conf_mask)
         img[indices[0], indices[1], :] = 0
         out_file_combined = os.path.join(results_path, 'combined_{}'.format(score_th2), os.path.split(imgname_full)[-1])

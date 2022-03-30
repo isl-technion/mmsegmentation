@@ -70,6 +70,11 @@ We can also choose
 
 
 # TODO:
+* Increase the loss weight gradually, to let the convergence to good segmentation first
+* Alternatively, use the gaussian log-probs as logits? Does it matter? Probably not...
+* change bins num and range, compare histograms only in miu+-k*std
+* Randomly rotate the features around the current mean of each class, in each iteration, in order to 'fill' the Gaussian with samples
+
 * The whole method shuold be changed:
 1) During a training epoch, do nothing, because the net's weights keep changing.
 2) During a validation epoch, continuously gather mean, cov (as in now), and also estimate the histogram at many bins as possible
