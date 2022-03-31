@@ -64,7 +64,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
         out = self.fusion_conv(torch.cat(outs, dim=1))
 
         if label is not None:
-            loss = self.loss_hist(out, label)
+            loss, out = self.loss_hist(out, label)
 
         if hist_model is not None:
             batch_size = out.shape[0]
