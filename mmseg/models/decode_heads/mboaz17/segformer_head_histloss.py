@@ -75,11 +75,11 @@ class SegformerHeadHistLoss(BaseDecodeHead):
             for c in range(0, hist_model.num_classes):
                 miu_curr = torch.tensor(hist_model.miu_all[:,c], device='cuda').clone().detach().\
                     unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
-                if 1:  # use variance
+                if 0:  # use variance
                     var_curr = torch.tensor(np.diag(hist_model.cov_mat_all[:, :, c]), device='cuda').clone().detach().\
                         unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
                     weight_factors = torch.tensor(1 / (hist_model.loss_per_dim_all[:, c] + 1e-20), device='cuda').clone().detach()
-                    weight_factors *= weight_factors
+                    # weight_factors *= weight_factors
                     weight_factors /= weight_factors.mean()
                     weight_factors = weight_factors.unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
                     maha_dist = (weight_factors * (out - miu_curr)**2 / var_curr).mean(dim=1)

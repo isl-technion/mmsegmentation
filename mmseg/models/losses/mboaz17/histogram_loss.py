@@ -50,7 +50,7 @@ class HistogramLoss(nn.Module):
         self.moment2_mat_all_curr_batch = np.zeros((self.features_num, self.features_num, self.num_classes))
         self.samples_num_all_curr_batch = np.zeros(self.num_classes)
 
-        self.alpha_hist = 0.995
+        self.alpha_hist = 0.95  # was 0.995 when samples_num was not considered
         self.bins_num = 51
         self.bins_vals = np.linspace(-5, 5, self.bins_num)
         self.hist_values = np.ones((self.features_num, self.bins_num, self.num_classes)) / self.bins_num
@@ -95,6 +95,8 @@ class HistogramLoss(nn.Module):
                                              np.int32(len(class_indices) / class_interval)).long()
             samples_num = len(sampled_indices)
             if samples_num:    # if class_indices.size(0):
+                alpha_hist_curr = 1 - (1 - self.alpha_hist) * samples_num / (width*height)
+
                 feat_vecs_curr = feature[0, :, class_indices[sampled_indices, 0], class_indices[sampled_indices, 1]]
                 miu_unnormalized = torch.sum(feat_vecs_curr, dim=1).detach().cpu().numpy()
                 miu = miu_unnormalized / samples_num
@@ -104,9 +106,9 @@ class HistogramLoss(nn.Module):
                 moment2_mat = moment2_mat_unnormalized / samples_num
 
                 if self.samples_num_all[c]:
-                    self.miu_all[:, c] = self.alpha_hist * self.miu_all[:, c] + (1-self.alpha_hist) * miu
-                    self.moment2_all[:, c] = self.alpha_hist * self.moment2_all[:, c] + (1-self.alpha_hist) * moment2
-                    self.moment2_mat_all[:, :, c] = self.alpha_hist * self.moment2_mat_all[:, :, c] + (1-self.alpha_hist) * moment2_mat
+                    self.miu_all[:, c] = alpha_hist_curr * self.miu_all[:, c] + (1-alpha_hist_curr) * miu
+                    self.moment2_all[:, c] = alpha_hist_curr * self.moment2_all[:, c] + (1-alpha_hist_curr) * moment2
+                    self.moment2_mat_all[:, :, c] = alpha_hist_curr * self.moment2_mat_all[:, :, c] + (1-alpha_hist_curr) * moment2_mat
                 else:
                     self.miu_all[:, c] = miu
                     self.moment2_all[:, c] = moment2
@@ -156,7 +158,7 @@ class HistogramLoss(nn.Module):
                 if c > 0:  # TODO: remove this after removing the background from the classes list
                     active_classes_num += 1
                     if self.samples_num_all[c]:
-                        hist_values_filtered = self.alpha_hist * torch.tensor(self.hist_values[:, :, c], device='cuda') + (1 - self.alpha_hist) * hist_values
+                        hist_values_filtered = alpha_hist_curr * torch.tensor(self.hist_values[:, :, c], device='cuda') + (1 - alpha_hist_curr) * hist_values
                     else:
                         hist_values_filtered = hist_values
 
@@ -168,7 +170,7 @@ class HistogramLoss(nn.Module):
                         if c==11:
                             aaa=1
                     self.loss_per_dim_all[:, c] = loss_vect.detach().cpu().numpy()
-                    if c==11:
+                    if c==7:
                         print(1000*loss_vect.sort()[0][::50].detach().cpu().numpy())
                     self.hist_values[:, :, c] =  hist_values_filtered.detach().cpu().numpy()
 
@@ -199,6 +201,12 @@ class HistogramLoss(nn.Module):
                         Z = torch.matmul(hist_values[f1:f1+1].T, hist_values[f2:f2+1]).detach().cpu().numpy()
                         ax.plot_surface(X, Y, Z)
                         plt.show()
+                    if 0:
+                        for f in range(0, 10):
+                            plt.plot(hist_values_filtered[indices[feature_dim - f - 1]].detach().cpu().numpy());
+                            plt.plot(target_values[indices[feature_dim - f - 1]].detach().cpu().numpy());
+                            plt.title(str(indices[feature_dim - f - 1]));
+                            plt.show()
 
                     val_low = np.minimum(val_low, (miu_t - 3*std_t).min().detach().cpu().numpy())
                     val_high = np.maximum(val_high, (miu_t + 3*std_t).max().detach().cpu().numpy())

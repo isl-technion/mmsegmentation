@@ -102,6 +102,7 @@ where the data fits the model well?
 * Add the revision number to the folder name
 
 # Done:
+* The filtering parameter (alpha_hist) should be determined according to the samples number in the batch
 * fix resize_size, crop_size, check them in testing \ inference, then rerun segformer 672*448 training (even without histloss)
 * Decimation of the label map instead of interpolation, for speed and memory
 * no need to calculate target values for all classes - it's the same vector (after normalizing to 1)
