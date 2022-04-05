@@ -12,20 +12,11 @@ if 0:  # Segformer - PathA, resized to 672*448, without histogramm loss (256 dim
     config_file='/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/segformer_mit-b0_pathA_pathA_reweighted_672_448.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/epoch_50.pth'
 elif 0:
-    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL50000/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL50000.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL50000/epoch_100.pth'
-elif 0:
-    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_30_pathA_30_reweighted_672_448_HL0_rotation/segformer_mit-b0_pathA_30_pathA_30_reweighted_672_448_HL0_rotation.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_30_pathA_30_reweighted_672_448_HL0_rotation/epoch_90.pth'
-elif 0:
-    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL0_rotation/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL0_rotation.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448_HL0_rotation/epoch_45.pth'
-elif 0:
-    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/bhat/segformer_mit-b0_pathA_30_rew_672_448_HL1/segformer_mit-b0_pathA_30_rew_672_448_HL1.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/bhat/segformer_mit-b0_pathA_30_rew_672_448_HL1/epoch_65.pth'
-elif 1:
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/bhat/segformer_mit-b0_pathA_30_rew_672_448_HL01/segformer_mit-b0_pathA_30_rew_672_448_HL01.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/bhat/segformer_mit-b0_pathA_30_rew_672_448_HL01/epoch_150.pth'
+elif 1:
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/bhat/segformer_mit-b0_pathA_30_rew_672_448_HL01_PCA/segformer_mit-b0_pathA_30_rew_672_448_HL01_PCA.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/bhat/segformer_mit-b0_pathA_30_rew_672_448_HL01_PCA/epoch_100.pth'
 
 hist_model = None
 hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0]+'.pickle')
@@ -53,7 +44,7 @@ images_list.sort()
 results_path = os.path.join(checkpoint_file.split('.')[0], os.path.split(images_path)[-1])
 interval = 3
 score_th1 = 0.75
-score_th2 = 0.9
+score_th2 = 0.8
 if 'Descend' not in images_path:
     interval = 1
     results_path = os.path.join(os.path.split(results_path)[0], images_path.split('Agamim/')[-1].replace('/', '_'))
@@ -75,7 +66,7 @@ for imgname in images_list[::interval]:
     # you can change the opacity of the painted segmentation map in (0, 1].
     if return_scores:
         if hist_model:
-            score_th2 = -0.5 * (1.0**2)
+            score_th2 = -0.5 * (2**2)
         out_file_score = os.path.join(results_path, 'scores_map', os.path.split(imgname_full)[-1])
         model.show_result(imgname_full, result[0], out_file=out_file, opacity=1)
         # conf_map = (result[1][0] - score_th1) / (1-score_th1)

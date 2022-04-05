@@ -73,7 +73,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
             width = out.shape[3]
             prob_scores = torch.zeros((batch_size, hist_model.num_classes, height, width), device='cuda')
             for c in range(0, hist_model.num_classes):
-                miu_curr = torch.tensor(hist_model.miu_all[:,c], device='cuda').clone().detach().\
+                miu_curr = torch.tensor(hist_model.miu_all[:,c], device='cuda').clone().float().detach().\
                     unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
                 if 0:  # use variance
                     var_curr = torch.tensor(np.diag(hist_model.cov_mat_all[:, :, c]), device='cuda').clone().detach().\
@@ -85,13 +85,24 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                     maha_dist = (weight_factors * (out - miu_curr)**2 / var_curr).mean(dim=1)
                     # log_prob = -0.5 * (maha_dist + torch.log(var_curr.prod()) + out.shape[1]*torch.log(2*torch.tensor(torch.pi)))
                     log_prob = -0.5 * maha_dist
-                    if c == 0:  # TODO: remove...
-                        log_prob[:] = -1e6
-                else:  # use covariance
+                elif 0:  # use covariance
                     covinv_curr = torch.tensor(hist_model.covinv_mat_all[:, :, c], device='cuda').clone().detach()
                     diff = (out - miu_curr).view((feature_dim, -1))
                     maha_dist = (diff * torch.matmul(covinv_curr, diff)).mean(dim=0).view((1, height, width))
+                else:  # use PCA-trained covariance
+                    eigen_vals, eigen_vecs = np.linalg.eig(hist_model.cov_mat_all[:, :, c])
+                    indices = np.argsort(eigen_vals)[::-1]  # From high to low
+                    eigen_vals = eigen_vals[indices[:1000000]]
+                    eigen_vecs = eigen_vecs[:, indices[:1000000]]
+                    eigen_vecs_t = torch.from_numpy(eigen_vecs).float().to('cuda')
+                    eigen_vals_t = torch.from_numpy(eigen_vals).float().to('cuda')
+                    diff = (out - miu_curr).view((feature_dim, -1))
+                    proj = torch.matmul(eigen_vecs_t.T, diff)
+                    proj = proj / torch.maximum(eigen_vals_t.sqrt(), torch.tensor(1e-15)).unsqueeze(dim=1)
+                    maha_dist = (proj**2).mean(dim=0).view((1, height, width))
                     log_prob = -0.5 * maha_dist
+                if c == 0:  # TODO: remove...
+                    log_prob[:] = -1e6
                 prob_scores[0, c] = log_prob[0]
 
             prob_scores[prob_scores.isinf()] = -1e6
