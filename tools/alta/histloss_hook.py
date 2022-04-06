@@ -75,6 +75,10 @@ class HistLossHook(Hook):
         runner.model.module.decode_head.loss_hist.proj_mat = torch.randn_like(runner.model.module.decode_head.loss_hist.proj_mat)
         runner.model.module.decode_head.loss_hist.proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
 
+        runner.model.module.decode_head.loss_hist.hist_values = np.ones_like(runner.model.module.decode_head.loss_hist.hist_values) \
+                                                                / runner.model.module.decode_head.loss_hist.bins_num
+        runner.model.module.decode_head.loss_hist.samples_num_all_curr_epoch[:] = 0
+
     def after_train_epoch(self, runner):
         """Synchronizing norm."""
 

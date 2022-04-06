@@ -70,6 +70,9 @@ We can also choose
 
 
 # TODO:
+* Choose a different kernel (e.g. 1/(1+x**2)) with less memory footprint. Also, change loss to L1?
+* delete data to save disk space
+
 * Increase the loss weight gradually, to let the convergence to good segmentation first
 * Alternatively, use the gaussian log-probs as logits? Does it matter? Probably not...
 * change bins num and range, compare histograms only in miu+-k*std
