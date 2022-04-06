@@ -2,6 +2,7 @@
 
 from mmcv.runner.hooks import HOOKS, Hook
 import numpy as np
+import torch
 import pickle
 
 from mmseg.models.losses.mboaz17.histogram_loss import HistogramLoss
@@ -69,6 +70,10 @@ class HistLossHook(Hook):
         self.save_folder = os.path.join(runner.work_dir, 'hooks')
         if not os.path.isdir(self.save_folder):
             os.mkdir(self.save_folder)
+
+        # randomize projection matrix
+        runner.model.module.decode_head.loss_hist.proj_mat = torch.randn_like(runner.model.module.decode_head.loss_hist.proj_mat)
+        runner.model.module.decode_head.loss_hist.proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
 
     def after_train_epoch(self, runner):
         """Synchronizing norm."""

@@ -38,13 +38,13 @@ class HistogramLoss(nn.Module):
         self._loss_name = loss_name
 
         self.features_num = 256  # 16
+        self.directions_num = 1000
         self.iters = 0
         self.miu_all = np.zeros((self.features_num, self.num_classes))
         self.moment2_all = np.zeros((self.features_num, self.num_classes))
         self.moment2_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
         self.cov_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))  # For in-epoch calculations
         self.samples_num_all = np.zeros(self.num_classes)
-        self.loss_per_dim_all = np.zeros((self.features_num, self.num_classes))
         self.miu_all_curr_batch = np.zeros((self.features_num, self.num_classes))
         self.moment2_all_curr_batch = np.zeros((self.features_num, self.num_classes))
         self.moment2_mat_all_curr_batch = np.zeros((self.features_num, self.features_num, self.num_classes))
@@ -53,8 +53,11 @@ class HistogramLoss(nn.Module):
         self.alpha_hist = 0.95  # was 0.995 when samples_num was not considered
         self.bins_num = 41
         self.bins_vals = np.linspace(-4, 4, self.bins_num)
-        self.hist_values = np.ones((self.features_num, self.bins_num, self.num_classes)) / self.bins_num
+        self.hist_values = np.ones((self.directions_num, self.bins_num, self.num_classes)) / self.bins_num
         self.epsilon = 1e-12
+
+        self.proj_mat = torch.zeros((self.directions_num, self.features_num), device='cuda')  # it should be constant within an epoch!
+        self.loss_per_dim_all = np.zeros((self.directions_num, self.num_classes))
 
     def forward(self,
                 feature,
@@ -116,31 +119,39 @@ class HistogramLoss(nn.Module):
                                             np.matmul(self.miu_all[:, c:c + 1], self.miu_all[:, c:c + 1].T) + \
                                             (1e-9) * np.eye(self.features_num)
 
-
                 eigen_vals, eigen_vecs = np.linalg.eig(self.cov_mat_all[:, :, c])
                 indices = np.argsort(eigen_vals)[::-1]  # From high to low
                 eigen_vals = eigen_vals[indices]
                 eigen_vecs = eigen_vecs[:, indices]
-                if np.any(np.iscomplex(eigen_vals)) or (np.abs(eigen_vals).min() <= 1e-9) or (eigen_vals.min() <= 0):
+                if np.any(np.iscomplex(eigen_vals)):
                     self.samples_num_all[c] += samples_num
                     print('Invalid: c = {}, eig_min = {}'.format(c, eigen_vals.min()))
                     continue
+                eigen_vals = np.maximum(eigen_vals, 1e-12)
                 eigen_vecs_t = torch.from_numpy(eigen_vecs).float().to('cuda')
                 eigen_vals_t = torch.from_numpy(eigen_vals).float().to('cuda')
-                miu_t = torch.tensor(self.miu_all[:,c], device='cuda', dtype=torch.float32).detach().clone()
-                var_sample_t = torch.ones_like(miu_t) / 25  # after whitening
-                feat_vecs_curr_centered = feat_vecs_curr - miu_t.unsqueeze(dim=1)
-                proj = torch.matmul(eigen_vecs_t.T, feat_vecs_curr_centered)
-                feat_vecs_curr = proj / eigen_vals_t.sqrt().unsqueeze(dim=1)
 
-                target_values = torch.zeros((feature_dim, self.bins_num), device='cuda')
-                sample_values = torch.zeros((feature_dim, self.bins_num), device='cuda')
+                miu_curr_t = torch.tensor(self.miu_all[:, c], device='cuda').to(torch.float32)
+                feat_vecs_curr_centered = feat_vecs_curr - miu_curr_t.unsqueeze(dim=1)
+                proj = torch.matmul(eigen_vecs_t.T, feat_vecs_curr_centered)
+
+                proj_mat_curr = self.proj_mat * eigen_vals_t.sqrt().unsqueeze(dim=0)  # prioritizing axes according to their std
+                proj_mat_curr /= (proj_mat_curr ** 2).sum(dim=1).sqrt().unsqueeze(dim=1)  # normalizing to norm 1
+                var_curr_t = (proj_mat_curr**2 * eigen_vals_t.unsqueeze(dim=0)).sum(dim=1)
+                std_curr_t = var_curr_t.sqrt()
+                feat_vecs_curr = torch.matmul(self.proj_mat, proj)
+                feat_vecs_curr = feat_vecs_curr / std_curr_t.unsqueeze(dim=1)
+                var_sample_t = torch.tensor(1/25 ,device='cuda')  # 25  # after whitening
+
+                target_values = torch.zeros((1, self.bins_num), device='cuda')
+                sample_values = torch.zeros((self.directions_num, self.bins_num), device='cuda')
                 for ind, bin in enumerate(self.bins_vals):
                     with torch.no_grad():
-                        target_values[:, ind] = torch.exp( -0.5 * (torch.tensor(bin, device='cuda'))**2) * \
-                                        (1/np.sqrt(2*np.pi))
-                    sample_values[:, ind] = torch.sum(torch.exp( -0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t.unsqueeze(dim=1)) \
-                                  * (1 / torch.sqrt(2 * torch.pi * var_sample_t.unsqueeze(dim=1))), dim=1)
+                        target_values[0, ind] = torch.exp( -0.5 * (torch.tensor(bin, device='cuda'))**2) * (1/np.sqrt(2*np.pi))
+                    tmp_result = tmp_calc(feat_vecs_curr, var_sample_t, bin)
+                    sample_values[:, ind] = tmp_result
+                    del tmp_result  # trying to save some memory
+                    torch.cuda.empty_cache()
 
                 hist_values = sample_values / (sample_values.sum(dim=1).unsqueeze(dim=1) + self.epsilon)
                 target_values = target_values / target_values.sum(dim=1).unsqueeze(dim=1)
@@ -152,16 +163,15 @@ class HistogramLoss(nn.Module):
                     else:
                         hist_values_filtered = hist_values
 
-                    loss_vect = torch.zeros(feature_dim, device='cuda')
-                    for f in range(feature_dim):
-                        # loss_vect[f] = F.smooth_l1_loss(hist_values_filtered[f], target_values[f])
-                        loss_vect[f] = 1 - torch.sum(torch.sqrt(hist_values_filtered[f] * target_values[f] + 1e-9))
+                    loss_vect = torch.zeros(hist_values_filtered.shape[0], device='cuda')
+                    for f in range(hist_values_filtered.shape[0]):
+                        # loss_vect[f] = F.smooth_l1_loss(hist_values_filtered[f], target_values[f]) / hist_values_filtered.shape[0]
+                        loss_vect[f] = (1 - torch.sum(torch.sqrt(hist_values_filtered[f] * target_values + 1e-9))) / hist_values_filtered.shape[0]
                         loss_hist += loss_vect[f]
-                        if c==11:
-                            aaa=1
+
                     self.loss_per_dim_all[:, c] = loss_vect.detach().cpu().numpy()
-                    if c==7:
-                        print(1000*loss_vect.sort()[0][::50].detach().cpu().numpy())
+                    if c==14:
+                        print(1000*loss_vect.sort()[0][::100].detach().cpu().numpy())
                     self.hist_values[:, :, c] =  hist_values_filtered.detach().cpu().numpy()
 
                     if 0:  # for c=11 (or 14?), after several epochs
@@ -206,7 +216,7 @@ class HistogramLoss(nn.Module):
             self.samples_num_all_curr_batch[c] = samples_num
 
         loss_hist /= (active_classes_num + self.epsilon)
-        print('loss_hist = {}, active = {}'.format(loss_hist, active_classes_num))
+        print('loss_hist = {}, active = {}'.format(self.loss_weight*loss_hist, active_classes_num))
 
         self.iters += 1
         return self.loss_weight * loss_hist, feature
@@ -224,3 +234,7 @@ class HistogramLoss(nn.Module):
             str: The name of this loss item.
         """
         return self._loss_name
+
+
+def tmp_calc(feat_vecs_curr, var_sample_t, bin):
+    return torch.sum(torch.exp(-0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t) * (1 / torch.sqrt(2 * torch.pi * var_sample_t)), dim=1)
