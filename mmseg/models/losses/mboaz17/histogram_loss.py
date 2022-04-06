@@ -51,7 +51,7 @@ class HistogramLoss(nn.Module):
 
         self.alpha_hist = 0.95  # was 0.995 when samples_num was not considered
         self.bins_num = 41
-        self.bins_vals = np.linspace(-4, 4, self.bins_num)
+        self.bins_vals = np.linspace(-3, 3, self.bins_num)
         self.hist_values = np.ones((self.directions_num, self.bins_num, self.num_classes)) / self.bins_num
         self.epsilon = 1e-12
 
@@ -167,9 +167,10 @@ class HistogramLoss(nn.Module):
                         hist_values_filtered = hist_values
 
                     # for f in range(hist_values_filtered.shape[0]):
-                        # loss_hist +=  F.smooth_l1_loss(hist_values_filtered[f], target_values)
+                    #     loss_hist +=  F.smooth_l1_loss(hist_values_filtered[f], target_values.squeeze())
                         # loss_hist += 1 - torch.sum(torch.sqrt(hist_values_filtered[f] * target_values + 1e-9))
-                    loss_hist += self.directions_num - torch.sum(torch.sqrt(hist_values_filtered * target_values + 1e-9))
+                    loss_hist += F.smooth_l1_loss(hist_values_filtered, target_values) * self.directions_num
+                    # loss_hist += self.directions_num - torch.sum(torch.sqrt(hist_values_filtered * target_values + 1e-9))
 
                     if c==14:
                         # print(1000*loss_vect.sort()[0][::100].detach().cpu().numpy())

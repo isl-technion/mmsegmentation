@@ -91,5 +91,6 @@ class HistLossHook(Hook):
             self.covinv_mat_all[:, :, c] = np.linalg.inv(self.cov_mat_all[:, :, c] + self.epsilon*np.eye(self.features_num))
 
         filename = os.path.join(self.save_folder, 'epoch_{}'.format(runner.epoch+1)+'.pickle')
-        with open(filename, 'wb') as handle:
-            pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if not np.mod(runner.epoch+1, 5):
+            with open(filename, 'wb') as handle:
+                pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
