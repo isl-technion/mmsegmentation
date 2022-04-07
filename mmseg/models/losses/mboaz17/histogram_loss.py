@@ -37,7 +37,7 @@ class HistogramLoss(nn.Module):
 
         self.features_num = 256  # 16
         self.directions_num = 2000
-        self.iters = 0
+        self.iters_since_init = 0
         self.miu_all = np.zeros((self.features_num, self.num_classes))
         self.moment2_all = np.zeros((self.features_num, self.num_classes))
         self.moment2_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
@@ -54,6 +54,7 @@ class HistogramLoss(nn.Module):
         self.bins_vals = np.linspace(-3, 3, self.bins_num)
         self.hist_values = np.ones((self.directions_num, self.bins_num, self.num_classes)) / self.bins_num
         self.epsilon = 1e-12
+        self.relative_weight = 1.0  # how much to multiply the loss. It's changed every iteration in the histloss_hook
 
         self.proj_mat = torch.randn((self.directions_num, self.features_num), device='cuda')  # it should be constant within an epoch!
         self.proj_mat /= torch.sum(self.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
@@ -220,10 +221,11 @@ class HistogramLoss(nn.Module):
 
         loss_hist /= self.directions_num
         loss_hist /= (active_classes_num + self.epsilon)
-        print('loss_hist = {}, active = {}'.format(self.loss_weight*loss_hist, active_classes_num))
+        loss_hist *= self.loss_weight * self.relative_weight
+        print('loss_hist = {}, active = {}, weight = {}'.format(loss_hist, active_classes_num, self.relative_weight))
 
-        self.iters += 1
-        return self.loss_weight * loss_hist, feature
+        self.iters_since_init += 1
+        return loss_hist, feature
 
     @property
     def loss_name(self):

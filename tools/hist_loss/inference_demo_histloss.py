@@ -11,9 +11,12 @@ use_hist_model = True
 if 0:  # Segformer - PathA, resized to 672*448, without histogramm loss (256 dims)
     config_file='/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/segformer_mit-b0_pathA_pathA_reweighted_672_448.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/epoch_50.pth'
-elif 1:
+elif 0:
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/randomproj/segformer_mit-b0_pathA_30_rew_672_448_HL20000/segformer_mit-b0_pathA_30_rew_672_448_HL20000.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/randomproj/segformer_mit-b0_pathA_30_rew_672_448_HL20000/epoch_500.pth'
+elif 1:
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/randomproj/segformer_mit-b0_pathA_30_rew_672_448_HL20000_10dirs/segformer_mit-b0_pathA_30_rew_672_448_HL20000_10dirs.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/randomproj/segformer_mit-b0_pathA_30_rew_672_448_HL20000_10dirs/epoch_55.pth'
 
 hist_model = None
 hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0]+'.pickle')

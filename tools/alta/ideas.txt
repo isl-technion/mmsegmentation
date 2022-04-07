@@ -73,8 +73,9 @@ We can also choose
 * Choose a different kernel (e.g. 1/(1+x**2)) with less memory footprint. Also, change loss to L1?
 * Also, try limiting the kernel's support (e.g. below 1e-20 is 0)
 * delete data to save disk space.
+* Think about the lr schedule
 
-* Increase the loss weight gradually, to let the convergence to good segmentation first
+* Increase the loss weight gradually, to allow convergence to good segmentation first
 * Alternatively, use the gaussian log-probs as logits? Does it matter? Probably not...
 * change bins num and range, compare histograms only in miu+-k*std
 * Randomly rotate the features around the current mean of each class, in each iteration, in order to 'fill' the Gaussian with samples
@@ -106,6 +107,7 @@ where the data fits the model well?
 * Add the revision number to the folder name
 
 # Done:
+* The relative weight of the current histogram in the loss is increased gradually during a batch until reaching 1
 * The filtering parameter (alpha_hist) should be determined according to the samples number in the batch
 * fix resize_size, crop_size, check them in testing \ inference, then rerun segformer 672*448 training (even without histloss)
 * Decimation of the label map instead of interpolation, for speed and memory

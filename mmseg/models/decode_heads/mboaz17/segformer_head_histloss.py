@@ -99,7 +99,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                     diff = (out - miu_curr).view((feature_dim, -1))
                     proj = torch.matmul(eigen_vecs_t.T, diff)
                     proj = proj / torch.maximum(eigen_vals_t.sqrt(), torch.tensor(1e-15)).unsqueeze(dim=1)
-                    if 0:  # normal covariance
+                    if 0:  # equal weight per dimensions
                         maha_dist = (proj**2).mean(dim=0).view((1, height, width))
                     else:  # larger eigen_vals get more emphasis
                         weight_factors = torch.maximum(eigen_vals_t.sqrt(), torch.tensor(1e-15))
