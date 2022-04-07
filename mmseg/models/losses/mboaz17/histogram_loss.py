@@ -156,20 +156,19 @@ class HistogramLoss(nn.Module):
                     del tmp_result  # trying to save some memory
                     torch.cuda.empty_cache()
 
-                hist_values = sample_values / (sample_values.sum(dim=1).unsqueeze(dim=1) + self.epsilon)
+                hist_values = sample_values  # / (sample_values.sum(dim=1).unsqueeze(dim=1) + self.epsilon)
                 target_values = target_values / target_values.sum(dim=1).unsqueeze(dim=1)
 
                 if c > 0:  # TODO: remove this after removing the background from the classes list
                     active_classes_num += 1
                     if self.samples_num_all_curr_epoch[c]:
-                        hist_values_filtered = alpha_hist_curr * torch.tensor(self.hist_values[:, :, c], device='cuda') + (1 - alpha_hist_curr) * hist_values
+                        # hist_values_filtered = alpha_hist_curr * torch.tensor(self.hist_values[:, :, c], device='cuda') + (1 - alpha_hist_curr) * hist_values
+                        hist_values_filtered = torch.tensor(self.hist_values[:, :, c], device='cuda') + hist_values
                     else:
                         hist_values_filtered = hist_values
 
-                    # for f in range(hist_values_filtered.shape[0]):
-                    #     loss_hist +=  F.smooth_l1_loss(hist_values_filtered[f], target_values.squeeze())
-                        # loss_hist += 1 - torch.sum(torch.sqrt(hist_values_filtered[f] * target_values + 1e-9))
-                    loss_hist += F.smooth_l1_loss(hist_values_filtered, target_values) * self.directions_num
+                    hist_values_for_loss = hist_values_filtered / (hist_values_filtered.sum(dim=1).unsqueeze(dim=1) + self.epsilon)
+                    loss_hist += F.smooth_l1_loss(hist_values_for_loss, target_values) * self.directions_num
                     # loss_hist += self.directions_num - torch.sum(torch.sqrt(hist_values_filtered * target_values + 1e-9))
 
                     if c==14:
