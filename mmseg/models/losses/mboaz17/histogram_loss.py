@@ -50,10 +50,12 @@ class HistogramLoss(nn.Module):
         self.samples_num_all_curr_epoch = np.zeros(self.num_classes)
 
         self.alpha_hist = 0.95  # was 0.995 when samples_num was not considered
-        self.bins_num = 41
-        self.bins_vals = np.linspace(-3, 3, self.bins_num)
+        self.bins_num = 81
+        self.bins_vals = np.linspace(-4, 4, self.bins_num)
         self.hist_values = np.ones((self.directions_num, self.bins_num, self.num_classes)) / self.bins_num
+        self.moment1_proj = np.ones((self.directions_num, self.num_classes))
         self.moment2_proj = np.ones((self.directions_num, self.num_classes))
+        self.moment4_proj = np.ones((self.directions_num, self.num_classes))
         self.epsilon = 1e-12
         self.relative_weight = 1.0  # how much to multiply the loss. It's changed every iteration in the histloss_hook
 
@@ -88,6 +90,8 @@ class HistogramLoss(nn.Module):
         class_interval = 1
         active_classes_num = 0
         loss_hist = torch.tensor(0.0, device='cuda')
+        loss_kurtosis = torch.tensor(0.0, device='cuda')
+        loss_moment2 = torch.tensor(0.0, device='cuda')
         for c in range(self.num_classes):
             miu_unnormalized = np.zeros(feature_dim)
             moment2_unnormalized = np.zeros(feature_dim)
@@ -162,23 +166,40 @@ class HistogramLoss(nn.Module):
                 hist_values = sample_values  # / (sample_values.sum(dim=1).unsqueeze(dim=1) + self.epsilon)
                 target_values = target_values / target_values.sum(dim=1).unsqueeze(dim=1)
 
-                moment2_proj = (feat_vecs_curr**2).sum(dim=1)
+                feat_vecs_curr_sqr = feat_vecs_curr ** 2
+                moment1_proj = (feat_vecs_curr).sum(dim=1)
+                moment2_proj = (feat_vecs_curr_sqr).sum(dim=1)
+                moment4_proj = (feat_vecs_curr_sqr**2).sum(dim=1)
                 if c > 0:  # TODO: remove this after removing the background from the classes list
                     active_classes_num += 1
                     if self.samples_num_all_curr_epoch[c]:
+                        moment1_proj_filtered = torch.tensor(self.moment1_proj[:, c], device='cuda') + moment1_proj
                         moment2_proj_filtered = torch.tensor(self.moment2_proj[:, c], device='cuda') + moment2_proj
+                        moment4_proj_filtered = torch.tensor(self.moment4_proj[:, c], device='cuda') + moment4_proj
                         hist_values_filtered = torch.tensor(self.hist_values[:, :, c], device='cuda') + hist_values
                     else:
+                        moment1_proj_filtered = moment1_proj
                         moment2_proj_filtered = moment2_proj
+                        moment4_proj_filtered = moment4_proj
                         hist_values_filtered = hist_values
 
+                    moment1_proj_for_loss = moment1_proj_filtered / (self.samples_num_all_curr_epoch[c] + samples_num)
                     moment2_proj_for_loss = moment2_proj_filtered / (self.samples_num_all_curr_epoch[c] + samples_num)
+                    moment4_proj_for_loss = moment4_proj_filtered / (self.samples_num_all_curr_epoch[c] + samples_num)
                     hist_values_for_loss = hist_values_filtered / (hist_values_filtered.sum(dim=1).unsqueeze(dim=1) + self.epsilon)
-                    loss_hist += ((moment2_proj_for_loss - 1)**2).mean()
+                    kurtosis = moment4_proj_for_loss / moment2_proj_for_loss**2 - 3
+
+                    loss_kurtosis_curr = kurtosis.abs().mean()  # kurtosis
+                    loss_moment2_curr = (moment2_proj_for_loss - moment1_proj_for_loss**2 - 1).abs().mean()  # moment2
+                    loss_kurtosis += loss_kurtosis_curr
+                    loss_moment2 += loss_moment2_curr
+                    loss_hist += 0.5 * loss_kurtosis_curr + 0.5 * loss_moment2_curr
                     if c==14:
                         # print(1000*loss_vect.sort()[0][::100].detach().cpu().numpy())
                         aaa=1
+                    self.moment1_proj[:, c] =  moment1_proj_filtered.detach().cpu().numpy()
                     self.moment2_proj[:, c] =  moment2_proj_filtered.detach().cpu().numpy()
+                    self.moment4_proj[:, c] =  moment4_proj_filtered.detach().cpu().numpy()
                     self.hist_values[:, :, c] =  hist_values_filtered.detach().cpu().numpy()
 
                     if 0:  # for c=11 (or 14?), after several epochs
@@ -223,9 +244,14 @@ class HistogramLoss(nn.Module):
             self.moment2_mat_all_curr_batch[:, :, c] = moment2_mat_unnormalized
             self.samples_num_all_curr_batch[c] = samples_num
 
+        loss_kurtosis /= (active_classes_num + self.epsilon)
+        loss_kurtosis *= self.loss_weight * self.relative_weight
+        loss_moment2 /= (active_classes_num + self.epsilon)
+        loss_moment2 *= self.loss_weight * self.relative_weight
         loss_hist /= (active_classes_num + self.epsilon)
         loss_hist *= self.loss_weight * self.relative_weight
-        print('loss_hist = {}, active = {}, weight = {}'.format(loss_hist, active_classes_num, self.relative_weight))
+        print('loss_hist = {:.3f}, loss_kurtosis = {:.3f}, loss_moment2 = {:.3f}, active = {}, weight = {:.3f}, '.
+              format(loss_hist, loss_kurtosis, loss_moment2, active_classes_num, self.relative_weight))
 
         self.iters_since_init += 1
         return loss_hist, feature
