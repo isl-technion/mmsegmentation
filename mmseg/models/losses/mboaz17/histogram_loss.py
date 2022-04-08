@@ -53,6 +53,7 @@ class HistogramLoss(nn.Module):
         self.bins_num = 41
         self.bins_vals = np.linspace(-3, 3, self.bins_num)
         self.hist_values = np.ones((self.directions_num, self.bins_num, self.num_classes)) / self.bins_num
+        self.moment2_proj = np.ones((self.directions_num, self.num_classes))
         self.epsilon = 1e-12
         self.relative_weight = 1.0  # how much to multiply the loss. It's changed every iteration in the histloss_hook
 
@@ -144,7 +145,7 @@ class HistogramLoss(nn.Module):
                 feat_vecs_curr = feat_vecs_curr / std_curr_t.unsqueeze(dim=1)
                 var_sample_t = torch.tensor(1/25 ,device='cuda')  # 25  # after whitening
 
-                del eigen_vecs_t, eigen_vals_t, feat_vecs_curr_centered, proj, proj_mat_curr, var_curr_t, std_curr_t
+                del eigen_vecs_t, eigen_vals_t, feat_vecs_curr_centered, proj, proj_mat_curr
                 torch.cuda.empty_cache()
 
                 target_values = torch.zeros((1, self.bins_num), device='cuda')
@@ -152,30 +153,32 @@ class HistogramLoss(nn.Module):
                 for ind, bin in enumerate(self.bins_vals):
                     with torch.no_grad():
                         target_values[0, ind] = torch.exp( -0.5 * (torch.tensor(bin, device='cuda'))**2) * (1/np.sqrt(2*np.pi))
-                    tmp_result = torch.sum(torch.exp(-0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t) *
+                        tmp_result = torch.sum(torch.exp(-0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t) *
                                            (1 / torch.sqrt(2 * torch.pi * var_sample_t)), dim=1)
-                    sample_values[:, ind] = tmp_result
+                        sample_values[:, ind] = tmp_result
                     del tmp_result  # trying to save some memory
                     torch.cuda.empty_cache()
 
                 hist_values = sample_values  # / (sample_values.sum(dim=1).unsqueeze(dim=1) + self.epsilon)
                 target_values = target_values / target_values.sum(dim=1).unsqueeze(dim=1)
 
+                moment2_proj = (feat_vecs_curr**2).sum(dim=1)
                 if c > 0:  # TODO: remove this after removing the background from the classes list
                     active_classes_num += 1
                     if self.samples_num_all_curr_epoch[c]:
-                        # hist_values_filtered = alpha_hist_curr * torch.tensor(self.hist_values[:, :, c], device='cuda') + (1 - alpha_hist_curr) * hist_values
+                        moment2_proj_filtered = torch.tensor(self.moment2_proj[:, c], device='cuda') + moment2_proj
                         hist_values_filtered = torch.tensor(self.hist_values[:, :, c], device='cuda') + hist_values
                     else:
+                        moment2_proj_filtered = moment2_proj
                         hist_values_filtered = hist_values
 
+                    moment2_proj_for_loss = moment2_proj_filtered / (self.samples_num_all_curr_epoch[c] + samples_num)
                     hist_values_for_loss = hist_values_filtered / (hist_values_filtered.sum(dim=1).unsqueeze(dim=1) + self.epsilon)
-                    loss_hist += F.smooth_l1_loss(hist_values_for_loss, target_values) * self.directions_num
-                    # loss_hist += self.directions_num - torch.sum(torch.sqrt(hist_values_filtered * target_values + 1e-9))
-
+                    loss_hist += ((moment2_proj_for_loss - 1)**2).mean()
                     if c==14:
                         # print(1000*loss_vect.sort()[0][::100].detach().cpu().numpy())
                         aaa=1
+                    self.moment2_proj[:, c] =  moment2_proj_filtered.detach().cpu().numpy()
                     self.hist_values[:, :, c] =  hist_values_filtered.detach().cpu().numpy()
 
                     if 0:  # for c=11 (or 14?), after several epochs
@@ -220,7 +223,6 @@ class HistogramLoss(nn.Module):
             self.moment2_mat_all_curr_batch[:, :, c] = moment2_mat_unnormalized
             self.samples_num_all_curr_batch[c] = samples_num
 
-        loss_hist /= self.directions_num
         loss_hist /= (active_classes_num + self.epsilon)
         loss_hist *= self.loss_weight * self.relative_weight
         print('loss_hist = {}, active = {}, weight = {}'.format(loss_hist, active_classes_num, self.relative_weight))
