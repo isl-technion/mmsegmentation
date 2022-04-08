@@ -152,7 +152,8 @@ class HistogramLoss(nn.Module):
                 for ind, bin in enumerate(self.bins_vals):
                     with torch.no_grad():
                         target_values[0, ind] = torch.exp( -0.5 * (torch.tensor(bin, device='cuda'))**2) * (1/np.sqrt(2*np.pi))
-                    tmp_result = tmp_calc(feat_vecs_curr, var_sample_t, bin)
+                    tmp_result = torch.sum(torch.exp(-0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t) *
+                                           (1 / torch.sqrt(2 * torch.pi * var_sample_t)), dim=1)
                     sample_values[:, ind] = tmp_result
                     del tmp_result  # trying to save some memory
                     torch.cuda.empty_cache()
@@ -243,5 +244,21 @@ class HistogramLoss(nn.Module):
 
 
 def tmp_calc(feat_vecs_curr, var_sample_t, bin):
-    return torch.sum(torch.exp(-0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t) * (1 / torch.sqrt(2 * torch.pi * var_sample_t)), dim=1)
+    with torch.no_grad():
+        mask_np = (((bin - feat_vecs_curr).abs() / var_sample_t.sqrt()) < 3).detach().cpu().numpy()
+        mask = torch.tensor(mask_np, device='cuda')
+        const = torch.tensor(0.0, device='cuda')
+
+    exp_arg = -0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t
+
+    # slighty more memory efficient implementation, but slower
+    final_res = torch.zeros(feat_vecs_curr.shape[0], device='cuda')
+    for f in range(0, feat_vecs_curr.shape[0]):
+        indices = np.nonzero(mask_np[f])
+        if len(indices[0]):
+            exp_arg_vect = exp_arg[f, indices]
+            final_res[f] = torch.sum(torch.exp(exp_arg_vect) * (1 / torch.sqrt(2 * torch.pi * var_sample_t)))
+
+    return final_res
+    # return torch.sum(torch.exp(exp_arg) * (1 / torch.sqrt(2 * torch.pi * var_sample_t)), dim=1)
     # return torch.sum((-0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t) * (1 / torch.sqrt(2 * torch.pi * var_sample_t)), dim=1)
