@@ -43,9 +43,9 @@ class HistLossHook(Hook):
         runner.model.module.decode_head.loss_hist.proj_mat = torch.randn_like(runner.model.module.decode_head.loss_hist.proj_mat)
         runner.model.module.decode_head.loss_hist.proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
 
-        # Debug - take only N first dimensions, the other are zeroed out
-        runner.model.module.decode_head.loss_hist.proj_mat[:, 10:] = 0
-        runner.model.module.decode_head.loss_hist.proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
+        # # Debug - take only N first dimensions, the other are zeroed out
+        # runner.model.module.decode_head.loss_hist.proj_mat[:, 10:] = 0
+        # runner.model.module.decode_head.loss_hist.proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
 
         ## Debug - take only exact principal components
         # runner.model.module.decode_head.loss_hist.proj_mat[:] = 0

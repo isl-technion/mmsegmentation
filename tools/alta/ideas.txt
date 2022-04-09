@@ -70,6 +70,12 @@ We can also choose
 
 
 # TODO:
+* Split the features to groups (e.g. 10), and hopefully each group can be made Gaussian. Then sum the distances to each.
+* Multivariate skewness can encourage elliptic symmetrical pdfs - ideal for distance measure?
+Also, it seems that some directions are skewed
+* Is class 9 problematic and ruins everything?
+* Use MCR2 in addition to my loss
+
 * Choose a different kernel (e.g. 1/(1+x**2)) with less memory footprint. Also, change loss to L1?
 * Also, try limiting the kernel's support (e.g. below 1e-20 is 0)
 * delete data to save disk space.
