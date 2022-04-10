@@ -43,7 +43,18 @@ class HistLossHook(Hook):
         runner.model.module.decode_head.loss_hist.proj_mat = torch.randn_like(runner.model.module.decode_head.loss_hist.proj_mat)
         runner.model.module.decode_head.loss_hist.proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
 
-        # # Debug - take only N first dimensions, the other are zeroed out
+        ## Split space to groups
+        feature_num_pre = runner.model.module.decode_head.loss_hist.proj_mat.shape[1]
+        feature_num_post = runner.model.module.decode_head.loss_hist.proj_mat.shape[0]
+        group_size = 8
+        groups_num = int(feature_num_pre / group_size)
+        feature_num_per_group = int(feature_num_post / groups_num)
+        for g in range(groups_num):
+            runner.model.module.decode_head.loss_hist.proj_mat[g*feature_num_per_group:(g+1)*feature_num_per_group, :g*group_size] = 0
+            runner.model.module.decode_head.loss_hist.proj_mat[g*feature_num_per_group:(g+1)*feature_num_per_group, (g+1)*group_size:] = 0
+        runner.model.module.decode_head.loss_hist.proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
+
+        ## Debug - take only N first dimensions, the other are zeroed out
         # runner.model.module.decode_head.loss_hist.proj_mat[:, 10:] = 0
         # runner.model.module.decode_head.loss_hist.proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
 

@@ -36,7 +36,7 @@ class HistogramLoss(nn.Module):
         self._loss_name = loss_name
 
         self.features_num = 256  # 16
-        self.directions_num = 2000
+        self.directions_num = 4000
         self.iters_since_init = 0
         self.miu_all = np.zeros((self.features_num, self.num_classes))
         self.moment2_all = np.zeros((self.features_num, self.num_classes))
@@ -122,7 +122,7 @@ class HistogramLoss(nn.Module):
 
                 self.cov_mat_all[:, :, c] = self.moment2_mat_all[:, :, c] - \
                                             np.matmul(self.miu_all[:, c:c + 1], self.miu_all[:, c:c + 1].T) + \
-                                            (1e-9) * np.eye(self.features_num)
+                                            (1e-8) * np.eye(self.features_num)
 
                 eigen_vals, eigen_vecs = np.linalg.eig(self.cov_mat_all[:, :, c])
                 indices = np.argsort(eigen_vals)[::-1]  # From high to low
@@ -141,7 +141,8 @@ class HistogramLoss(nn.Module):
                 feat_vecs_curr_centered = feat_vecs_curr - miu_curr_t.unsqueeze(dim=1)
                 proj = torch.matmul(eigen_vecs_t.T, feat_vecs_curr_centered)
 
-                proj_mat_curr = self.proj_mat * eigen_vals_t.sqrt().unsqueeze(dim=0)  # prioritizing axes according to their std
+                # proj_mat_curr = self.proj_mat * eigen_vals_t.sqrt().unsqueeze(dim=0)  # prioritizing axes according to their std
+                proj_mat_curr = self.proj_mat * torch.ones_like(eigen_vals_t).unsqueeze(dim=0)  # prioritizing axes according to their std
                 proj_mat_curr /= (proj_mat_curr ** 2).sum(dim=1).sqrt().unsqueeze(dim=1)  # normalizing to norm 1
                 var_curr_t = (proj_mat_curr**2 * eigen_vals_t.unsqueeze(dim=0)).sum(dim=1)
                 std_curr_t = var_curr_t.sqrt()
@@ -168,8 +169,8 @@ class HistogramLoss(nn.Module):
 
                 feat_vecs_curr_sqr = feat_vecs_curr ** 2
                 moment1_proj = (feat_vecs_curr).sum(dim=1)
-                moment2_proj = (feat_vecs_curr_sqr).sum(dim=1)
-                moment4_proj = (feat_vecs_curr_sqr**2).sum(dim=1)
+                moment2_proj = (feat_vecs_curr_sqr).sum(dim=1)  # non-centered
+                moment4_proj = ((feat_vecs_curr - moment1_proj.unsqueeze(1)/samples_num)**4).sum(dim=1)  # centered
                 if c > 0:  # TODO: remove this after removing the background from the classes list
                     active_classes_num += 1
                     if self.samples_num_all_curr_epoch[c]:
@@ -193,7 +194,7 @@ class HistogramLoss(nn.Module):
                     loss_moment2_curr = (moment2_proj_for_loss - moment1_proj_for_loss**2 - 1).abs().mean()  # moment2
                     loss_kurtosis += loss_kurtosis_curr
                     loss_moment2 += loss_moment2_curr
-                    loss_hist += 0.5 * loss_kurtosis_curr + 0.5 * loss_moment2_curr
+                    loss_hist += 0.0 * loss_kurtosis_curr + 1.0 * loss_moment2_curr
                     if c==14:
                         # print(1000*loss_vect.sort()[0][::100].detach().cpu().numpy())
                         aaa=1
