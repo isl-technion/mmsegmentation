@@ -70,10 +70,11 @@ We can also choose
 
 
 # TODO:
-* Split the features to groups (e.g. 10), and hopefully each group can be made Gaussian. Then sum the distances to each.
+* Is class 9 problematic? It's really outnumbered - maybe weigh each class differently?
+* calculate mom4 correctly!
+
 * Multivariate skewness can encourage elliptic symmetrical pdfs - ideal for distance measure?
 Also, it seems that some directions are skewed
-* Is class 9 problematic and ruins everything?
 * Use MCR2 in addition to my loss
 
 * Choose a different kernel (e.g. 1/(1+x**2)) with less memory footprint. Also, change loss to L1?
@@ -113,6 +114,8 @@ where the data fits the model well?
 * Add the revision number to the folder name
 
 # Done:
+* Split the features to groups (e.g. 10), and hopefully each group can be made Gaussian. Then sum the distances to each.
+It seems unnecessary after removing the alpha filter, though.
 * The relative weight of the current histogram in the loss is increased gradually during a batch until reaching 1
 * The filtering parameter (alpha_hist) should be determined according to the samples number in the batch
 * fix resize_size, crop_size, check them in testing \ inference, then rerun segformer 672*448 training (even without histloss)

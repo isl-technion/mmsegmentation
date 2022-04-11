@@ -118,13 +118,13 @@ lr_config = dict(
 # evaluation = dict(interval=500, metric='mIoU', pre_eval=True)
 # workflow = [('train', int(480)), ('val', int(96))]
 
-runner = dict(type='EpochBasedRunner', max_epochs=1000)
+runner = dict(type='EpochBasedRunner', max_epochs=500)
 checkpoint_config = dict(by_epoch=True, interval=5)
 evaluation = dict(interval=5, metric='mIoU', pre_eval=True)
 workflow = [('train', int(1))]
 
-# load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
-load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/results/randomproj/segformer_mit-b0_pathA_30_rew_672_448_HL20000/epoch_500.pth'
+load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
+# load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/results/randomproj/segformer_mit-b0_pathA_30_rew_672_448_HL20000/epoch_500.pth'
 
 custom_hooks = [
     dict(type='HistLossHook', num_classes=num_classes, features_num=256)
