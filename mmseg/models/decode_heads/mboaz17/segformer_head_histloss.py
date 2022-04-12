@@ -153,4 +153,5 @@ def calc_log_prob(feature, hist_model):
     prob_scores[prob_scores.isinf()] = -1e6
     prob_scores[prob_scores.isnan()] = -1e6
     # res = prob_scores.argmax(dim=1)
+
     return prob_scores
