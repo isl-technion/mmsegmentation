@@ -70,7 +70,8 @@ We can also choose
 
 
 # TODO:
-* Is class 9 problematic? It's really outnumbered - maybe weigh each class differently?
+* Update all PathA annotations!
+* Is class 9 problematic? Eliminate too small classes (e.g. samples_num < const*dimension over an epoch)
 * calculate mom4 correctly!
 
 * Multivariate skewness can encourage elliptic symmetrical pdfs - ideal for distance measure?
@@ -175,3 +176,10 @@ wcwidth            0.2.5
 wheel              0.37.0
 yapf               0.32.0
 zipp               3.7.0
+
+
+* register new ssh key:
+ssh-keygen -t ed25519
+cat ~/.ssh/id_ed25519.pub
+In github, generate new ssh key and copy the content, e.g.:
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMWelQMTz3wH3UGAU29HAb3CIN5ouHSlaEO6QPrHXuue airsim@isl15

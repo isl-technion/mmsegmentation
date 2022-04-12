@@ -121,9 +121,9 @@ class HistogramLoss(nn.Module):
                 miu_curr = self.miu_all[:, c] / (self.samples_num_all_curr_epoch[c] + samples_num)
                 moment2_curr = self.moment2_all[:, c] / (self.samples_num_all_curr_epoch[c] + samples_num)
                 moment2_mat_curr = self.moment2_mat_all[:, :, c] / (self.samples_num_all_curr_epoch[c] + samples_num)
-
+                cov_eps = np.maximum( np.minimum( 1e-8 * 1000 / (self.samples_num_all_curr_epoch[c] + samples_num), 1e-5), 1e-8)  # TODO: should depend on the dimension!
                 cov_mat_all_curr = (moment2_mat_curr - np.matmul(np.expand_dims(miu_curr, 1), np.expand_dims(miu_curr, 1).T)) +\
-                                            (1e-8) * np.eye(self.features_num)
+                                            cov_eps * np.eye(self.features_num)
                 self.cov_mat_all[:, :, c] = cov_mat_all_curr
 
                 eigen_vals, eigen_vecs = np.linalg.eig(cov_mat_all_curr)
@@ -204,40 +204,6 @@ class HistogramLoss(nn.Module):
                 self.moment4_proj[:, c] =  moment4_proj_filtered.detach().cpu().numpy()
                 self.hist_values[:, :, c] =  hist_values_filtered.detach().cpu().numpy()
 
-                if 0:  # for c=11 (or 14?), after several epochs
-                    f1 = 0
-                    f2 = 1
-                    feat_vecs_curr_2d = feat_vecs_curr[(f1, f2), :]
-                    sample_values_2d = torch.zeros((self.bins_num, self.bins_num), device='cuda')
-                    var_sample_t_2d = var_sample_t.unsqueeze(dim=1)[(f1, f2), :]
-                    for ind1, bin1 in enumerate(self.bins_vals):
-                        for ind2, bin2 in enumerate(self.bins_vals):
-                            bin = torch.tensor((bin1, bin2), device='cuda').unsqueeze(dim=1)
-                            with torch.no_grad():
-                                sample_values_2d[ind1, ind2] = torch.sum(
-                                    torch.exp(-0.5 * torch.sum((bin - feat_vecs_curr_2d) ** 2 / var_sample_t_2d, dim=0))
-                                    * (1 / torch.sqrt(2 * torch.pi * var_sample_t_2d)))
-
-                    # Make data.
-                    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-                    X = self.bins_vals
-                    Y = self.bins_vals
-                    X, Y = np.meshgrid(X, Y)
-                    Z = sample_values_2d.detach().cpu().numpy()
-                    ax.plot_surface(X, Y, Z)
-                    plt.show()
-
-                    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-                    Z = torch.matmul(hist_values[f1:f1+1].T, hist_values[f2:f2+1]).detach().cpu().numpy()
-                    ax.plot_surface(X, Y, Z)
-                    plt.show()
-                if 0:
-                    for f in range(0, 10):
-                        plt.plot(hist_values_filtered[indices[feature_dim - f - 1]].detach().cpu().numpy());
-                        plt.plot(target_values[indices[feature_dim - f - 1]].detach().cpu().numpy());
-                        plt.title(str(indices[feature_dim - f - 1]));
-                        plt.show()
-
                 self.samples_num_all[c] += samples_num
                 self.samples_num_all_curr_epoch[c] += samples_num
 
@@ -249,14 +215,15 @@ class HistogramLoss(nn.Module):
         loss_moment2 = torch.sum(weight_per_class * loss_moment2_vect)
         loss_hist = torch.sum(weight_per_class * loss_hist_vect)
 
+        print(self._loss_name + ' = {:.3f}, loss_kurtosis = {:.3f}, loss_moment2 = {:.3f}, active = {}, weight = {:.3f}, '.
+              format(loss_hist, loss_kurtosis, loss_moment2, active_classes_num, self.relative_weight))
+
         loss_kurtosis *= self.relative_weight
         loss_moment2 *= self.relative_weight
         loss_hist *= self.relative_weight
-        print('loss_hist = {:.3f}, loss_kurtosis = {:.3f}, loss_moment2 = {:.3f}, active = {}, weight = {:.3f}, '.
-              format(loss_hist, loss_kurtosis, loss_moment2, active_classes_num, self.relative_weight))
 
         self.iters_since_init += 1
-        return self.loss_weight*loss_hist, feature
+        return self.loss_weight*loss_hist
 
     @property
     def loss_name(self):

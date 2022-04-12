@@ -97,8 +97,11 @@ class BaseDecodeHead(BaseModule, metaclass=ABCMeta):
             raise TypeError(f'loss_decode must be a dict or sequence of dict,\
                 but got {type(loss_decode)}')
 
-        loss_hist['num_classes'] = self.num_classes
-        self.loss_hist = build_loss(loss_hist)
+        self.loss_hist_list = []
+        for l in range(5):
+            loss_hist['num_classes'] = self.num_classes
+            loss_hist['loss_name'] = 'loss_hist_{}'.format(l)
+            self.loss_hist_list.append(build_loss(loss_hist))
 
         if sampler is not None:
             self.sampler = build_pixel_sampler(sampler, context=self)
@@ -206,9 +209,10 @@ class BaseDecodeHead(BaseModule, metaclass=ABCMeta):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        seg_logits, loss_hist_val = self.forward(inputs, gt_semantic_seg)
+        seg_logits, loss_hist_vals = self.forward(inputs, gt_semantic_seg)
         losses = self.losses(seg_logits, gt_semantic_seg)
-        losses[self.loss_hist.loss_name] = loss_hist_val
+        for l in range(len(loss_hist_vals)):
+            losses[self.loss_hist_list[l].loss_name] = loss_hist_vals[l]
         return losses
 
     def forward_test(self, inputs, img_metas, test_cfg, hist_model=None):
