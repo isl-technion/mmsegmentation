@@ -70,11 +70,13 @@ We can also choose
 
 
 # TODO:
+* Why does all 5 losses jump, occasionally? Is it simply an unexplored area of space?
+* Increase the number of directions.
 * Update all PathA annotations!
 * Is class 9 problematic? Eliminate too small classes (e.g. samples_num < const*dimension over an epoch)
 * calculate mom4 correctly!
-
-* Multivariate skewness can encourage elliptic symmetrical pdfs - ideal for distance measure?
+* More measures of Gaussianity:
+Multivariate skewness can encourage elliptic symmetrical pdfs - ideal for distance measure?
 Also, it seems that some directions are skewed
 * Use MCR2 in addition to my loss
 
@@ -115,6 +117,7 @@ where the data fits the model well?
 * Add the revision number to the folder name
 
 # Done:
+* Remove calculation of the histogram - it's time consuming!
 * Split the features to groups (e.g. 10), and hopefully each group can be made Gaussian. Then sum the distances to each.
 It seems unnecessary after removing the alpha filter, though.
 * The relative weight of the current histogram in the loss is increased gradually during a batch until reaching 1
