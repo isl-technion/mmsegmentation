@@ -61,12 +61,12 @@ class EncoderDecoderEnhanced(BaseSegmentor):
             else:
                 self.auxiliary_head = builder.build_head(auxiliary_head)
 
-    def extract_feat(self, img):
+    def extract_feat(self, img, label=None):
         """Extract features from images."""
-        x = self.backbone(img)
+        x, loss_hist_list, loss_hist_vals = self.backbone(img, label=label)
         if self.with_neck:
             x = self.neck(x)
-        return x
+        return x, loss_hist_list, loss_hist_vals
 
     def encode_decode(self, img, img_metas, hist_model=None):
         """Encode images with backbone and decode into a semantic segmentation
@@ -140,12 +140,15 @@ class EncoderDecoderEnhanced(BaseSegmentor):
             dict[str, Tensor]: a dictionary of loss components
         """
 
-        x = self.extract_feat(img)
-
         losses = dict()
+
+        x, loss_hist_list, loss_hist_vals = self.extract_feat(img, gt_semantic_seg)
+        for l in range(len(loss_hist_vals)):
+            losses['encode.'+loss_hist_list[l].loss_name] = loss_hist_vals[l]
 
         loss_decode = self._decode_head_forward_train(x, img_metas,
                                                       gt_semantic_seg)
+
         losses.update(loss_decode)
 
         if self.with_auxiliary_head:

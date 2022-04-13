@@ -27,6 +27,7 @@ class HistogramLoss(nn.Module):
                  num_classes,
                  class_weight=None,
                  loss_weight=1.0,
+                 features_num=256,
                  loss_name='loss_hist'):
         super(HistogramLoss, self).__init__()
 
@@ -36,7 +37,7 @@ class HistogramLoss(nn.Module):
         self.class_weight = get_class_weight(class_weight)
         self._loss_name = loss_name
 
-        self.features_num = 256  # 16
+        self.features_num = features_num
         self.directions_num = 10000
         self.iters_since_init = 0
         self.miu_all = np.zeros((self.features_num, self.num_classes))
@@ -122,7 +123,7 @@ class HistogramLoss(nn.Module):
                 miu_curr = self.miu_all[:, c] / (self.samples_num_all_curr_epoch[c] + samples_num)
                 moment2_curr = self.moment2_all[:, c] / (self.samples_num_all_curr_epoch[c] + samples_num)
                 moment2_mat_curr = self.moment2_mat_all[:, :, c] / (self.samples_num_all_curr_epoch[c] + samples_num)
-                cov_eps = np.maximum( np.minimum( 1e-8 * 1000 / (self.samples_num_all_curr_epoch[c] + samples_num), 1e-5), 1e-8)  # TODO: should depend on the dimension!
+                cov_eps = np.maximum( np.minimum( 1e-8 * 10000 / (self.samples_num_all_curr_epoch[c] + samples_num), 1e-4), 1e-8)  # TODO: should depend on the dimension!
                 cov_mat_all_curr = (moment2_mat_curr - np.matmul(np.expand_dims(miu_curr, 1), np.expand_dims(miu_curr, 1).T)) +\
                                             cov_eps * np.eye(self.features_num)
                 self.cov_mat_all[:, :, c] = cov_mat_all_curr

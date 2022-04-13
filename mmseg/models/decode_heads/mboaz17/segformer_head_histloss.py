@@ -66,17 +66,21 @@ class SegformerHeadHistLoss(BaseDecodeHead):
             x = inputs[idx]
             conv = self.convs[idx]
             conv_x = conv(x)
+            if label is not None:
+                loss =  self.loss_hist_list[idx](conv_x, label)
+                loss_hist_vals.append(loss)
+            if hist_model is not None:
+                prob_scores = calc_log_prob(conv_x, hist_model.models_list[idx])
+                prob_scores_list.append(resize(
+                    input=prob_scores,
+                    size=inputs[0].shape[2:],
+                    mode=self.interpolate_mode,
+                    align_corners=self.align_corners))
             res = resize(
                     input=conv_x,
                     size=inputs[0].shape[2:],
                     mode=self.interpolate_mode,
                     align_corners=self.align_corners)
-            if label is not None:
-                loss =  self.loss_hist_list[idx](res, label)
-                loss_hist_vals.append(loss)
-            if hist_model is not None:
-                prob_scores = calc_log_prob(res, hist_model.models_list[idx])
-                prob_scores_list.append(prob_scores)
             outs.append(self.relu_operation.activate(res))  # mboaz17
 
         out = self.fusion_conv(torch.cat(outs, dim=1))
@@ -99,12 +103,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
         out = self.cls_seg(out)
 
         if label is not None:
-            loss = 0
-            for i in range(len(loss_hist_vals)):
-                loss += loss_hist_vals[i]
-            loss /= len(loss_hist_vals)
             return out, loss_hist_vals
-            # return out, loss
 
         return out
 
