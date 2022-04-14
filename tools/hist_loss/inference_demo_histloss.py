@@ -12,11 +12,11 @@ if 0:  # Segformer - PathA, resized to 672*448, without histogramm loss (256 dim
     config_file='/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/segformer_mit-b0_pathA_pathA_reweighted_672_448.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/epoch_50.pth'
 elif 0:
-    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/kurt_mom2/segformer_mit-b0_pathA_rew_672_448_HL5/segformer_mit-b0_pathA_rew_672_448_HL5.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/kurt_mom2/segformer_mit-b0_pathA_rew_672_448_HL5/epoch_380.pth'
-elif 1:
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multilayer/segformer_mit-b0_pathA_rew_672_448_HL5/segformer_mit-b0_pathA_rew_672_448_HL5.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multilayer/segformer_mit-b0_pathA_rew_672_448_HL5/epoch_120.pth'
+elif 1:
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5/segformer_mit-b0_pathA_rew_672_448_HL5.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5/epoch_370.pth'
 
 hist_model = None
 hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0]+'.pickle')
@@ -34,11 +34,11 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0001'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0005'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
-# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/100'
+images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/100'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Ir yamim/50'
 # images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/CamVid/train'
-images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/Airsim/train'
+# images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/Airsim/train'
 
 images_list = os.listdir(images_path)
 images_list.sort()

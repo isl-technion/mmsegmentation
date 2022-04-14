@@ -61,18 +61,40 @@ class EncoderDecoderEnhanced(BaseSegmentor):
             else:
                 self.auxiliary_head = builder.build_head(auxiliary_head)
 
-    def extract_feat(self, img, label=None):
+    def extract_feat(self, img, label=None, hist_model=None):
         """Extract features from images."""
-        x, loss_hist_list, loss_hist_vals = self.backbone(img, label=label)
+        x = self.backbone(img, label=label, hist_model=hist_model)
+        if label is not None:
+            loss_hist_list = x[1]
+            loss_hist_vals = x[2]
+            x = x[0]
+        if hist_model is not None:
+            prob_scores_list = x[1]
+            x = x[0]
         if self.with_neck:
             x = self.neck(x)
-        return x, loss_hist_list, loss_hist_vals
+        if label is not None:
+            return x, loss_hist_list, loss_hist_vals
+        if hist_model is not None:
+            return x, prob_scores_list
+        return x
 
     def encode_decode(self, img, img_metas, hist_model=None):
         """Encode images with backbone and decode into a semantic segmentation
         map of the same size as input."""
-        x = self.extract_feat(img)
+        x = self.extract_feat(img, hist_model=hist_model)
+        if hist_model is not None:
+            prob_scores_list_encoder = x[1]
+            x = x[0]
         out = self._decode_head_forward_test(x, img_metas, hist_model=hist_model)
+        if hist_model is not None:
+            prob_scores_list = prob_scores_list_encoder + out
+            out = 1e6*torch.ones_like(prob_scores_list[0])
+            for l in range(len(prob_scores_list)):
+                if not hist_model.encoder_validity[l]:
+                    continue
+                out = torch.minimum(out, prob_scores_list[l])
+
         out = resize(
             input=out,
             size=img.shape[2:],
@@ -148,7 +170,6 @@ class EncoderDecoderEnhanced(BaseSegmentor):
 
         loss_decode = self._decode_head_forward_train(x, img_metas,
                                                       gt_semantic_seg)
-
         losses.update(loss_decode)
 
         if self.with_auxiliary_head:

@@ -132,10 +132,10 @@ class HistogramLoss(nn.Module):
                 indices = np.argsort(eigen_vals)[::-1]  # From high to low
                 eigen_vals = eigen_vals[indices]
                 eigen_vecs = eigen_vecs[:, indices]
-                if np.any(np.iscomplex(eigen_vals)):
+                if np.any(np.iscomplex(eigen_vals)):  #  or eigen_vals[-1] < 0:
                     self.samples_num_all[c] += samples_num
                     self.samples_num_all_curr_epoch[c] += samples_num
-                    print('Invalid: c = {}, eig_min = {}'.format(c, eigen_vals.min()))
+                    print('Invalid: c = {}, eig_min = {}'.format(c, eigen_vals[-1]))
                     continue
                 eigen_vals = np.maximum(eigen_vals, 1e-12)
                 eigen_vecs_t = torch.from_numpy(eigen_vecs).float().to('cuda')
@@ -172,7 +172,7 @@ class HistogramLoss(nn.Module):
                         else:
                             hist_values_filtered = hist_values.detach().cpu().numpy()
                         self.hist_values[:, :, c] = hist_values_filtered
-
+                        target_values /= target_values.sum()
                         del hist_values  # trying to save some memory
                         torch.cuda.empty_cache()
                         hist_values_for_loss = hist_values_filtered / (np.expand_dims(hist_values_filtered.sum(1), 1) + self.epsilon)

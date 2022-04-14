@@ -15,6 +15,8 @@ from mmcv.runner import BaseModule, ModuleList, Sequential
 from ...builder import BACKBONES, build_loss
 from ...utils import PatchEmbed, nchw_to_nlc, nlc_to_nchw
 
+from ...decode_heads.mboaz17.segformer_head_histloss import calc_log_prob
+from mmseg.ops import resize
 
 class MixFFN(BaseModule):
     """An implementation of MixFFN of Segformer.
@@ -444,12 +446,15 @@ class MixVisionTransformerHistLoss(BaseModule):
         else:
             super(MixVisionTransformerHistLoss, self).init_weights()
 
-    def forward(self, x, label=None):
+    def forward(self, x, label=None, hist_model=None):
         outs = []
         loss_hist_vals = []
+        prob_scores_list = []
 
         for i, layer in enumerate(self.layers):
             x, hw_shape = layer[0](x)
+            if i == 0:
+                hw_shape0 = hw_shape
             for block in layer[1]:
                 x = block(x, hw_shape)
             x = layer[2](x)
@@ -457,8 +462,18 @@ class MixVisionTransformerHistLoss(BaseModule):
             if label is not None:
                 loss =  self.loss_hist_list[i](x, label)
                 loss_hist_vals.append(loss)
+            if hist_model is not None:
+                prob_scores = calc_log_prob(x, hist_model.models_list[i])
+                prob_scores_list.append(resize(
+                    input=prob_scores,
+                    size=hw_shape0,
+                    mode='bilinear',
+                    align_corners=False))
             if i in self.out_indices:
                 outs.append(x)
+
+        if hist_model is not None:
+            return outs, prob_scores_list
 
         if label is not None:
             return outs, self.loss_hist_list, loss_hist_vals

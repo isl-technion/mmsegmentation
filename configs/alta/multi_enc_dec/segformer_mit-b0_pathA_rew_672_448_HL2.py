@@ -22,7 +22,7 @@ model = dict(
                      loss_decode=dict(
                          type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),
                      loss_hist=dict(
-                         type='HistogramLoss', loss_weight=5.0),
+                         type='HistogramLoss', loss_weight=2.0),
                      ),
     test_cfg=dict(mode='whole', crop_size=crop_size))
 
@@ -135,9 +135,10 @@ checkpoint_config = dict(by_epoch=True, interval=5)
 evaluation = dict(interval=10, metric='mIoU', pre_eval=True)
 workflow = [('train', int(1))]
 
-load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
+# load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
+load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5/epoch_380.pth'
 
 custom_hooks = [
-    dict(type='HistLossHook', num_classes=num_classes, features_num=256)
+    dict(type='HistLossHook', num_classes=num_classes, first_epoch=0, features_num=256)
 ]
 custom_imports = dict(imports=['tools.alta.histloss_hook'], allow_failed_imports=False)

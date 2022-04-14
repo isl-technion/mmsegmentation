@@ -70,7 +70,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                 loss =  self.loss_hist_list[idx](conv_x, label)
                 loss_hist_vals.append(loss)
             if hist_model is not None:
-                prob_scores = calc_log_prob(conv_x, hist_model.models_list[idx])
+                prob_scores = calc_log_prob(conv_x, hist_model.models_list[idx+hist_model.layers_num_encoder])
                 prob_scores_list.append(resize(
                     input=prob_scores,
                     size=inputs[0].shape[2:],
@@ -90,13 +90,9 @@ class SegformerHeadHistLoss(BaseDecodeHead):
             loss_hist_vals.append(loss)
 
         if hist_model is not None:
-            prob_scores = calc_log_prob(out, hist_model.models_list[-1])
+            prob_scores = calc_log_prob(out, hist_model.models_list[len(inputs) + hist_model.layers_num_encoder])
             prob_scores_list.append(prob_scores)
-
-            prob_scores = 1e6*torch.ones_like(prob_scores)
-            for l in range(len(hist_model.models_list)):
-                prob_scores = torch.minimum(prob_scores, prob_scores_list[l])
-            return prob_scores
+            return prob_scores_list
 
         out = self.relu_operation.activate(out)  # doing the removed activation function of the fusion_conv
 
@@ -132,11 +128,13 @@ def calc_log_prob(feature, hist_model):
             log_prob = -0.5 * maha_dist
         elif 1:  # use covariance
             covinv_curr = torch.from_numpy(hist_model.covinv_mat_all[:, :, c]).float().to('cuda')
+            # epsilon = np.maximum( - hist_model.eigen_vals_all[:, c].min(), 0) + 1e-12
+            # covinv_curr = torch.from_numpy(hist_model.cov_mat_all[:, :, c] + epsilon * np.eye(hist_model.features_num)).float().to('cuda')
             diff = (feature - miu_curr).view((feature_dim, -1))
             maha_dist = (diff * torch.matmul(covinv_curr, diff)).mean(dim=0).view((1, height, width))
         else:  # use PCA-trained covariance
-            eigen_vecs_t = torch.from_numpy(hist_model.eigen_vecs[:, :, c]).float().to('cuda')
-            eigen_vals_t = torch.from_numpy(hist_model.eigen_vals[:, c]).float().to('cuda')
+            eigen_vecs_t = torch.from_numpy(hist_model.eigen_vecs_all[:, :, c]).float().to('cuda')
+            eigen_vals_t = torch.from_numpy(hist_model.eigen_vals_all[:, c]).float().to('cuda')
             diff = (feature - miu_curr).view((feature_dim, -1))
             proj = torch.matmul(eigen_vecs_t.T, diff)
             proj = proj / torch.maximum(eigen_vals_t.sqrt(), torch.tensor(1e-15)).unsqueeze(dim=1)
