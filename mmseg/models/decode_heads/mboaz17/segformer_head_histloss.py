@@ -65,6 +65,9 @@ class SegformerHeadHistLoss(BaseDecodeHead):
         for idx in range(len(inputs)):
             x = inputs[idx]
             conv = self.convs[idx]
+            if not self.training:
+                conv.norm.running_mean = None
+                conv.norm.running_var = None
             conv_x = conv(x)
             if label is not None:
                 loss =  self.loss_hist_list[idx](conv_x, label)
@@ -83,6 +86,9 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                     align_corners=self.align_corners)
             outs.append(self.relu_operation.activate(res))  # mboaz17
 
+        if not self.training:
+            self.fusion_conv.norm.running_mean = None
+            self.fusion_conv.norm.running_var = None
         out = self.fusion_conv(torch.cat(outs, dim=1))
 
         if label is not None:
@@ -126,7 +132,7 @@ def calc_log_prob(feature, hist_model):
             maha_dist = (weight_factors * (feature - miu_curr) ** 2 / var_curr).mean(dim=1)
             # log_prob = -0.5 * (maha_dist + torch.log(var_curr.prod()) + feature.shape[1]*torch.log(2*torch.tensor(torch.pi)))
             log_prob = -0.5 * maha_dist
-        elif 1:  # use covariance
+        elif 0:  # use covariance
             covinv_curr = torch.from_numpy(hist_model.covinv_mat_all[:, :, c]).float().to('cuda')
             # epsilon = np.maximum( - hist_model.eigen_vals_all[:, c].min(), 0) + 1e-12
             # covinv_curr = torch.from_numpy(hist_model.cov_mat_all[:, :, c] + epsilon * np.eye(hist_model.features_num)).float().to('cuda')
@@ -135,9 +141,15 @@ def calc_log_prob(feature, hist_model):
         else:  # use PCA-trained covariance
             eigen_vecs_t = torch.from_numpy(hist_model.eigen_vecs_all[:, :, c]).float().to('cuda')
             eigen_vals_t = torch.from_numpy(hist_model.eigen_vals_all[:, c]).float().to('cuda')
+            if eigen_vals_t[-1]<1e-6:
+                print('c = {}, eigmin = {}'.format(c, eigen_vals_t[-1]))
+                aaa=1
+            indices_pos = eigen_vals_t > 1e-6
+            eigen_vecs_t = eigen_vecs_t[:, indices_pos]
+            eigen_vals_t = eigen_vals_t[indices_pos]
             diff = (feature - miu_curr).view((feature_dim, -1))
             proj = torch.matmul(eigen_vecs_t.T, diff)
-            proj = proj / torch.maximum(eigen_vals_t.sqrt(), torch.tensor(1e-15)).unsqueeze(dim=1)
+            proj = proj / eigen_vals_t.sqrt().unsqueeze(dim=1)
             if 1:  # equal weight per dimensions
                 maha_dist = (proj ** 2).mean(dim=0).view((1, height, width))
             else:  # larger eigen_vals get more emphasis

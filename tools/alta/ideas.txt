@@ -70,7 +70,13 @@ We can also choose
 
 
 # TODO:
-* Why does all 5 losses jump, occasionally? Is it simply an unexplored area of space?
+* check directions that are nearly aligned with the smallest eigenvals! Will it still work?
+* Put the hist loss before the norm layer??? because during training, the batch statistics are used, while in evaluation\testing,
+the running statistics are used. Use track_running_stats=False in training, or use batch statistics.
+Maybe it's better regardless, because the image can contain one area in dist. and the other outside...
+* Try Deeplabv3 with unet
+* Don't add cov_eps, because it affects the eigenvals. Simply don't measure the distance in these directions.
+* Why do all 5 losses jump, occasionally? Is it simply an unexplored area of space?
 * Increase the number of directions.
 * Update all PathA annotations!
 * Is class 9 problematic? Eliminate too small classes (e.g. samples_num < const*dimension over an epoch)
@@ -79,6 +85,7 @@ We can also choose
 Multivariate skewness can encourage elliptic symmetrical pdfs - ideal for distance measure?
 Also, it seems that some directions are skewed
 * Use MCR2 in addition to my loss
+* Does the number of effective eigen values increase following training?
 
 * Choose a different kernel (e.g. 1/(1+x**2)) with less memory footprint. Also, change loss to L1?
 * Also, try limiting the kernel's support (e.g. below 1e-20 is 0)

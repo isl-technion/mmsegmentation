@@ -8,15 +8,9 @@ import pickle
 
 return_scores = True
 use_hist_model = True
-if 0:  # Segformer - PathA, resized to 672*448, without histogramm loss (256 dims)
-    config_file='/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/segformer_mit-b0_pathA_pathA_reweighted_672_448.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/histloss/segformer_mit-b0_pathA_pathA_reweighted_672_448/epoch_50.pth'
-elif 0:
-    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multilayer/segformer_mit-b0_pathA_rew_672_448_HL5/segformer_mit-b0_pathA_rew_672_448_HL5.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multilayer/segformer_mit-b0_pathA_rew_672_448_HL5/epoch_120.pth'
-elif 1:
-    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5/segformer_mit-b0_pathA_rew_672_448_HL5.py'
-    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5/epoch_370.pth'
+if 1:
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec/epoch_495.pth'
 
 hist_model = None
 hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0]+'.pickle')
@@ -39,6 +33,7 @@ images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/100'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Ir yamim/50'
 # images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/CamVid/train'
 # images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/Airsim/train'
+# images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/Kitti/2011_09_26_drive_0001_extract/image_00/data'
 
 images_list = os.listdir(images_path)
 images_list.sort()
@@ -68,7 +63,7 @@ for imgname in images_list[::interval]:
     # you can change the opacity of the painted segmentation map in (0, 1].
     if return_scores:
         if hist_model:
-            score_th2 = -0.5 * (1.25**2)
+            score_th2 = -0.5 * (1.5**2)
         out_file_score = os.path.join(results_path, 'scores_map', os.path.split(imgname_full)[-1])
         model.show_result(imgname_full, result[0], out_file=out_file, opacity=1)
         # conf_map = (result[1][0] - score_th1) / (1-score_th1)

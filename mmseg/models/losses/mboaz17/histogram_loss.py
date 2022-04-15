@@ -86,6 +86,9 @@ class HistogramLoss(nn.Module):
         class_interval = 1
         active_classes_num = 0
         loss_hist = torch.tensor(0.0, device='cuda')
+        if self.loss_weight == 0:  # save time
+            return loss_hist
+
         loss_kurtosis = torch.tensor(0.0, device='cuda')
         loss_moment2 = torch.tensor(0.0, device='cuda')
         loss_hist_vect = torch.zeros(self.num_classes, device='cuda')

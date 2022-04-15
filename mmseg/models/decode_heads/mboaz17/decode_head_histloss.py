@@ -100,7 +100,7 @@ class BaseDecodeHead(BaseModule, metaclass=ABCMeta):
         self.loss_hist_list = []
         for l in range(5):
             loss_hist['num_classes'] = self.num_classes
-            loss_hist['loss_name'] = 'loss_hist_{}'.format(l)
+            loss_hist['loss_name'] = 'loss_hist_dec_{}'.format(l)
             self.loss_hist_list.append(build_loss(loss_hist))
 
         if sampler is not None:

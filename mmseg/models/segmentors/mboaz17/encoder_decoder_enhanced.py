@@ -90,10 +90,15 @@ class EncoderDecoderEnhanced(BaseSegmentor):
         if hist_model is not None:
             prob_scores_list = prob_scores_list_encoder + out
             out = 1e6*torch.ones_like(prob_scores_list[0])
+            out[:] = 0
+            active_layers = 0
             for l in range(len(prob_scores_list)):
-                if not hist_model.encoder_validity[l]:
+                if not hist_model.layer_validity[l] or (l in [6, 7]):
                     continue
-                out = torch.minimum(out, prob_scores_list[l])
+                # out = torch.minimum(out, prob_scores_list[l])
+                out += prob_scores_list[l]
+                active_layers += 1
+            out = out / active_layers
 
         out = resize(
             input=out,

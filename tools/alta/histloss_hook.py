@@ -13,15 +13,18 @@ import os
 @HOOKS.register_module()
 class HistLossHook(Hook):
 
-    def __init__(self, num_classes=2, features_num=1, first_epoch=0, layers_num_encoder=4, layers_num_decoder=5):
+    def __init__(self, num_classes=2, features_num=1, first_epoch=0, layers_num_encoder=4, layers_num_decoder=5,
+                 layer_validity=None):
 
         self.save_folder = ''  # will be determined later
         self.first_epoch = first_epoch
         self.layers_num_encoder = layers_num_encoder
         self.layers_num_decoder = layers_num_decoder
-        self.encoder_validity = np.ones(layers_num_encoder + layers_num_decoder)
-        self.encoder_validity[3] = 0
-        self.encoder_validity[7] = 0
+        if layer_validity is None:
+            self.layer_validity = [1] * (layers_num_encoder + layers_num_decoder)
+        else:
+            self.layer_validity = layer_validity
+        assert len(self.layer_validity) == layers_num_encoder + layers_num_decoder
         self.models_list = []
 
         for l in range(self.layers_num_encoder):
@@ -51,7 +54,7 @@ class HistLossHook(Hook):
             # Start training only after self.first_epoch epochs
             runner.model.module.backbone.loss_hist_list[l].loss_weight = runner.model.module.backbone.loss_hist_list[l].loss_weight_orig * \
                                                                     (runner.epoch>=self.first_epoch)
-            if not self.encoder_validity[l]:  # Disable the smallest resolution layer - probably not enough samples
+            if not self.layer_validity[l]:  # Disable some of the losses
                 runner.model.module.backbone.loss_hist_list[l].loss_weight = 0
 
             # randomize projection matrix
@@ -65,7 +68,7 @@ class HistLossHook(Hook):
             # Start training only after 10 epochs
             runner.model.module.decode_head.loss_hist_list[l].loss_weight = runner.model.module.decode_head.loss_hist_list[l].loss_weight_orig * \
                                                                     (runner.epoch>=self.first_epoch)
-            if not self.encoder_validity[l+self.layers_num_encoder]:  # Disable the smallest resolution layer - probably not enough samples
+            if not self.layer_validity[l+self.layers_num_encoder]:  # Disable some of the losses
                 runner.model.module.decode_head.loss_hist_list[l].loss_weight = 0
 
             # randomize projection matrix

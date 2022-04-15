@@ -395,7 +395,7 @@ class MixVisionTransformerHistLoss(BaseModule):
 
         self.loss_hist_list = []
         for l in range(len(num_layers)):
-            loss_hist['loss_name'] = 'loss_hist_{}'.format(l)
+            loss_hist['loss_name'] = 'loss_hist_enc_{}'.format(l)
             loss_hist['features_num'] = [32, 64, 160, 256][l]
             self.loss_hist_list.append(build_loss(loss_hist))
 
