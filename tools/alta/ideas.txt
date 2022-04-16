@@ -70,6 +70,11 @@ We can also choose
 
 
 # TODO:
+* use validation epoch to save hist_model!
+* When I discard BN, it seems that the sum of effective eigenvalues of all classes is 31*8=~256 (in loss_hist_dec_0). In dec_1 it's 63*8.
+ Why? Are the subspaces orthogonal?  Is it a function of the resolution?
+The first ~31 eigenvalues are very similar as well. Why? Is it important? usable?
+In dec_4 there is no sudden drop like in previous layers, and all eigs are large enough. Why? Does it happen also without hist loss?
 * check directions that are nearly aligned with the smallest eigenvals! Will it still work?
 * Put the hist loss before the norm layer??? because during training, the batch statistics are used, while in evaluation\testing,
 the running statistics are used. Use track_running_stats=False in training, or use batch statistics.

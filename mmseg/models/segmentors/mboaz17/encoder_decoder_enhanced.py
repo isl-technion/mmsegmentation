@@ -93,7 +93,7 @@ class EncoderDecoderEnhanced(BaseSegmentor):
             out[:] = 0
             active_layers = 0
             for l in range(len(prob_scores_list)):
-                if not hist_model.layer_validity[l] or (l in [6, 7]):
+                if not hist_model.layer_validity[l]:
                     continue
                 # out = torch.minimum(out, prob_scores_list[l])
                 out += prob_scores_list[l]

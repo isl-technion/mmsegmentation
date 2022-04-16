@@ -65,15 +65,12 @@ class SegformerHeadHistLoss(BaseDecodeHead):
         for idx in range(len(inputs)):
             x = inputs[idx]
             conv = self.convs[idx]
-            if not self.training:
-                conv.norm.running_mean = None
-                conv.norm.running_var = None
             conv_x = conv(x)
             if label is not None:
                 loss =  self.loss_hist_list[idx](conv_x, label)
                 loss_hist_vals.append(loss)
             if hist_model is not None:
-                prob_scores = calc_log_prob(conv_x, hist_model.models_list[idx+hist_model.layers_num_encoder])
+                prob_scores = calc_log_prob(conv_x, hist_model, index=idx+hist_model.layers_num_encoder)
                 prob_scores_list.append(resize(
                     input=prob_scores,
                     size=inputs[0].shape[2:],
@@ -86,9 +83,6 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                     align_corners=self.align_corners)
             outs.append(self.relu_operation.activate(res))  # mboaz17
 
-        if not self.training:
-            self.fusion_conv.norm.running_mean = None
-            self.fusion_conv.norm.running_var = None
         out = self.fusion_conv(torch.cat(outs, dim=1))
 
         if label is not None:
@@ -96,7 +90,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
             loss_hist_vals.append(loss)
 
         if hist_model is not None:
-            prob_scores = calc_log_prob(out, hist_model.models_list[len(inputs) + hist_model.layers_num_encoder])
+            prob_scores = calc_log_prob(out, hist_model, index=len(inputs) + hist_model.layers_num_encoder)
             prob_scores_list.append(prob_scores)
             return prob_scores_list
 
@@ -110,21 +104,22 @@ class SegformerHeadHistLoss(BaseDecodeHead):
         return out
 
 
-def calc_log_prob(feature, hist_model):
+def calc_log_prob(feature, hist_model, index=0):
+    curr_model = hist_model[index]
     batch_size = feature.shape[0]
     feature_dim = feature.shape[1]
     height = feature.shape[2]
     width = feature.shape[3]
-    prob_scores = -1e6 * torch.ones((batch_size, hist_model.num_classes, height, width), device='cuda')
-    for c in range(0, hist_model.num_classes):
-        if not hist_model.samples_num_all_curr_epoch[c]:
+    prob_scores = -1e6 * torch.ones((batch_size, curr_model.num_classes, height, width), device='cuda')
+    for c in range(0, curr_model.num_classes):
+        if not curr_model.samples_num_all_curr_epoch[c]:
             continue
-        miu_curr = torch.tensor(hist_model.miu_all[:, c], device='cuda').clone().float().detach(). \
+        miu_curr = torch.tensor(curr_model.miu_all[:, c], device='cuda').clone().float().detach(). \
             unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
         if 0:  # use variance
-            var_curr = torch.tensor(np.diag(hist_model.cov_mat_all[:, :, c]), device='cuda').clone().detach(). \
+            var_curr = torch.tensor(np.diag(curr_model.cov_mat_all[:, :, c]), device='cuda').clone().detach(). \
                 unsqueeze(dim=0).unsqueeze(dim=2).unsqueeze(dim=3)
-            weight_factors = torch.tensor(1 / (hist_model.loss_per_dim_all[:, c] + 1e-20),
+            weight_factors = torch.tensor(1 / (curr_model.loss_per_dim_all[:, c] + 1e-20),
                                           device='cuda').clone().detach()
             # weight_factors *= weight_factors
             weight_factors /= weight_factors.mean()
@@ -133,18 +128,17 @@ def calc_log_prob(feature, hist_model):
             # log_prob = -0.5 * (maha_dist + torch.log(var_curr.prod()) + feature.shape[1]*torch.log(2*torch.tensor(torch.pi)))
             log_prob = -0.5 * maha_dist
         elif 0:  # use covariance
-            covinv_curr = torch.from_numpy(hist_model.covinv_mat_all[:, :, c]).float().to('cuda')
-            # epsilon = np.maximum( - hist_model.eigen_vals_all[:, c].min(), 0) + 1e-12
-            # covinv_curr = torch.from_numpy(hist_model.cov_mat_all[:, :, c] + epsilon * np.eye(hist_model.features_num)).float().to('cuda')
+            covinv_curr = torch.from_numpy(curr_model.covinv_mat_all[:, :, c]).float().to('cuda')
+            # epsilon = np.maximum( - curr_model.eigen_vals_all[:, c].min(), 0) + 1e-12
+            # covinv_curr = torch.from_numpy(curr_model.cov_mat_all[:, :, c] + epsilon * np.eye(curr_model.features_num)).float().to('cuda')
             diff = (feature - miu_curr).view((feature_dim, -1))
             maha_dist = (diff * torch.matmul(covinv_curr, diff)).mean(dim=0).view((1, height, width))
         else:  # use PCA-trained covariance
-            eigen_vecs_t = torch.from_numpy(hist_model.eigen_vecs_all[:, :, c]).float().to('cuda')
-            eigen_vals_t = torch.from_numpy(hist_model.eigen_vals_all[:, c]).float().to('cuda')
-            if eigen_vals_t[-1]<1e-6:
-                print('c = {}, eigmin = {}'.format(c, eigen_vals_t[-1]))
-                aaa=1
-            indices_pos = eigen_vals_t > 1e-6
+            eigval_min = 1e-3
+            eigen_vecs_t = torch.from_numpy(curr_model.eigen_vecs_all[:, :, c]).float().to('cuda')
+            eigen_vals_t = torch.from_numpy(curr_model.eigen_vals_all[:, c]).float().to('cuda')
+            print('index = {}, c = {}, eigmin = {}, #eigsmall = {}'.format(index, c, eigen_vals_t[-1], (eigen_vals_t <= eigval_min).sum()))
+            indices_pos = eigen_vals_t > eigval_min
             eigen_vecs_t = eigen_vecs_t[:, indices_pos]
             eigen_vals_t = eigen_vals_t[indices_pos]
             diff = (feature - miu_curr).view((feature_dim, -1))

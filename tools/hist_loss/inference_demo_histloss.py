@@ -8,9 +8,12 @@ import pickle
 
 return_scores = True
 use_hist_model = True
-if 1:
+if 0:
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec/epoch_495.pth'
+if 1:
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/no_batchnorm/segformer_mit-b0_pathA_rew_672_448_HL5_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/no_batchnorm/segformer_mit-b0_pathA_rew_672_448_HL5_dec/epoch_435.pth'
 
 hist_model = None
 hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0]+'.pickle')
