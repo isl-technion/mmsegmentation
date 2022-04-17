@@ -61,9 +61,14 @@ class HistLossHook(Hook):
             # randomize projection matrix
             runner.model.module.backbone.loss_hist_list[l].proj_mat = torch.randn_like(runner.model.module.backbone.loss_hist_list[l].proj_mat)
             runner.model.module.backbone.loss_hist_list[l].proj_mat /= torch.sum(runner.model.module.backbone.loss_hist_list[l].proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
+            # Use the principal components as some of the directions
+            features_num = runner.model.module.backbone.loss_hist_list[l].proj_mat.shape[1]
+            runner.model.module.backbone.loss_hist_list[l].proj_mat[:features_num, :] = torch.eye(features_num, device='cuda')
 
             self.models_list[l].samples_num_all_curr_epoch[:] = 0
             runner.model.module.backbone.loss_hist_list[l].samples_num_all_curr_epoch[:] = 0
+            runner.model.module.backbone.loss_hist_list[l].samples_num_all_in_loss[:] = 0
+            runner.model.module.backbone.loss_hist_list[l].iters_since_epoch_init = 0
 
         for l in range(self.layers_num_decoder):
             # Start training only after 10 epochs
@@ -75,9 +80,14 @@ class HistLossHook(Hook):
             # randomize projection matrix
             runner.model.module.decode_head.loss_hist_list[l].proj_mat = torch.randn_like(runner.model.module.decode_head.loss_hist_list[l].proj_mat)
             runner.model.module.decode_head.loss_hist_list[l].proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist_list[l].proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
+            # Use the principal components as some of the directions
+            features_num = runner.model.module.decode_head.loss_hist_list[l].proj_mat.shape[1]
+            runner.model.module.decode_head.loss_hist_list[l].proj_mat[:features_num, :] = torch.eye(features_num, device='cuda')
 
             self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch[:] = 0
             runner.model.module.decode_head.loss_hist_list[l].samples_num_all_curr_epoch[:] = 0
+            runner.model.module.decode_head.loss_hist_list[l].samples_num_all_in_loss[:] = 0
+            runner.model.module.decode_head.loss_hist_list[l].iters_since_epoch_init = 0
 
     def after_train_epoch(self, runner):
         pass
@@ -88,14 +98,6 @@ class HistLossHook(Hook):
         if not os.path.isdir(self.save_folder):
             os.mkdir(self.save_folder)
 
-        # Increase the loss weight as more batches are involved in the histogram estimation
-        for l in range(self.layers_num_encoder):
-            runner.model.module.backbone.loss_hist_list[l].relative_weight = \
-                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
-        for l in range(self.layers_num_decoder):
-            runner.model.module.decode_head.loss_hist_list[l].relative_weight = \
-                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
-
         for l in range(self.layers_num_encoder):
             # randomize projection matrix
             runner.model.module.backbone.loss_hist_list[l].proj_mat = torch.randn_like(runner.model.module.backbone.loss_hist_list[l].proj_mat)
@@ -103,6 +105,8 @@ class HistLossHook(Hook):
 
             self.models_list[l].samples_num_all_curr_epoch[:] = 0
             runner.model.module.backbone.loss_hist_list[l].samples_num_all_curr_epoch[:] = 0
+            runner.model.module.backbone.loss_hist_list[l].samples_num_all_in_loss[:] = 0
+            runner.model.module.backbone.loss_hist_list[l].iters_since_epoch_init = 0
 
         for l in range(self.layers_num_decoder):
             # randomize projection matrix
@@ -111,6 +115,8 @@ class HistLossHook(Hook):
 
             self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch[:] = 0
             runner.model.module.decode_head.loss_hist_list[l].samples_num_all_curr_epoch[:] = 0
+            runner.model.module.decode_head.loss_hist_list[l].samples_num_all_in_loss[:] = 0
+            runner.model.module.decode_head.loss_hist_list[l].iters_since_epoch_init = 0
 
 
     def after_val_epoch(self, runner):
