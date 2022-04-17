@@ -161,6 +161,14 @@ class HistLossHook(Hook):
             with open(filename, 'wb') as handle:
                 pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+    def before_val_iter(self, runner):
+        # Increase the loss weight as more batches are involved in the histogram estimation
+        for l in range(self.layers_num_encoder):
+            runner.model.module.backbone.loss_hist_list[l].relative_weight = \
+                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
+        for l in range(self.layers_num_decoder):
+            runner.model.module.decode_head.loss_hist_list[l].relative_weight = \
+                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
 
 class ModelParams(object):
     def __init__(self, num_classes=2, features_num=1):
