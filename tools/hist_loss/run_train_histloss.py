@@ -95,7 +95,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    args.work_dir = os.path.join('/home/airsim/repos/open-mmlab/mmsegmentation/results/no_batchnorm',
+    args.work_dir = os.path.join('/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec',
                                  os.path.split(args.config)[1].split('.py')[0])
 
     cfg = Config.fromfile(args.config)

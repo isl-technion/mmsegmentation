@@ -214,7 +214,7 @@ class HistogramLoss(nn.Module):
         # weighing each class according to sqrt(sample_num)
         samples_num_all_in_loss_curr = self.samples_num_all_in_loss - samples_num_all_in_loss_pre
         weight_per_class = torch.from_numpy(samples_num_all_in_loss_curr).float().to('cuda').sqrt()
-        weight_per_class /= weight_per_class.sum()
+        weight_per_class /= (weight_per_class.sum() + 1e-15)
         loss_kurtosis = torch.sum(weight_per_class * loss_kurtosis_vect)
         loss_moment2 = torch.sum(weight_per_class * loss_moment2_vect)
         loss_hist = torch.sum(weight_per_class * loss_hist_vect)

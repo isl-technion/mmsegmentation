@@ -102,6 +102,9 @@ class HistLossHook(Hook):
             # randomize projection matrix
             runner.model.module.backbone.loss_hist_list[l].proj_mat = torch.randn_like(runner.model.module.backbone.loss_hist_list[l].proj_mat)
             runner.model.module.backbone.loss_hist_list[l].proj_mat /= torch.sum(runner.model.module.backbone.loss_hist_list[l].proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
+            # Use the principal components as some of the directions
+            features_num = runner.model.module.backbone.loss_hist_list[l].proj_mat.shape[1]
+            runner.model.module.backbone.loss_hist_list[l].proj_mat[:features_num, :] = torch.eye(features_num, device='cuda')
 
             self.models_list[l].samples_num_all_curr_epoch[:] = 0
             runner.model.module.backbone.loss_hist_list[l].samples_num_all_curr_epoch[:] = 0
@@ -112,6 +115,9 @@ class HistLossHook(Hook):
             # randomize projection matrix
             runner.model.module.decode_head.loss_hist_list[l].proj_mat = torch.randn_like(runner.model.module.decode_head.loss_hist_list[l].proj_mat)
             runner.model.module.decode_head.loss_hist_list[l].proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist_list[l].proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
+            # Use the principal components as some of the directions
+            features_num = runner.model.module.decode_head.loss_hist_list[l].proj_mat.shape[1]
+            runner.model.module.decode_head.loss_hist_list[l].proj_mat[:features_num, :] = torch.eye(features_num, device='cuda')
 
             self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch[:] = 0
             runner.model.module.decode_head.loss_hist_list[l].samples_num_all_curr_epoch[:] = 0

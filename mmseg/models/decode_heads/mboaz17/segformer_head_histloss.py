@@ -134,10 +134,12 @@ def calc_log_prob(feature, hist_model, index=0):
             diff = (feature - miu_curr).view((feature_dim, -1))
             maha_dist = (diff * torch.matmul(covinv_curr, diff)).mean(dim=0).view((1, height, width))
         else:  # use PCA-trained covariance
-            eigval_min = 1e-3
+            eigval_min = 1e-12
             eigen_vecs_t = torch.from_numpy(curr_model.eigen_vecs_all[:, :, c]).float().to('cuda')
             eigen_vals_t = torch.from_numpy(curr_model.eigen_vals_all[:, c]).float().to('cuda')
-            print('index = {}, c = {}, eigmin = {}, #eigsmall = {}'.format(index, c, eigen_vals_t[-1], (eigen_vals_t <= eigval_min).sum()))
+            small_eigs_num = (eigen_vals_t <= eigval_min).sum()
+            if small_eigs_num:
+                print('index = {}, c = {}, eigmin = {}, #eigsmall = {}'.format(index, c, eigen_vals_t[-1], small_eigs_num))
             indices_pos = eigen_vals_t > eigval_min
             eigen_vecs_t = eigen_vecs_t[:, indices_pos]
             eigen_vals_t = eigen_vals_t[indices_pos]
