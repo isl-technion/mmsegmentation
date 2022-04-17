@@ -463,7 +463,7 @@ class MixVisionTransformerHistLoss(BaseModule):
                 loss =  self.loss_hist_list[i](x, label)
                 loss_hist_vals.append(loss)
             if hist_model is not None:
-                prob_scores = calc_log_prob(x, hist_model.models_list[i])
+                prob_scores = calc_log_prob(x, hist_model, index=i)
                 prob_scores_list.append(resize(
                     input=prob_scores,
                     size=hw_shape0,

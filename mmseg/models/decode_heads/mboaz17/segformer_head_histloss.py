@@ -105,7 +105,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
 
 
 def calc_log_prob(feature, hist_model, index=0):
-    curr_model = hist_model[index]
+    curr_model = hist_model.models_list[index]
     batch_size = feature.shape[0]
     feature_dim = feature.shape[1]
     height = feature.shape[2]

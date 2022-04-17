@@ -11,9 +11,12 @@ use_hist_model = True
 if 0:
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/multi_enc_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec/epoch_495.pth'
-if 1:
+elif 0:
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/no_batchnorm/segformer_mit-b0_pathA_rew_672_448_HL5_dec/segformer_mit-b0_pathA_rew_672_448_HL5_dec.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/no_batchnorm/segformer_mit-b0_pathA_rew_672_448_HL5_dec/epoch_435.pth'
+elif 1:
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/no_batchnorm/segformer_mit-b0_pathA_rew_672_448_HL5_dec_val/segformer_mit-b0_pathA_rew_672_448_HL5_dec_val.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/no_batchnorm/segformer_mit-b0_pathA_rew_672_448_HL5_dec_val/epoch_500.pth'
 
 hist_model = None
 hist_model_path = os.path.join(os.path.split(checkpoint_file)[0], 'hooks', os.path.split(checkpoint_file)[1].split('.')[0]+'.pickle')
@@ -31,10 +34,10 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0001'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0005'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
-images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/100'
+# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/100'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Ir yamim/50'
-# images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/CamVid/train'
+images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/CamVid/train'
 # images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/Airsim/train'
 # images_path = '/home/airsim/repos/segmentation_models.pytorch/examples/data/Kitti/2011_09_26_drive_0001_extract/image_00/data'
 
