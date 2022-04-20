@@ -70,7 +70,9 @@ We can also choose
 
 
 # TODO:
-* use validation epoch to save hist_model!
+* Weighing the layers by their total loss
+* Increase loss weight of the PCA directions.
+* Use tow consecutive vals epochs at the end? Probably unnecessary...
 * When I discard BN, it seems that the sum of effective eigenvalues of all classes is 31*8=~256 (in loss_hist_dec_0). In dec_1 it's 63*8.
  Why? Are the subspaces orthogonal?  Is it a function of the resolution?
 The first ~31 eigenvalues are very similar as well. Why? Is it important? usable?
@@ -135,6 +137,7 @@ It seems unnecessary after removing the alpha filter, though.
 * The relative weight of the current histogram in the loss is increased gradually during a batch until reaching 1
 * The filtering parameter (alpha_hist) should be determined according to the samples number in the batch
 * fix resize_size, crop_size, check them in testing \ inference, then rerun segformer 672*448 training (even without histloss)
+* use validation epoch to save hist_model!
 * Decimation of the label map instead of interpolation, for speed and memory
 * no need to calculate target values for all classes - it's the same vector (after normalizing to 1)
 * covariance instead of variance + ignore log(det(cov))?

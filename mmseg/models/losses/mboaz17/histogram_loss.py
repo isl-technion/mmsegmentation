@@ -56,6 +56,7 @@ class HistogramLoss(nn.Module):
         self.hist_values = np.ones((self.directions_num, self.bins_num, self.num_classes)) / self.bins_num
         self.moment1_proj = np.zeros((self.directions_num, self.num_classes))
         self.moment2_proj = np.zeros((self.directions_num, self.num_classes))
+        self.moment3_proj = np.zeros((self.directions_num, self.num_classes))
         self.moment4_proj = np.zeros((self.directions_num, self.num_classes))
         self.epsilon = 1e-12
         self.relative_weight = 1.0  # how much to multiply the loss. It's changed every iteration in the histloss_hook
@@ -63,6 +64,11 @@ class HistogramLoss(nn.Module):
         self.proj_mat = torch.randn((self.directions_num, self.features_num), device='cuda')  # it should be constant within an epoch!
         self.proj_mat /= torch.sum(self.proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
         self.loss_per_dim_all = np.zeros((self.directions_num, self.num_classes))
+
+        self.miu_all_prev = np.zeros((self.features_num, self.num_classes))
+        self.eigen_vecs_prev = np.zeros((self.features_num, self.features_num, self.num_classes))
+        self.eigen_vals_prev = np.zeros((self.features_num, self.num_classes))
+        self.model_prev_exists =  np.zeros(self.num_classes)
 
     def forward(self,
                 feature,
@@ -132,42 +138,92 @@ class HistogramLoss(nn.Module):
                                             cov_eps * np.eye(self.features_num)
                 self.cov_mat_all[:, :, c] = cov_mat_all_curr
 
-                eigen_vals, eigen_vecs = np.linalg.eig(cov_mat_all_curr)
-                indices = np.argsort(eigen_vals)[::-1]  # From high to low
-                eigen_vals = eigen_vals[indices]
-                eigen_vecs = eigen_vecs[:, indices]
-                if np.any(np.iscomplex(eigen_vals)) or eigen_vals[-1] < self.epsilon:
+                if self.model_prev_exists[c]:  # Estimated in the previous epoch, loaded in the hook
+                    miu_curr = self.miu_all_prev[:, c]
+                    eigen_vals = self.eigen_vals_prev[:, c]  # not actually used
+                    eigen_vecs = self.eigen_vecs_prev[:, :, c]
+                else:
+                    eigen_vals, eigen_vecs = np.linalg.eig(cov_mat_all_curr)
+                    indices = np.argsort(eigen_vals)[::-1]  # From high to low
+                    eigen_vals = eigen_vals[indices]
+                    eigen_vecs = eigen_vecs[:, indices]
+
+                    self.miu_all_prev[:, c] = miu_curr
+                    self.eigen_vecs_prev[:, :, c] = eigen_vecs
+                if np.any(np.iscomplex(eigen_vals)):  # or eigen_vals[-1] < self.epsilon:
                     print('Invalid: c = {}, eig_min = {}'.format(c, eigen_vals[-1]))
                     continue
+
                 active_classes_num += 1
+                miu_curr_t = torch.tensor(miu_curr, device='cuda').to(torch.float32)
                 # eigen_vals = np.maximum(eigen_vals, self.epsilon)
                 eigen_vecs_t = torch.from_numpy(eigen_vecs).float().to('cuda')
                 eigen_vals_t = torch.from_numpy(eigen_vals).float().to('cuda')
 
-                miu_curr_t = torch.tensor(miu_curr, device='cuda').to(torch.float32)
-                feat_vecs_curr_centered = feat_vecs_curr - miu_curr_t.unsqueeze(dim=1)
                 proj = torch.matmul(eigen_vecs_t.T, feat_vecs_curr - miu_curr_t.unsqueeze(dim=1))
-
                 # proj_mat_curr = self.proj_mat * eigen_vals_t.sqrt().unsqueeze(dim=0)  # prioritizing axes according to their std
                 proj_mat_curr = self.proj_mat * torch.ones_like(eigen_vals_t).unsqueeze(dim=0)  # prioritizing axes according to their std
                 proj_mat_curr /= (proj_mat_curr ** 2).sum(dim=1).sqrt().unsqueeze(dim=1)  # normalizing to norm 1
-                var_curr_t = (proj_mat_curr**2 * eigen_vals_t.unsqueeze(dim=0)).sum(dim=1)
-                std_curr_t = var_curr_t.sqrt()
                 feat_vecs_curr = torch.matmul(proj_mat_curr, proj)
-                feat_vecs_curr = feat_vecs_curr / std_curr_t.unsqueeze(dim=1)
-                var_sample_t = torch.tensor(1/100 ,device='cuda')  # 25  # after whitening
 
-                del eigen_vecs_t, eigen_vals_t, feat_vecs_curr_centered, proj, proj_mat_curr
+                del eigen_vecs_t, eigen_vals_t, proj, proj_mat_curr
                 torch.cuda.empty_cache()
 
+                moment1_proj = (feat_vecs_curr).sum(dim=1)
+                moment2_proj = (feat_vecs_curr**2).sum(dim=1)  # non-centered
+                moment3_proj = (feat_vecs_curr**3).sum(dim=1)  # non-centered
+                moment4_proj = (feat_vecs_curr**4).sum(dim=1)  # non-centered
+                if self.samples_num_all_in_loss[c]:
+                    moment1_proj_filtered = torch.tensor(self.moment1_proj[:, c], device='cuda') + moment1_proj
+                    moment2_proj_filtered = torch.tensor(self.moment2_proj[:, c], device='cuda') + moment2_proj
+                    moment3_proj_filtered = torch.tensor(self.moment3_proj[:, c], device='cuda') + moment3_proj
+                    moment4_proj_filtered = torch.tensor(self.moment4_proj[:, c], device='cuda') + moment4_proj
+                else:
+                    moment1_proj_filtered = moment1_proj
+                    moment2_proj_filtered = moment2_proj
+                    moment3_proj_filtered = moment3_proj
+                    moment4_proj_filtered = moment4_proj
+
+                self.samples_num_all_in_loss[c] += samples_num
+                moment1_proj_for_loss = moment1_proj_filtered / self.samples_num_all_in_loss[c]
+                moment2_proj_for_loss = moment2_proj_filtered / self.samples_num_all_in_loss[c]
+                moment3_proj_for_loss = moment3_proj_filtered / self.samples_num_all_in_loss[c]
+                moment4_proj_for_loss = moment4_proj_filtered / self.samples_num_all_in_loss[c]
+
+                var_curr_t = moment2_proj_for_loss - moment1_proj_for_loss**2
+                var_curr_t = torch.maximum(var_curr_t, torch.tensor(1e-16, device='cuda'))
+                std_curr_t = var_curr_t.sqrt()
+                self.eigen_vals_prev[:, c] = var_curr_t[:self.features_num].detach().cpu().numpy()  # Assuming the first features_num directions are principal components
+
+                moment4_proj_for_loss_central = 1 * moment1_proj_for_loss**4 + 4 * (-1) * moment1_proj_for_loss ** 4 + \
+                                                6 * 1 * moment2_proj_for_loss * moment1_proj_for_loss**2 + \
+                                                4 * (-1) * moment3_proj_for_loss * moment1_proj_for_loss + 1 * moment4_proj_for_loss
+                kurtosis = moment4_proj_for_loss_central / var_curr_t**2 - 3
+                kurtosis = torch.maximum(torch.minimum(kurtosis, torch.tensor(3, device='cuda')), torch.tensor(-3, device='cuda'))
+                loss_kurtosis_curr = kurtosis.abs().mean()  # kurtosis
+                loss_moment2_curr = 0  # (moment2_proj_for_loss - moment1_proj_for_loss**2 - 1).abs().mean()  # moment2
+                loss_kurtosis_vect[c] = loss_kurtosis_curr
+                loss_moment2_vect[c] = loss_moment2_curr
+                loss_hist_vect[c] = 1.0 * loss_kurtosis_vect[c] + 0.0 * loss_moment2_vect[c]
+                if c==9:
+                    aaa=1
+                if c==14:
+                    aaa=1
+                self.moment1_proj[:, c] =  moment1_proj_filtered.detach().cpu().numpy()
+                self.moment2_proj[:, c] =  moment2_proj_filtered.detach().cpu().numpy()
+                self.moment3_proj[:, c] =  moment3_proj_filtered.detach().cpu().numpy()
+                self.moment4_proj[:, c] =  moment4_proj_filtered.detach().cpu().numpy()
+
                 if self.estimate_hist_flag:  # Default=False, but can be changed in the hook
+                    feat_vecs_curr_norm = feat_vecs_curr / std_curr_t.unsqueeze(dim=1)
+                    var_sample_t = torch.tensor(1 / 100, device='cuda')  # 25  # after whitening
                     with torch.no_grad():
                         target_values = torch.zeros((1, self.bins_num), device='cuda')
                         hist_values = torch.zeros((self.directions_num, self.bins_num), device='cuda')
                         for ind, bin in enumerate(self.bins_vals):
                             target_values[0, ind] = torch.exp(-0.5 * (torch.tensor(bin, device='cuda')) ** 2) * (
                                         1 / np.sqrt(2 * np.pi))
-                            hist_values[:, ind] = torch.sum(torch.exp(-0.5 * (bin - feat_vecs_curr) ** 2 / var_sample_t) *
+                            hist_values[:, ind] = torch.sum(torch.exp(-0.5 * (bin - feat_vecs_curr_norm) ** 2 / var_sample_t) *
                                                    (1 / torch.sqrt(2 * torch.pi * var_sample_t)), dim=1)
 
                         if self.samples_num_all_in_loss[c]:
@@ -176,40 +232,10 @@ class HistogramLoss(nn.Module):
                             hist_values_filtered = hist_values.detach().cpu().numpy()
                         self.hist_values[:, :, c] = hist_values_filtered
                         target_values /= target_values.sum()
-                        del hist_values  # trying to save some memory
+                        del feat_vecs_curr_norm, hist_values  # trying to save some memory
                         torch.cuda.empty_cache()
                         hist_values_for_loss = hist_values_filtered / (np.expand_dims(hist_values_filtered.sum(1), 1) + self.epsilon)
-
-                moment1_proj = (feat_vecs_curr).sum(dim=1)
-                moment2_proj = (feat_vecs_curr**2).sum(dim=1)  # non-centered
-                moment4_proj = (feat_vecs_curr**4).sum(dim=1)  # non-centered
-                if self.samples_num_all_in_loss[c]:
-                    moment1_proj_filtered = torch.tensor(self.moment1_proj[:, c], device='cuda') + moment1_proj
-                    moment2_proj_filtered = torch.tensor(self.moment2_proj[:, c], device='cuda') + moment2_proj
-                    moment4_proj_filtered = torch.tensor(self.moment4_proj[:, c], device='cuda') + moment4_proj
-                else:
-                    moment1_proj_filtered = moment1_proj
-                    moment2_proj_filtered = moment2_proj
-                    moment4_proj_filtered = moment4_proj
-
-                self.samples_num_all_in_loss[c] += samples_num
-                moment1_proj_for_loss = moment1_proj_filtered / self.samples_num_all_in_loss[c]
-                moment2_proj_for_loss = moment2_proj_filtered / self.samples_num_all_in_loss[c]
-                moment4_proj_for_loss = moment4_proj_filtered / self.samples_num_all_in_loss[c]
-                kurtosis = moment4_proj_for_loss / moment2_proj_for_loss**2 - 3
-
-                loss_kurtosis_curr = kurtosis.abs().mean()  # kurtosis
-                loss_moment2_curr = (moment2_proj_for_loss - moment1_proj_for_loss**2 - 1).abs().mean()  # moment2
-                loss_kurtosis_vect[c] = loss_kurtosis_curr
-                loss_moment2_vect[c] = loss_moment2_curr
-                loss_hist_vect[c] = 1.0 * loss_kurtosis_vect[c] + 1.0 * loss_moment2_vect[c]
-                if c==9:
-                    aaa=1
-                if c==14:
-                    aaa=1
-                self.moment1_proj[:, c] =  moment1_proj_filtered.detach().cpu().numpy()
-                self.moment2_proj[:, c] =  moment2_proj_filtered.detach().cpu().numpy()
-                self.moment4_proj[:, c] =  moment4_proj_filtered.detach().cpu().numpy()
+                        aaa=1
 
         # weighing each class according to sqrt(sample_num)
         samples_num_all_in_loss_curr = self.samples_num_all_in_loss - samples_num_all_in_loss_pre

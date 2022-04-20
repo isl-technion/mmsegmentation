@@ -45,6 +45,7 @@ class HistLossHook(Hook):
             runner.model.module.decode_head.loss_hist_list[l].relative_weight = \
                 (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
 
+
     def before_train_epoch(self, runner):
 
         self.save_folder = os.path.join(runner.work_dir, 'hooks')
@@ -89,9 +90,71 @@ class HistLossHook(Hook):
             runner.model.module.decode_head.loss_hist_list[l].samples_num_all_in_loss[:] = 0
             runner.model.module.decode_head.loss_hist_list[l].iters_since_epoch_init = 0
 
-    def after_train_epoch(self, runner):
-        pass
 
+    def after_train_epoch(self, runner):
+        for l in range(self.layers_num_encoder):
+            self.models_list[l].samples_num_all_curr_epoch = runner.model.module.backbone.loss_hist_list[l].samples_num_all_curr_epoch
+            self.models_list[l].miu_all = runner.model.module.backbone.loss_hist_list[l].miu_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
+            self.models_list[l].moment2_all = runner.model.module.backbone.loss_hist_list[l].moment2_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
+            self.models_list[l].moment2_mat_all = runner.model.module.backbone.loss_hist_list[l].moment2_mat_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
+            self.models_list[l].cov_mat_all = runner.model.module.backbone.loss_hist_list[l].cov_mat_all
+            self.models_list[l].model_prev_exists = True
+            for c in range(0, self.models_list[l].num_classes):
+                if self.models_list[l].samples_num_all_curr_epoch[c]:
+                    # Statistics for testing
+                    eigen_vals = runner.model.module.backbone.loss_hist_list[l].eigen_vals_prev[:, c]
+                    eigen_vecs = runner.model.module.backbone.loss_hist_list[l].eigen_vecs_prev[:, :, c]
+                    indices = np.argsort(eigen_vals)[::-1]  # From high to low
+                    self.models_list[l].eigen_vals_all_for_testing[:, c] = eigen_vals[indices]
+                    self.models_list[l].eigen_vecs_all_for_testing[:, :, c] = eigen_vecs[:, indices]
+                    self.models_list[l].miu_all_for_testing[:, c] = runner.model.module.backbone.loss_hist_list[l].miu_all_prev[:, c]
+
+                    # Statistics for next training\validation epoch
+                    eigen_vals, eigen_vecs = np.linalg.eig(self.models_list[l].cov_mat_all[:, :, c])
+                    indices = np.argsort(eigen_vals)[::-1]  # From high to low
+                    runner.model.module.backbone.loss_hist_list[l].eigen_vals_prev[:, c] = eigen_vals[indices]  # won't actually be used
+                    runner.model.module.backbone.loss_hist_list[l].eigen_vecs_prev[:, :, c] = eigen_vecs[:, indices]
+                    runner.model.module.backbone.loss_hist_list[l].miu_all_prev[:, c] = self.models_list[l].miu_all[:, c]
+                    runner.model.module.backbone.loss_hist_list[l].model_prev_exists[c] = True
+
+        for l in range(self.layers_num_decoder):
+            self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch = runner.model.module.decode_head.loss_hist_list[l].samples_num_all_curr_epoch
+            self.models_list[l+self.layers_num_encoder].miu_all = runner.model.module.decode_head.loss_hist_list[l].miu_all / (np.expand_dims(self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch,0) + 1e-12)
+            self.models_list[l+self.layers_num_encoder].moment2_all = runner.model.module.decode_head.loss_hist_list[l].moment2_all / (np.expand_dims(self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch,0) + 1e-12)
+            self.models_list[l+self.layers_num_encoder].moment2_mat_all = runner.model.module.decode_head.loss_hist_list[l].moment2_mat_all / (np.expand_dims(self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch,0) + 1e-12)
+            self.models_list[l+self.layers_num_encoder].cov_mat_all = runner.model.module.decode_head.loss_hist_list[l].cov_mat_all
+            for c in range(0, self.models_list[l+self.layers_num_encoder].num_classes):
+                if self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch[c]:
+                    # Statistics for testing
+                    eigen_vals = runner.model.module.decode_head.loss_hist_list[l].eigen_vals_prev[:, c]
+                    eigen_vecs = runner.model.module.decode_head.loss_hist_list[l].eigen_vecs_prev[:, :, c]
+                    indices = np.argsort(eigen_vals)[::-1]  # From high to low
+                    self.models_list[l+self.layers_num_encoder].eigen_vals_all_for_testing[:, c] = eigen_vals[indices]
+                    self.models_list[l+self.layers_num_encoder].eigen_vecs_all_for_testing[:, :, c] = eigen_vecs[:, indices]
+                    self.models_list[l+self.layers_num_encoder].miu_all_for_testing[:, c] = runner.model.module.decode_head.loss_hist_list[l].miu_all_prev[:, c]
+
+                    # Statistics for next training\validation epoch
+                    eigen_vals, eigen_vecs = np.linalg.eig(self.models_list[l+self.layers_num_encoder].cov_mat_all[:, :, c])
+                    indices = np.argsort(eigen_vals)[::-1]  # From high to low
+                    runner.model.module.decode_head.loss_hist_list[l].eigen_vals_prev[:, c] = eigen_vals[indices]  # won't actually be used
+                    runner.model.module.decode_head.loss_hist_list[l].eigen_vecs_prev[:, :, c] = eigen_vecs[:, indices]
+                    runner.model.module.decode_head.loss_hist_list[l].miu_all_prev[:, c] = self.models_list[l+self.layers_num_encoder].miu_all[:, c]
+                    runner.model.module.decode_head.loss_hist_list[l].model_prev_exists[c] = True
+
+        # filename = os.path.join(self.save_folder, 'epoch_{}'.format(runner.epoch+1)+'.pickle')
+        # if not np.mod(runner.epoch+1, self.save_interval):
+        #     with open(filename, 'wb') as handle:
+        #         pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+    def before_val_iter(self, runner):
+        # Increase the loss weight as more batches are involved in the histogram estimation
+        for l in range(self.layers_num_encoder):
+            runner.model.module.backbone.loss_hist_list[l].relative_weight = \
+                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
+        for l in range(self.layers_num_decoder):
+            runner.model.module.decode_head.loss_hist_list[l].relative_weight = \
+                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
 
     def before_val_epoch(self, runner):
         self.save_folder = os.path.join(runner.work_dir, 'hooks')
@@ -132,14 +195,24 @@ class HistLossHook(Hook):
             self.models_list[l].moment2_all = runner.model.module.backbone.loss_hist_list[l].moment2_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
             self.models_list[l].moment2_mat_all = runner.model.module.backbone.loss_hist_list[l].moment2_mat_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
             self.models_list[l].cov_mat_all = runner.model.module.backbone.loss_hist_list[l].cov_mat_all
+            self.models_list[l].model_prev_exists = True
             for c in range(0, self.models_list[l].num_classes):
                 if self.models_list[l].samples_num_all_curr_epoch[c]:
-                    self.models_list[l].covinv_mat_all[:, :, c] = np.linalg.inv(self.models_list[l].cov_mat_all[:, :, c])
+                    # Statistics for testing
+                    eigen_vals = runner.model.module.backbone.loss_hist_list[l].eigen_vals_prev[:, c]
+                    eigen_vecs = runner.model.module.backbone.loss_hist_list[l].eigen_vecs_prev[:, :, c]
+                    indices = np.argsort(eigen_vals)[::-1]  # From high to low
+                    self.models_list[l].eigen_vals_all_for_testing[:, c] = eigen_vals[indices]
+                    self.models_list[l].eigen_vecs_all_for_testing[:, :, c] = eigen_vecs[:, indices]
+                    self.models_list[l].miu_all_for_testing[:, c] = runner.model.module.backbone.loss_hist_list[l].miu_all_prev[:, c]
 
+                    # Statistics for next training\validation epoch
                     eigen_vals, eigen_vecs = np.linalg.eig(self.models_list[l].cov_mat_all[:, :, c])
                     indices = np.argsort(eigen_vals)[::-1]  # From high to low
-                    self.models_list[l].eigen_vals_all[:, c] = eigen_vals[indices]
-                    self.models_list[l].eigen_vecs_all[:, :, c] = eigen_vecs[:, indices]
+                    runner.model.module.backbone.loss_hist_list[l].eigen_vals_prev[:, c] = eigen_vals[indices]  # won't actually be used
+                    runner.model.module.backbone.loss_hist_list[l].eigen_vecs_prev[:, :, c] = eigen_vecs[:, indices]
+                    runner.model.module.backbone.loss_hist_list[l].miu_all_prev[:, c] = self.models_list[l].miu_all[:, c]
+                    runner.model.module.backbone.loss_hist_list[l].model_prev_exists[c] = True
 
         for l in range(self.layers_num_decoder):
             self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch = runner.model.module.decode_head.loss_hist_list[l].samples_num_all_curr_epoch
@@ -149,26 +222,27 @@ class HistLossHook(Hook):
             self.models_list[l+self.layers_num_encoder].cov_mat_all = runner.model.module.decode_head.loss_hist_list[l].cov_mat_all
             for c in range(0, self.models_list[l+self.layers_num_encoder].num_classes):
                 if self.models_list[l+self.layers_num_encoder].samples_num_all_curr_epoch[c]:
-                    self.models_list[l+self.layers_num_encoder].covinv_mat_all[:, :, c] = np.linalg.inv(self.models_list[l+self.layers_num_encoder].cov_mat_all[:, :, c])
+                    # Statistics for testing
+                    eigen_vals = runner.model.module.decode_head.loss_hist_list[l].eigen_vals_prev[:, c]
+                    eigen_vecs = runner.model.module.decode_head.loss_hist_list[l].eigen_vecs_prev[:, :, c]
+                    indices = np.argsort(eigen_vals)[::-1]  # From high to low
+                    self.models_list[l+self.layers_num_encoder].eigen_vals_all_for_testing[:, c] = eigen_vals[indices]
+                    self.models_list[l+self.layers_num_encoder].eigen_vecs_all_for_testing[:, :, c] = eigen_vecs[:, indices]
+                    self.models_list[l+self.layers_num_encoder].miu_all_for_testing[:, c] = runner.model.module.decode_head.loss_hist_list[l].miu_all_prev[:, c]
 
+                    # Statistics for next training\validation epoch
                     eigen_vals, eigen_vecs = np.linalg.eig(self.models_list[l+self.layers_num_encoder].cov_mat_all[:, :, c])
                     indices = np.argsort(eigen_vals)[::-1]  # From high to low
-                    self.models_list[l+self.layers_num_encoder].eigen_vals_all[:, c] = eigen_vals[indices]
-                    self.models_list[l+self.layers_num_encoder].eigen_vecs_all[:, :, c] = eigen_vecs[:, indices]
+                    runner.model.module.decode_head.loss_hist_list[l].eigen_vals_prev[:, c] = eigen_vals[indices]  # won't actually be used
+                    runner.model.module.decode_head.loss_hist_list[l].eigen_vecs_prev[:, :, c] = eigen_vecs[:, indices]
+                    runner.model.module.decode_head.loss_hist_list[l].miu_all_prev[:, c] = self.models_list[l+self.layers_num_encoder].miu_all[:, c]
+                    runner.model.module.decode_head.loss_hist_list[l].model_prev_exists[c] = True
 
         filename = os.path.join(self.save_folder, 'epoch_{}'.format(runner.epoch)+'.pickle')
         if not np.mod(runner.epoch, self.save_interval):
             with open(filename, 'wb') as handle:
                 pickle.dump(self, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def before_val_iter(self, runner):
-        # Increase the loss weight as more batches are involved in the histogram estimation
-        for l in range(self.layers_num_encoder):
-            runner.model.module.backbone.loss_hist_list[l].relative_weight = \
-                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
-        for l in range(self.layers_num_decoder):
-            runner.model.module.decode_head.loss_hist_list[l].relative_weight = \
-                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
 
 class ModelParams(object):
     def __init__(self, num_classes=2, features_num=1):
@@ -176,9 +250,13 @@ class ModelParams(object):
         self.features_num = features_num
         self.miu_all = np.zeros((self.features_num, self.num_classes))
         self.moment2_all = np.zeros((self.features_num, self.num_classes))
-        self.moment2_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
+        # self.moment2_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
         self.cov_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
-        self.covinv_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
-        self.eigen_vals_all = np.zeros((self.features_num, self.num_classes))
-        self.eigen_vecs_all = np.zeros((self.features_num, self.features_num, self.num_classes))
         self.samples_num_all_curr_epoch = np.zeros(self.num_classes)
+        # self.covinv_mat_all = np.zeros((self.features_num, self.features_num, self.num_classes))
+        # self.eigen_vals_all = np.zeros((self.features_num, self.num_classes))
+        # self.eigen_vecs_all = np.zeros((self.features_num, self.features_num, self.num_classes))
+
+        self.miu_all_for_testing = np.zeros((self.features_num, self.num_classes))
+        self.eigen_vals_all_for_testing = np.zeros((self.features_num, self.num_classes))
+        self.eigen_vecs_all_for_testing = np.zeros((self.features_num, self.features_num, self.num_classes))
