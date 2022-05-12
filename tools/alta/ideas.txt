@@ -70,9 +70,14 @@ We can also choose
 
 
 # TODO:
+* Update all PathA, pathB annotations!
+* Use Leaky-Relu to prevent feature collapse
+* Why we have sometimes kurtosis>0 but almost perfect Gaussian? Esp. for the small PCA's...
+* Does GAN assume\force Normal distribution. Some new works do...
 * Weighing the layers by their total loss
+* How to weigh the loss per iteration of the epoch?????????????????????
 * Increase loss weight of the PCA directions.
-* Use tow consecutive vals epochs at the end? Probably unnecessary...
+* Use two consecutive vals epochs at the end? Probably unnecessary...
 * When I discard BN, it seems that the sum of effective eigenvalues of all classes is 31*8=~256 (in loss_hist_dec_0). In dec_1 it's 63*8.
  Why? Are the subspaces orthogonal?  Is it a function of the resolution?
 The first ~31 eigenvalues are very similar as well. Why? Is it important? usable?
@@ -83,11 +88,9 @@ the running statistics are used. Use track_running_stats=False in training, or u
 Maybe it's better regardless, because the image can contain one area in dist. and the other outside...
 * Try Deeplabv3 with unet
 * Don't add cov_eps, because it affects the eigenvals. Simply don't measure the distance in these directions.
-* Why do all 5 losses jump, occasionally? Is it simply an unexplored area of space?
+* Why do all 5 losses jump, occasionally? Is it simply an unexplored area of space? Probably because of the small eigenvals...
 * Increase the number of directions.
-* Update all PathA annotations!
 * Is class 9 problematic? Eliminate too small classes (e.g. samples_num < const*dimension over an epoch)
-* calculate mom4 correctly!
 * More measures of Gaussianity:
 Multivariate skewness can encourage elliptic symmetrical pdfs - ideal for distance measure?
 Also, it seems that some directions are skewed
@@ -131,6 +134,7 @@ where the data fits the model well?
 * Add the revision number to the folder name
 
 # Done:
+* calculate mom4 correctly!
 * Remove calculation of the histogram - it's time consuming!
 * Split the features to groups (e.g. 10), and hopefully each group can be made Gaussian. Then sum the distances to each.
 It seems unnecessary after removing the alpha filter, though.

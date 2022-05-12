@@ -72,7 +72,7 @@ class HistLossHook(Hook):
             runner.model.module.backbone.loss_hist_list[l].iters_since_epoch_init = 0
 
         for l in range(self.layers_num_decoder):
-            # Start training only after 10 epochs
+            # Start training only after self.first_epoch epochs
             runner.model.module.decode_head.loss_hist_list[l].loss_weight = runner.model.module.decode_head.loss_hist_list[l].loss_weight_orig * \
                                                                     (runner.epoch>=self.first_epoch)
             if not self.layer_validity[l+self.layers_num_encoder]:  # Disable some of the losses
@@ -162,6 +162,12 @@ class HistLossHook(Hook):
             os.mkdir(self.save_folder)
 
         for l in range(self.layers_num_encoder):
+            # Start training only after self.first_epoch epochs
+            runner.model.module.backbone.loss_hist_list[l].loss_weight = runner.model.module.backbone.loss_hist_list[l].loss_weight_orig * \
+                                                                    (runner.epoch>=self.first_epoch)
+            if not self.layer_validity[l]:  # Disable some of the losses
+                runner.model.module.backbone.loss_hist_list[l].loss_weight = 0
+
             # randomize projection matrix
             runner.model.module.backbone.loss_hist_list[l].proj_mat = torch.randn_like(runner.model.module.backbone.loss_hist_list[l].proj_mat)
             runner.model.module.backbone.loss_hist_list[l].proj_mat /= torch.sum(runner.model.module.backbone.loss_hist_list[l].proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
@@ -175,6 +181,12 @@ class HistLossHook(Hook):
             runner.model.module.backbone.loss_hist_list[l].iters_since_epoch_init = 0
 
         for l in range(self.layers_num_decoder):
+            # Start training only after self.first_epoch epochs
+            runner.model.module.decode_head.loss_hist_list[l].loss_weight = runner.model.module.decode_head.loss_hist_list[l].loss_weight_orig * \
+                                                                    (runner.epoch>=self.first_epoch)
+            if not self.layer_validity[l+self.layers_num_encoder]:  # Disable some of the losses
+                runner.model.module.decode_head.loss_hist_list[l].loss_weight = 0
+
             # randomize projection matrix
             runner.model.module.decode_head.loss_hist_list[l].proj_mat = torch.randn_like(runner.model.module.decode_head.loss_hist_list[l].proj_mat)
             runner.model.module.decode_head.loss_hist_list[l].proj_mat /= torch.sum(runner.model.module.decode_head.loss_hist_list[l].proj_mat**2, dim=1).sqrt().unsqueeze(dim=1)
