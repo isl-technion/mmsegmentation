@@ -32,7 +32,7 @@ It seems that some of the wrong predictions have also lowish score (<0.9). But c
 But anyway, the score near edges are lower.
 We should think how to use them...
 
-* For my presentation
+* For my ATR presentation
 * Show presentation about the project as a whole
 * Show the AirSim simulation
 * Explain about Alta, how it was collected and annotated
@@ -44,11 +44,7 @@ We should think how to use them...
 ... Will it help to use more than one Gaussian per class?
 
 
-** on ISL15 RTX3090 you should install torch using (although there's only cuda10.2 installed!)
- pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
-
-
-# For meeting with Haim Baskin
+# For the first meeting with Haim Baskin
 * My aim: Develop a real-time OOD detector (epistemic uncertainty), which does not require external datasets.
  - Unlike Monte-Carlo Dropout and Deep Ensembles, which are not real time
  - Unlike many other methods which use external datasets for training and calibration.
@@ -66,10 +62,38 @@ In my opinion the Gaussian assumption is flawed. Also the optimization certainly
 * My best idea thus far - measure the loss between the 1d pdf (or cdf), which requires only a small number of samples, with a
 Gaussian pdf (or cdf) with the same mean and std. The sample pdf can be implemented using several sigmoid functions.
 In each iteration, one can choose one dimension (random or cyclical), or several, or all - per class.
-We can also choose
+
+# For the second meeting with Haim Baskin 17/05/2022
+* Show my work up till now - presentation, papers
+* Only then I discovered some other works...
+* There are works on making the latent space Gaussian, using Wasserstein, SW meausure, Distributional SW,, Generalized SW,
+Chi-squared on radii and differences, etc.
+* However:
+1) Their loss is on a single mini-batches, not the entire dataset.
+2) The datasets are usually MNIST, CIFAR, CelebA, and LSUN (downsampled to 64x64).
+3) The task is usually Auto-Encoder. If OOD is mentioned, it refers to the entire population, not a specific class.
+I didn't find papers doing both classification\det\seg and OOD (maybe 'FOOD\GLOD', but they use a Gaussian layer).
+* I use an aggregate measure (Kurtosis) on the entire epoch. I don't know what's the correct weight per batch. I also don't
+know how to balance weights of different classes.
+* How to adapt SW to the entire epoch? It seems impossible without saving lots of data...
+* However, adapting the chi^2 on radii and differences is possible using density estimation. It won't blow the memory because
+it's only one\two per class.
+* It can be used both in ood and in AutoEncoders. It doesn't have to be Gaussian, according to the paper (Jarek Duda).
+* Also, in segmentation (and detection), one cannot randomly sample any mini-batch as in classification. Hence, using
+their methods might not work on the whole distribution.
+* Regarding the small eigenvalues, maybe a different net will solve this? (e.g. deeplabv3+)
+
+
+1) Is it possible to make all layers approx. Gaussian without harming results?
+2) Using a different net, which will not collapse eigs?
+3) Use a standard Dataset (e.g. Pascal VOC)
+4) Try Chi^2 distribution to minimize.
 
 
 # TODO:
+* Implement the method for batch_size>1
+* Implement histogram of radii and differences
+* Use deeplabv3+ and voc. Are there any tiny eigen values?
 * Update all PathA, pathB annotations!
 * Use Leaky-Relu to prevent feature collapse
 * Why we have sometimes kurtosis>0 but almost perfect Gaussian? Esp. for the small PCA's...
@@ -155,10 +179,16 @@ It seems unnecessary after removing the alpha filter, though.
 Deducted from segformer_mit-b0_pathA_30_50_pathA_30_50_672_448_HL5000\20000
 
 
+## Benchmarking issues and dilemmas - for paper
+* What resolution? The full one is possible in training only when using cropping
+* Which categories? With equal weight, some categories will not be detected.
+* What should be the class weights?
+* Train each net with a single height, or all heights?
+* What is the train, val and test sets?
+* Which architectures to try?
+* Which augmentations to use?
 
-
-
-pip list (29/03/2022) - for Autonomous-landing API, revision 4be91cd7482d1386f51949d1bdc9d9c6128fb715
+**pip list (29/03/2022) - for Autonomous-landing API, revision 4be91cd7482d1386f51949d1bdc9d9c6128fb715
 addict             2.4.0
 attrs              21.4.0
 certifi            2021.10.8
@@ -200,7 +230,11 @@ yapf               0.32.0
 zipp               3.7.0
 
 
-* register new ssh key:
+** on ISL15 RTX3090 you should install torch using (although there's only cuda10.2 installed!)
+ pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
+
+
+** register new ssh key:
 ssh-keygen -t ed25519
 cat ~/.ssh/id_ed25519.pub
 In github, generate new ssh key and copy the content, e.g.:
