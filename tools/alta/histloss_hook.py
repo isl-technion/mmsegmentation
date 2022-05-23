@@ -40,10 +40,10 @@ class HistLossHook(Hook):
         # Increase the loss weight as more batches are involved in the histogram estimation
         for l in range(self.layers_num_encoder):
             runner.model.module.backbone.loss_hist_list[l].relative_weight = \
-                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
+                (runner.inner_iter+1) * runner.data_loader.batch_size / np.float32(runner.data_loader.sampler.num_samples)
         for l in range(self.layers_num_decoder):
             runner.model.module.decode_head.loss_hist_list[l].relative_weight = \
-                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
+                (runner.inner_iter+1) * runner.data_loader.batch_size / np.float32(runner.data_loader.sampler.num_samples)
 
 
     def before_train_epoch(self, runner):
@@ -151,10 +151,10 @@ class HistLossHook(Hook):
         # Increase the loss weight as more batches are involved in the histogram estimation
         for l in range(self.layers_num_encoder):
             runner.model.module.backbone.loss_hist_list[l].relative_weight = \
-                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
+                (runner.inner_iter+1) * runner.data_loader.batch_size / np.float32(runner.data_loader.sampler.num_samples)
         for l in range(self.layers_num_decoder):
             runner.model.module.decode_head.loss_hist_list[l].relative_weight = \
-                (runner.inner_iter+1) / runner.data_loader.sampler.num_samples
+                (runner.inner_iter+1) * runner.data_loader.batch_size / np.float32(runner.data_loader.sampler.num_samples)
 
     def before_val_epoch(self, runner):
         self.save_folder = os.path.join(runner.work_dir, 'hooks')

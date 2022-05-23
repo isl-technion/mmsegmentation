@@ -106,12 +106,10 @@ class HistogramLoss(nn.Module):
             miu_unnormalized = np.zeros(feature_dim)
             moment2_unnormalized = np.zeros(feature_dim)
             moment2_mat_unnormalized = np.zeros((feature_dim, feature_dim))
-            class_indices = (label_downscaled[0, 0, :, :] == torch.tensor(c, device='cuda')).nonzero()
-            sampled_indices = torch.linspace(0, len(class_indices) - 1,
-                                             np.int32(len(class_indices) / class_interval)).long()
-            samples_num = len(sampled_indices)
+            class_indices = (label_downscaled[:, 0, :, :] == torch.tensor(c, device='cuda')).nonzero()
+            samples_num = len(class_indices)
             if samples_num:
-                feat_vecs_curr = feature[0, :, class_indices[sampled_indices, 0], class_indices[sampled_indices, 1]]
+                feat_vecs_curr = feature[class_indices[:, 0], :, class_indices[:, 1], class_indices[:, 2]].T
                 miu_unnormalized = torch.sum(feat_vecs_curr, dim=1).detach().cpu().numpy()
                 miu = miu_unnormalized / samples_num
                 moment2_unnormalized = torch.sum(feat_vecs_curr**2, dim=1).detach().cpu().numpy()
