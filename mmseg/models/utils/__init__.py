@@ -9,8 +9,14 @@ from .shape_convert import (nchw2nlc2nchw, nchw_to_nlc, nlc2nchw2nlc,
                             nlc_to_nchw)
 from .up_conv_block import UpConvBlock
 
+from .mboaz17.res_layer_normless import ResLayerNormLess  # <mboaz17>
+from .mboaz17.res_layer_WN import ResLayerWeightNorm  # <mboaz17>
+
 __all__ = [
     'ResLayer', 'SelfAttentionBlock', 'make_divisible', 'InvertedResidual',
     'UpConvBlock', 'InvertedResidualV3', 'SELayer', 'PatchEmbed',
     'nchw_to_nlc', 'nlc_to_nchw', 'nchw2nlc2nchw', 'nlc2nchw2nlc'
 ]
+
+__all__.append('ResLayerNormLess')  # <mboaz17>
+__all__.append('ResLayerWeightNorm')  # <mboaz17>
