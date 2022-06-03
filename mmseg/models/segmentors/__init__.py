@@ -7,4 +7,4 @@ from .mboaz17.encoder_decoder_enhanced import EncoderDecoderEnhanced  # <mboaz17
 
 __all__ = ['BaseSegmentor', 'EncoderDecoder', 'CascadeEncoderDecoder']
 
-__all__.append('EncoderDecoderEnhanced')
+__all__.append('EncoderDecoderEnhanced')  # <mboaz17>

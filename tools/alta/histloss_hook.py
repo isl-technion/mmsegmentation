@@ -92,13 +92,17 @@ class HistLossHook(Hook):
 
 
     def after_train_epoch(self, runner):
+
+        if runner.epoch>=self.first_epoch+1e6:  # Freeze BatchNorm statistics when training hist-loss
+            runner.model.module.decode_head.norm_eval = True
+            runner.model.module.backbone.norm_eval = True
+
         for l in range(self.layers_num_encoder):
             self.models_list[l].samples_num_all_curr_epoch = runner.model.module.backbone.loss_hist_list[l].samples_num_all_curr_epoch
             self.models_list[l].miu_all = runner.model.module.backbone.loss_hist_list[l].miu_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
             self.models_list[l].moment2_all = runner.model.module.backbone.loss_hist_list[l].moment2_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
             self.models_list[l].moment2_mat_all = runner.model.module.backbone.loss_hist_list[l].moment2_mat_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
             self.models_list[l].cov_mat_all = runner.model.module.backbone.loss_hist_list[l].cov_mat_all
-            self.models_list[l].model_prev_exists = True
             for c in range(0, self.models_list[l].num_classes):
                 if self.models_list[l].samples_num_all_curr_epoch[c]:
                     # Statistics for testing
@@ -128,6 +132,9 @@ class HistLossHook(Hook):
                     # Statistics for testing
                     eigen_vals = runner.model.module.decode_head.loss_hist_list[l].eigen_vals_prev[:, c]
                     eigen_vecs = runner.model.module.decode_head.loss_hist_list[l].eigen_vecs_prev[:, :, c]
+                    if np.any(np.iscomplex(eigen_vals)) or eigen_vals.min() < 0 or np.any(np.isnan(eigen_vals)):
+                        print('Invalid: c = {}, eig_min = {}'.format(c, eigen_vals.min()))
+                        aaa=1
                     indices = np.argsort(eigen_vals)[::-1]  # From high to low
                     self.models_list[l+self.layers_num_encoder].eigen_vals_all_for_testing[:, c] = eigen_vals[indices]
                     self.models_list[l+self.layers_num_encoder].eigen_vecs_all_for_testing[:, :, c] = eigen_vecs[:, indices]
@@ -135,6 +142,9 @@ class HistLossHook(Hook):
 
                     # Statistics for next training\validation epoch
                     eigen_vals, eigen_vecs = np.linalg.eig(self.models_list[l+self.layers_num_encoder].cov_mat_all[:, :, c])
+                    if np.any(np.iscomplex(eigen_vals)) or eigen_vals.min() < 0 or np.any(np.isnan(eigen_vals)):
+                        print('Invalid: c = {}, eig_min = {}'.format(c, eigen_vals.min()))
+                        aaa=1
                     indices = np.argsort(eigen_vals)[::-1]  # From high to low
                     runner.model.module.decode_head.loss_hist_list[l].eigen_vals_prev[:, c] = eigen_vals[indices]  # won't actually be used
                     runner.model.module.decode_head.loss_hist_list[l].eigen_vecs_prev[:, :, c] = eigen_vecs[:, indices]
@@ -207,7 +217,6 @@ class HistLossHook(Hook):
             self.models_list[l].moment2_all = runner.model.module.backbone.loss_hist_list[l].moment2_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
             self.models_list[l].moment2_mat_all = runner.model.module.backbone.loss_hist_list[l].moment2_mat_all / (np.expand_dims(self.models_list[l].samples_num_all_curr_epoch,0) + 1e-12)
             self.models_list[l].cov_mat_all = runner.model.module.backbone.loss_hist_list[l].cov_mat_all
-            self.models_list[l].model_prev_exists = True
             for c in range(0, self.models_list[l].num_classes):
                 if self.models_list[l].samples_num_all_curr_epoch[c]:
                     # Statistics for testing
@@ -237,6 +246,9 @@ class HistLossHook(Hook):
                     # Statistics for testing
                     eigen_vals = runner.model.module.decode_head.loss_hist_list[l].eigen_vals_prev[:, c]
                     eigen_vecs = runner.model.module.decode_head.loss_hist_list[l].eigen_vecs_prev[:, :, c]
+                    if np.any(np.iscomplex(eigen_vals)) or eigen_vals.min() < 0 or np.any(np.isnan(eigen_vals)):
+                        print('Invalid: c = {}, eig_min = {}'.format(c, eigen_vals.min()))
+                        aaa=1
                     indices = np.argsort(eigen_vals)[::-1]  # From high to low
                     self.models_list[l+self.layers_num_encoder].eigen_vals_all_for_testing[:, c] = eigen_vals[indices]
                     self.models_list[l+self.layers_num_encoder].eigen_vecs_all_for_testing[:, :, c] = eigen_vecs[:, indices]
@@ -244,6 +256,9 @@ class HistLossHook(Hook):
 
                     # Statistics for next training\validation epoch
                     eigen_vals, eigen_vecs = np.linalg.eig(self.models_list[l+self.layers_num_encoder].cov_mat_all[:, :, c])
+                    if np.any(np.iscomplex(eigen_vals)) or eigen_vals.min() < 0 or np.any(np.isnan(eigen_vals)):
+                        print('Invalid: c = {}, eig_min = {}'.format(c, eigen_vals.min()))
+                        aaa=1
                     indices = np.argsort(eigen_vals)[::-1]  # From high to low
                     runner.model.module.decode_head.loss_hist_list[l].eigen_vals_prev[:, c] = eigen_vals[indices]  # won't actually be used
                     runner.model.module.decode_head.loss_hist_list[l].eigen_vecs_prev[:, :, c] = eigen_vecs[:, indices]

@@ -30,6 +30,8 @@ from .stdc_head import STDCHead
 from .uper_head import UPerHead
 
 from .mboaz17.segformer_head_histloss import SegformerHeadHistLoss  # <mboaz17>
+from .mboaz17.sep_aspp_head_histloss import DepthwiseSeparableASPPHeadHistLoss  # <mboaz17>
+from .mboaz17.aspp_head_histloss import ASPPHeadHistLoss  # <mboaz17>
 
 __all__ = [
     'FCNHead', 'PSPHead', 'ASPPHead', 'PSAHead', 'NLHead', 'GCHead', 'CCHead',
@@ -42,3 +44,5 @@ __all__ = [
 ]
 
 __all__.append('SegformerHeadHistLoss')  # <mboaz17>
+__all__.append('DepthwiseSeparableASPPHeadHistLoss')  # <mboaz17>
+__all__.append('ASPPHeadHistLoss')  # <mboaz17>

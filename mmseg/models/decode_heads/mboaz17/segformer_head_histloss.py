@@ -4,9 +4,9 @@ import torch.nn as nn
 from mmcv.cnn import ConvModule
 
 from mmseg.models.builder import HEADS
-from mmseg.models.decode_heads.mboaz17.decode_head_histloss import BaseDecodeHead
 from mmseg.ops import resize
 
+from mmseg.models.decode_heads.mboaz17.decode_head_histloss import BaseDecodeHead
 from mmseg.models.losses.mboaz17.histogram_loss import HistogramLoss
 import numpy as np
 

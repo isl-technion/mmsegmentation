@@ -28,6 +28,7 @@ class HistogramLoss(nn.Module):
                  class_weight=None,
                  loss_weight=1.0,
                  features_num=256,
+                 directions_num=10000,
                  loss_name='loss_hist'):
         super(HistogramLoss, self).__init__()
 
@@ -38,7 +39,7 @@ class HistogramLoss(nn.Module):
         self._loss_name = loss_name
 
         self.features_num = features_num
-        self.directions_num = 10000
+        self.directions_num = directions_num
         self.iters_since_init = 0
         self.iters_since_epoch_init = 0
         self.miu_all = np.zeros((self.features_num, self.num_classes))
@@ -102,7 +103,7 @@ class HistogramLoss(nn.Module):
         loss_hist_vect = torch.zeros(self.num_classes, device='cuda')
         loss_kurtosis_vect = torch.zeros(self.num_classes, device='cuda')
         loss_moment2_vect = torch.zeros(self.num_classes, device='cuda')
-        for c in range(1, self.num_classes):   # TODO: start from 0 after removing the background from the classes list
+        for c in range(0, self.num_classes):   # TODO: start from 0 after removing the background from the classes list
             miu_unnormalized = np.zeros(feature_dim)
             moment2_unnormalized = np.zeros(feature_dim)
             moment2_mat_unnormalized = np.zeros((feature_dim, feature_dim))

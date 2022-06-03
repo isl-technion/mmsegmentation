@@ -95,9 +95,16 @@ def parse_args():
 def main():
     args = parse_args()
 
-    args.work_dir = os.path.join('/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17',
+    if 0:  # normal
+        args.work_dir = os.path.join('/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17',
                                  os.path.split(os.path.split(args.config)[0])[1],
                                  os.path.split(args.config)[1].split('.py')[0])
+    else:  # hist-loss
+        args.work_dir = os.path.join('/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17',
+                                     os.path.split(os.path.split(os.path.split(args.config)[0])[0])[1],
+                                     os.path.split(os.path.split(args.config)[0])[1],
+                                     os.path.split(args.config)[1].split('.py')[0])
+        ''
 
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:

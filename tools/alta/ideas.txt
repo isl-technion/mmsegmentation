@@ -91,6 +91,15 @@ their methods might not work on the whole distribution.
 
 
 # TODO:
+* DeepLabV3+:
+1) Put the loss before the ReLU, then put ReLU (fix the bug in the last DepthwiseSeparableConvModule!!!)
+2) First class should be 0 not 1
+3) Does BatchNorm behavious differ from train to val? If so, put Layer-Norm?
+Because the loss_hist_dec_4 is much higher in val stage with the same dataset!!!
+4) Use Leaky-ReLU\GeLU
+5) Put weight-norm in the decoder as well
+6) Use Local Contrast Norm?
+
 * Implement the method for batch_size>1
 * Implement histogram of radii and differences
 * Use deeplabv3+ and voc. Are there any tiny eigen values?
@@ -180,13 +189,42 @@ Deducted from segformer_mit-b0_pathA_30_50_pathA_30_50_672_448_HL5000\20000
 
 
 ## Benchmarking issues and dilemmas - for paper
-* What resolution? The full one is possible in training only when using cropping
+* What resolution? The full one is possible in training only when using cropping. Another option is to downscale the images.
 * Which categories? With equal weight, some categories will not be detected.
-* What should be the class weights?
-* Train each net with a single height, or all heights?
-* What is the train, val and test sets?
+* Write script to count pixels per category.
+* What should be the class weights? UAVid didn't reweight
+* What is the train, val and test sets? UAVid had 30 sequences - 15, 5, 10 respectively.
+And the test was kept hidden for benchmarking (as in UAVid, SemanticDrone and Cityscape)
+IrYamim could be the test set. What about the descend scenarios? Another test set?
 * Which architectures to try?
-* Which augmentations to use?
+* Use batch-size>1. On one hand, it limits the crop size. On the other, batchnorm layer should be fixed to use only 1.
+* Which augmentations to use? Should I use albumentations? Report with and without augs?
+* Use a pretrained net, or scratch, or both (As in UAVid)?
+* Metric: UAVid used mIoU (as Pascal-VOC as well)
+* Compare to several datasets (UAVid, ISPRS, ICG SemanticDrone, Citscapes)
+* Train each net with a single height, or all heights? Same silemma for testing - report separately and\or together?
+*
+
+UAVid:
+Dataset - 30 scenarios divided to train, val test as 15, 5, 10
+Image size ~ 4Kx2K. Divided to 3x3 crops of 2048x1024 (bit training and testing)
+8 categories, the smallest (Human) has 0.16% of the pixels
+Metric - mIoU
+Architectures - FCN-8s, Dilation net and U-Net. Also, Multi-Scale-Dilation Net to deal with different object sizes
+Loss - Cross Entropy (with auxiliary loss for the MS Net)
+Pretraining - scratch\pretraining on Cityscapes
+Postprocessing - spatio-temporal CRF
+GPU - Nvidia Titan X GPU with 12G, one image per batch
+Optimization - All models are trained with the Adam optimizer for 27K iterations (20 epochs). The base learning
+rate is set to 10−4 exponentially decaying to 10−7. Weight decay for all weights in convolutional kernels is set to 10−5
+Augmentation - left-to-right flip randomly; series of color augmentation, including random hue operation, random contrast operation, random
+brightness operation, random saturation operation.
+Quantitative results - comparative table
+Qualitative reults - focusing on a specific area where using their MS-net is advantageous
+Class weights - uniform
+
+
+
 
 **pip list (29/03/2022) - for Autonomous-landing API, revision 4be91cd7482d1386f51949d1bdc9d9c6128fb715
 addict             2.4.0

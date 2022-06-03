@@ -10,6 +10,7 @@ from ...builder import SEGMENTORS
 from ..base import BaseSegmentor
 
 from mmseg.models.decode_heads.mboaz17.segformer_head_histloss import SegformerHeadHistLoss
+from mmseg.models.decode_heads.mboaz17.sep_aspp_head_histloss import DepthwiseSeparableASPPHeadHistLoss
 
 @SEGMENTORS.register_module()
 class EncoderDecoderEnhanced(BaseSegmentor):
@@ -63,7 +64,10 @@ class EncoderDecoderEnhanced(BaseSegmentor):
 
     def extract_feat(self, img, label=None, hist_model=None):
         """Extract features from images."""
-        x = self.backbone(img, label=label, hist_model=hist_model)
+        if label is None:
+            x = self.backbone(img)
+        else:
+            x = self.backbone(img, label=label, hist_model=hist_model)
         if label is not None:
             loss_hist_list = x[1]
             loss_hist_vals = x[2]
@@ -121,7 +125,7 @@ class EncoderDecoderEnhanced(BaseSegmentor):
     def _decode_head_forward_test(self, x, img_metas, hist_model=None):
         """Run forward function and calculate loss for decode head in
         inference."""
-        if isinstance(self.decode_head, SegformerHeadHistLoss):
+        if isinstance(self.decode_head, SegformerHeadHistLoss) or isinstance(self.decode_head, DepthwiseSeparableASPPHeadHistLoss):
             seg_logits = self.decode_head.forward_test(x, img_metas, self.test_cfg, hist_model=hist_model)
         else:
             seg_logits = self.decode_head.forward_test(x, img_metas, self.test_cfg)
@@ -169,9 +173,15 @@ class EncoderDecoderEnhanced(BaseSegmentor):
 
         losses = dict()
 
-        x, loss_hist_list, loss_hist_vals = self.extract_feat(img, gt_semantic_seg)
-        for l in range(len(loss_hist_vals)):
-            losses['encode.'+loss_hist_list[l].loss_name] = loss_hist_vals[l]
+        gt_semantic_seg_for_encoder = None
+        x = self.extract_feat(img, label=gt_semantic_seg_for_encoder)
+        if gt_semantic_seg_for_encoder is not None:
+            loss_hist_list = x[1]
+            loss_hist_vals = x[2]
+            x = x[0]
+
+            for l in range(len(loss_hist_vals)):
+                losses['encode.'+loss_hist_list[l].loss_name] = loss_hist_vals[l]
 
         loss_decode = self._decode_head_forward_train(x, img_metas,
                                                       gt_semantic_seg)
