@@ -195,14 +195,14 @@ Deducted from segformer_mit-b0_pathA_30_50_pathA_30_50_672_448_HL5000\20000
 * What should be the class weights? UAVid didn't reweight
 * What is the train, val and test sets? UAVid had 30 sequences - 15, 5, 10 respectively.
 And the test was kept hidden for benchmarking (as in UAVid, SemanticDrone and Cityscape)
-IrYamim could be the test set. What about the descend scenarios? Another test set?
+IrYamim could be the test set(?). Or maybe PilotPath? What about the descend scenarios? Another test set?
 * Which architectures to try?
 * Use batch-size>1. On one hand, it limits the crop size. On the other, batchnorm layer should be fixed to use only 1.
 * Which augmentations to use? Should I use albumentations? Report with and without augs?
 * Use a pretrained net, or scratch, or both (As in UAVid)?
 * Metric: UAVid used mIoU (as Pascal-VOC as well)
 * Compare to several datasets (UAVid, ISPRS, ICG SemanticDrone, Citscapes)
-* Train each net with a single height, or all heights? Same silemma for testing - report separately and\or together?
+* Train each net with a single height, or all heights? Same dilemma for testing - report separately and\or together?
 *
 
 UAVid:

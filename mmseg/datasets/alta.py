@@ -89,11 +89,11 @@ class AltaDataset(CustomDataset):
         super(AltaDataset, self).__init__(
             img_suffix='.JPG',
             seg_map_suffix='.png',
-            reduce_zero_label=False,
+            reduce_zero_label=True,  # False,
             classes=self.CLASSES,
             palette=self.PALETTE,
             **kwargs)
-        self.label_map = {0: 0, 1: 4, 2: 2, 3: 4, 4: 4, 5: 4, 6: 4, 7: 7, 8: 4, 9: 9, 10: 4, 11: 11, 12: 12, 13: 13, 14: 14, 15: 4}
+        # self.label_map = {0: 0, 1: 4, 2: 2, 3: 4, 4: 4, 5: 4, 6: 4, 7: 7, 8: 4, 9: 9, 10: 4, 11: 11, 12: 12, 13: 13, 14: 14, 15: 4}
         assert osp.exists(self.img_dir)
 
     # def prepare_test_img(self, idx):  # uncomment if LoadAnnotations is needed during testing...
