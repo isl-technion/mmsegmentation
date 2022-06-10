@@ -11,7 +11,7 @@ class AltaDataset(CustomDataset):
     """
 
     CLASSES = [
-        'background',  # 0
+        # 'background',  # 0
         'bicycle',  # 1
         'building',  # 2
         'fence',  # 3
@@ -29,7 +29,7 @@ class AltaDataset(CustomDataset):
         'water',  # 15
     ]
     PALETTE = [
-        [0, 0, 0],  # 0
+        # [0, 0, 0],  # 0
         [255, 50, 50],  # 1
         [255, 127, 50],  # 2
         [255, 204, 50],  # 3
@@ -48,7 +48,7 @@ class AltaDataset(CustomDataset):
     ]
 
     class_scores = [
-        0,  # 'background',  # 0
+        # 0,  # 'background',  # 0
         0,  # 'bicycle',  # 1
         0,  # 'building',  # 2
         0,  # 'fence',  # 3
@@ -89,7 +89,7 @@ class AltaDataset(CustomDataset):
         super(AltaDataset, self).__init__(
             img_suffix='.JPG',
             seg_map_suffix='.png',
-            reduce_zero_label=True,  # False,
+            reduce_zero_label=True,  # False  #remove the bkg class
             classes=self.CLASSES,
             palette=self.PALETTE,
             **kwargs)

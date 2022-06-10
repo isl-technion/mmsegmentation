@@ -25,9 +25,12 @@ elif 0:  # Segformer - PathA, reweighted (also fixed DJI_149), resized to 672*44
 elif 0:  # Segformer - PathA, resized to 672*448, with histogramm loss (16 dims)
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_672_448_histloss/segformer_mit-b0_pathA_pathA_672_448_histloss.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_672_448_histloss/iter_4000.pth'
-elif 1:  # Segformer - PathA, resized to 672*448, with histogramm loss (256 dims)
+elif 0:  # Segformer - PathA, resized to 672*448, with histogramm loss (256 dims)
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_672_448_histloss_1000_feat256/segformer_mit-b0_pathA_pathA_672_448_histloss_1000_feat256.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_672_448_histloss_1000_feat256/epoch_100.pth'
+elif 1:  # for_paper - DeepLabV3+
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB/iter_40000.pth'
 
 
 # build the model from a config file and a checkpoint file
@@ -37,14 +40,14 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0001'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0005'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
-images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/50'
-# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
+# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/100'
+images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
 images_list = os.listdir(images_path)
 images_list.sort()
 
 results_path = os.path.join(checkpoint_file.split('.')[0], os.path.split(images_path)[-1])
 interval = 3
-return_scores = True
+return_scores = False
 score_th1 = 0.8
 score_th2 = 0.9
 if 'Descend' not in images_path:

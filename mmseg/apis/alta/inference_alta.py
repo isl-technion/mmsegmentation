@@ -7,6 +7,7 @@ from mmcv.runner import load_checkpoint
 
 from mmseg.datasets.pipelines import Compose
 from mmseg.models import build_segmentor
+from mmseg.models.segmentors.mboaz17.encoder_decoder_enhanced import EncoderDecoderEnhanced
 
 
 def init_segmentor(config, checkpoint=None, device='cuda:0'):
@@ -103,7 +104,10 @@ def inference_segmentor(model, img, return_scores=False, hist_model=None):
 
     # forward the model
     with torch.no_grad():
-        result = model(return_loss=False, rescale=True, **data, return_scores=return_scores, hist_model=hist_model)
+        if isinstance(model, EncoderDecoderEnhanced):
+            result = model(return_loss=False, rescale=True, **data, return_scores=return_scores, hist_model=hist_model)
+        else:
+            result = model(return_loss=False, rescale=True, **data)
     return result
 
 
