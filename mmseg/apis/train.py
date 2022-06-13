@@ -115,7 +115,7 @@ def train_segmentor(model,
         if not torch.cuda.is_available():
             assert digit_version(mmcv.__version__) >= digit_version('1.4.4'), \
                 'Please use MMCV >= 1.4.4 for CPU training!'
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
+        model = build_dp(model, device='cuda', device_ids=cfg.gpu_ids)
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
