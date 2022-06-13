@@ -17,7 +17,9 @@ dir_list = [dir_agamim_path_A, dir_agamim_path_B, dir_agamim_path_C, dir_ir_yami
 
 for dir_name in dir_list:
     scenario_list = [scn for scn in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name, scn))]
+    population_vect_per_dir = np.zeros(len(AltaDataset.CLASSES), dtype=np.uint64)
     for scenario_name in scenario_list:
+        print(scenario_name)
         population_vect = np.zeros(len(AltaDataset.CLASSES), dtype=np.uint64)
 
         if dir_name == dir_agamim_path_A:
@@ -40,13 +42,19 @@ for dir_name in dir_list:
         for img_name in img_names:
             img = cv2.imread(img_name)
             for ind, color in enumerate(AltaDataset.PALETTE):
-                print(color)
                 population_vect[ind] += np.sum(np.all(img == color[::-1], axis=2))
 
-        datasets_list_file.write(dataset_name)
-        datasets_list_file.write("{}".format(population_vect))
-        datasets_list_file.write("\n")
+        datasets_list_file.write(dataset_name + '\n')
+        for val in population_vect:
+            datasets_list_file.write("{}, ".format(val))
+        datasets_list_file.write('\n\n')
 
-        aaa=1
+        population_vect_per_dir += population_vect
+
+    datasets_list_file.write(dir_name + '\n')
+    for val in population_vect_per_dir:
+        datasets_list_file.write("{}, ".format(val))
+    datasets_list_file.write('\n\n')
+
 
 datasets_list_file.close()
