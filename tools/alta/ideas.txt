@@ -187,6 +187,8 @@ It seems unnecessary after removing the alpha filter, though.
 * It seems that ~0.1/5000 is the minimum obtainable hist-loss (per class, for L1smooth, Alta, Segformer, penultimate layer).
 Deducted from segformer_mit-b0_pathA_30_50_pathA_30_50_672_448_HL5000\20000
 
+## For paper
+* Add the 'void' category description and count it.
 
 ## Benchmarking issues and dilemmas - for paper
 * What resolution? The full one is possible in training only when using cropping. Another option is to downscale the images.

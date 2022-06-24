@@ -25,12 +25,24 @@ values = list(values)
 
 keys = [keys[i] for i in indices]
 values = [values[i] for i in indices]
+
+plt.figure()
 plt.bar(keys, values, color = 'maroon', width=0.8)
 plt.xticks(range(len(keys)), keys, rotation=60)
 plt.xlabel('Category Name', fontsize=12)
 plt.ylabel('Population', fontsize=12)
 # plt.show()
-
 plt.savefig('./class_hist.png', bbox_inches='tight')
+plt.close()
+
+plt.figure()
+small_classes_num = 5
+plt.bar(keys[-small_classes_num:], values[-small_classes_num:], color = 'maroon', width=0.8)
+plt.xticks(range(small_classes_num), keys[-small_classes_num:], rotation=60)
+plt.xlabel('Category Name', fontsize=12)
+plt.ylabel('Population', fontsize=12)
+# plt.show()
+plt.savefig('./small_class_hist.png', bbox_inches='tight')
+plt.close()
 
 aaa=1

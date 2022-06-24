@@ -32,9 +32,12 @@ elif 0:  # Segformer - PathA, resized to 672*448, with histogramm loss (256 dims
 elif 0:  # for_paper - DeepLabV3+
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB/iter_40000.pth'
-elif 1:  # for_paper - DeepLabV3+ reweighted
+elif 0:  # for_paper - DeepLabV3+ reweighted
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB_rew_sqrt.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB_rew_sqrt/iter_40000.pth'
+elif 1:  # for_paper - DeepLabV3+ reweighted, 2048x1024, trial experiment
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB_rew_sqrt_temp.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB_rew_sqrt_temp/iter_20000.pth'
 
 
 # build the model from a config file and a checkpoint file
