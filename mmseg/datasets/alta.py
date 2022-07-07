@@ -89,7 +89,8 @@ class AltaDataset(CustomDataset):
         super(AltaDataset, self).__init__(
             img_suffix='.JPG',
             seg_map_suffix='.png',
-            reduce_zero_label=True,  # False  #remove the bkg class
+            # reduce_zero_label=True,  # False  #remove the bkg class
+            # ignore_index=1,
             classes=self.CLASSES,
             palette=self.PALETTE,
             **kwargs)
