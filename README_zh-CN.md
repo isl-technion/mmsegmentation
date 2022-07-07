@@ -72,9 +72,10 @@ MMSegmentation 是一个基于 PyTorch 的语义分割开源工具箱。它是 O
 
 ## 最新进展
 
-最新版本 v0.25.0 在 2022.6.2 发布：
+最新版本 v0.26.0 在 2022.7.1 发布：
 
-- 支持 PyTorch MLU 后端
+- 更新了 SegFormer 在 ADE20K 数据集上的模型结果
+- 在 MMSegmentation 增加 MMSegWandbHook 以使用 wandb 可视化工具
 
 如果想了解更多版本更新细节和历史信息，请阅读[更新日志](docs/en/changelog.md)。
 
@@ -198,7 +199,7 @@ MMSegmentation 是一个由来自不同高校和企业的研发人员共同参�
 
 ## 开源许可证
 
-该项目采用 [Apache 2.0 开源许可证](LICENSE)。
+`MMSegmentation` 目前以 Apache 2.0 的许可证发布，但是其中有一部分功能并不是使用的 Apache2.0 许可证，我们在 [许可证](LICENSES.md) 中详细地列出了这些功能以及他们对应的许可证，如果您正在从事盈利性活动，请谨慎参考此文档。
 
 ## OpenMMLab 的其他项目
 
