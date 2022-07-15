@@ -38,9 +38,12 @@ elif 0:  # for_paper - DeepLabV3+ reweighted
 elif 0:  # for_paper - DeepLabV3+ reweighted, 2048x1024, trial experiment
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB_rew_sqrt_temp.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/deeplabv3_r50-d8_pathA_pathB_rew_sqrt_temp/iter_20000.pth'
-elif 1:  # for_paper - DeepLabV3+ reweighted, pathABC -> IrYamim+Pilot
+elif 0:  # for_paper - DeepLabV3+ reweighted, pathABC -> IrYamim+Pilot
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17/paper/deeplabv3_r50-d8_train_pathABC_val_IrYamim_Pilot_rew_sqrt.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/deeplabv3_r50-d8_train_pathABC_val_IrYamim_Pilot_rew_sqrt/iter_40000.pth'
+elif 1:  # for_paper - DeepLabV3+ reweighted, pathABC -> IrYamim+Pilot
+    config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/segformer_mit-b0_train_pathABC_val_IrYamim_Pilot_rew_sqrt_noB/segformer_mit-b0_train_pathABC_val_IrYamim_Pilot_rew_sqrt_noB.py'
+    checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/segformer_mit-b0_train_pathABC_val_IrYamim_Pilot_rew_sqrt_noB/iter_40000.pth'
 
 
 # build the model from a config file and a checkpoint file

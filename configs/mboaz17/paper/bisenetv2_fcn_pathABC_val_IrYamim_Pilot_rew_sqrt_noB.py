@@ -1,8 +1,8 @@
 _base_ = [
-    '../../_base_/models/deeplabv3_r50-d8.py',
-    # '../../_base_/datasets/pascal_voc12_aug.py',
+    '../../_base_/models/bisenetv2.py',
+    # '../../_base_/datasets/cityscapes_1024x1024.py',
     '../../_base_/default_runtime.py',
-    '../../_base_/schedules/schedule_20k.py'
+    '../../_base_/schedules/schedule_20k.py'  # 160k
 ]
 
 num_classes=15
@@ -17,21 +17,91 @@ class_weight = [4.0789308 , 0.12975509, 0.29180902, 0.4089733 , 2.6890245 ,
 crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
 
+# model settings
+norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    # backbone=dict(init_cfg=dict(type='Pretrained', checkpoint='/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/mit_b0.pth')),
-    decode_head=dict(num_classes=num_classes,
-                     ignore_index=1,
-                     loss_decode=dict(
-                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight, avg_non_ignore=True),
-                     ),
-    auxiliary_head=dict(num_classes=num_classes,
-                        ignore_index=1,
-                        loss_decode=dict(
-                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4, class_weight=class_weight, avg_non_ignore=True)),
-    # test_cfg=dict(mode='slide', crop_size=crop_size, stride=stride_size)
-    test_cfg=dict(mode='slide', crop_size=(1024, 2048), stride=(768, 1536))
-
-)
+    type='EncoderDecoder',
+    pretrained=None,
+    backbone=dict(
+        type='BiSeNetV2',
+        detail_channels=(64, 64, 128),
+        semantic_channels=(16, 32, 64, 128),
+        semantic_expansion_ratio=6,
+        bga_channels=128,
+        out_indices=(0, 1, 2, 3, 4),
+        init_cfg=None,
+        align_corners=False),
+    decode_head=dict(
+        type='FCNHead',
+        in_channels=128,
+        in_index=0,
+        channels=1024,
+        num_convs=1,
+        concat_input=False,
+        dropout_ratio=0.1,
+        num_classes=num_classes,
+        ignore_index=1,
+        norm_cfg=norm_cfg,
+        align_corners=False,
+        loss_decode=dict(
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight, avg_non_ignore=True)),
+    auxiliary_head=[
+        dict(
+            type='FCNHead',
+            in_channels=16,
+            channels=16,
+            num_convs=2,
+            num_classes=num_classes,
+            ignore_index=1,
+            in_index=1,
+            norm_cfg=norm_cfg,
+            concat_input=False,
+            align_corners=False,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight, avg_non_ignore=True)),
+        dict(
+            type='FCNHead',
+            in_channels=32,
+            channels=64,
+            num_convs=2,
+            num_classes=num_classes,
+            ignore_index=1,
+            in_index=2,
+            norm_cfg=norm_cfg,
+            concat_input=False,
+            align_corners=False,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight, avg_non_ignore=True)),
+        dict(
+            type='FCNHead',
+            in_channels=64,
+            channels=256,
+            num_convs=2,
+            num_classes=num_classes,
+            ignore_index=1,
+            in_index=3,
+            norm_cfg=norm_cfg,
+            concat_input=False,
+            align_corners=False,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight, avg_non_ignore=True)),
+        dict(
+            type='FCNHead',
+            in_channels=128,
+            channels=1024,
+            num_convs=2,
+            num_classes=num_classes,
+            ignore_index=1,
+            in_index=4,
+            norm_cfg=norm_cfg,
+            concat_input=False,
+            align_corners=False,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight, avg_non_ignore=True)),
+    ],
+    # model training and testing settings
+    train_cfg=dict(),
+    test_cfg=dict(mode='whole'))
 
 
 # dataset settings
@@ -129,9 +199,12 @@ data = dict(
         pipeline=test_pipeline))
 
 
+lr_config = dict(warmup='linear', warmup_iters=1000)
+optimizer = dict(lr=0.05)
+
 # runtime settings
 runner = dict(type='IterBasedRunner', max_iters=40000)
-checkpoint_config = dict(by_epoch=False, interval=4000)
-evaluation = dict(interval=4000, metric='mIoU', pre_eval=True)
+checkpoint_config = dict(by_epoch=False, interval=200)
+evaluation = dict(interval=200, metric='mIoU', pre_eval=True)
 
-load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/deeplabv3plus_r50-d8_512x512_20k_voc12aug_20200617_102323-aad58ef1.pth'
+load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes_20210902_015551-bcf10f09.pth'
