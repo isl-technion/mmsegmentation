@@ -206,12 +206,13 @@ IrYamim could be the test set(?). Or maybe PilotPath? What about the descend sce
 * Compare to several datasets (UAVid, ISPRS, ICG SemanticDrone, Citscapes)
 * Train each net with a single height, or all heights? Same dilemma for testing - report separately and\or together?
 *
+* Rethink tiles size and stride !!!!! So it divedes nicely
+* Set hyper-parameters (esp. iterations number) using the PathC val set
 * Mask the building areas from testing (and training?) to get reasonable results. Update class weights accordingly!!!
 * Report the results of 15 categories and also super-categories (e.g. veg+rough+soft, water+bicycle+person) to get reasonable results?
 * Report results of each height separately or everything together? Separately seems better. How to calculate the final result???
 Onw part? Two parts? Five parts?
-* Run the heavier models with stride? Or use the same stride for all models???
-* Create a detalied results table for all categories
+* Why does it crash with batch=2 for segformer??? Sometimes it works fine...
 * Perform score calibration (??)
 
 

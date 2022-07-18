@@ -2,11 +2,10 @@ import os
 import sys
 import shutil
 import time
-from datetime import datetime
 from tools.alta.run_train_alta import main as mmseg_train
 
-time_now = str(datetime.now())
-dest_dir = os.path.join('/media/omek/Alta/experiments', time_now)
+timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
+dest_dir = os.path.join('/media/omek/Alta/experiments', timestamp)
 if not os.path.isdir(dest_dir):
     os.makedirs(dest_dir)
 
@@ -16,7 +15,7 @@ results_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17'
 
 train_val_spec_list = ['train_Agamim_ABC_val_IrYamim_Kikar']
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
-model_type_list = ['segformer_mit-b0']  # 'segformer_mit-b0' \ ...
+model_type_list = ['deeplabv3plus_r50-d8', 'bisenetv2', 'segformer_mit-b2', 'segformer_mit-b1', 'segformer_mit-b0']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
 weighting_method_list = ['equal', 'sqrt']  # 'equal' \ 'sqrt' \ ?
 
 for train_val_spec in train_val_spec_list:
@@ -30,30 +29,28 @@ for train_val_spec in train_val_spec_list:
                     continue
 
                 for trial_ind in range(trials_per_config):
+                    work_dir = os.path.join(results_dir, 'curr_run')
+                    if os.path.isdir(work_dir):
+                        shutil.rmtree(work_dir)
+                    os.makedirs(work_dir)
 
-                    for trial_ind in range(trials_per_config):
-                        work_dir = os.path.join(results_dir, 'curr_run')
-                        if os.path.isdir(work_dir):
-                            shutil.rmtree(work_dir)
-                        os.makedirs(work_dir)
+                    sys.argv = [sys.argv[0]]
+                    sys.argv.append(config_file_path)
+                    sys.argv.append('--work-dir')
+                    sys.argv.append(work_dir)
 
-                        sys.argv = [sys.argv[0]]
-                        sys.argv.append(config_file_path)
-                        sys.argv.append('--work-dir')
-                        sys.argv.append(work_dir)
+                    with open(os.path.join(work_dir, 'experiment_log.txt'), 'w') as f:
+                        try:
+                            mmseg_train()
+                            f.write('Successfully trained ' + config_file_path + '\n')
+                        except Exception as inst:
+                            f.write(str(inst) + '\n')
+                            f.write('Error while training ' + config_file_path + '\n')
+                        f.close()
 
-                        with open(os.path.join(work_dir, 'experiment_log.txt'), 'w') as f:
-                            try:
-                                mmseg_train()
-                                f.write('Successfully trained ' + config_file_path + '\n')
-                            except Exception as inst:
-                                f.write(str(inst) + '\n')
-                                f.write('Error while training ' + config_file_path + '\n')
-                            f.close()
-
-                        # move experiment content to a server and delete original directory
-                        if os.path.isfile(os.path.join(work_dir, 'latest.pth')):
-                            os.remove(os.path.join(work_dir, 'latest.pth'))
-                        dest_dir_curr = os.path.join(dest_dir, config_rel_path, 'trial_{}'.format(trial_ind+1))
-                        shutil.move(work_dir, dest_dir_curr)
-                        time.sleep(10)
+                    # move experiment content to a server and delete original directory
+                    if os.path.isfile(os.path.join(work_dir, 'latest.pth')):
+                        os.remove(os.path.join(work_dir, 'latest.pth'))
+                    dest_dir_curr = os.path.join(dest_dir, config_rel_path, 'trial_{}'.format(trial_ind+1))
+                    shutil.move(work_dir, dest_dir_curr)
+                    time.sleep(10)
