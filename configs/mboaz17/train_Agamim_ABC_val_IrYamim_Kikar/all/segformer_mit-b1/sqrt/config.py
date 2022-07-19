@@ -27,7 +27,7 @@ model = dict(
                          type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),  # , avg_non_ignore=True),
                      ),
     # test_cfg=dict(mode='whole', crop_size=crop_size))
-    test_cfg=dict(mode='slide', crop_size=(1024, 2048), stride=(768, 1536)))
+    test_cfg=dict(mode='slide', crop_size=(1366, 2048), stride=(1141, 1712)))
 
 
 # dataset settings
@@ -97,8 +97,8 @@ IrYamim_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') f
 PilotPath_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in PilotPath_img]
 
 data = dict(
-    samples_per_gpu=3,  ###
-    workers_per_gpu=3,  ###
+    samples_per_gpu=2,  ###
+    workers_per_gpu=2,  ###
     train=dict(
         type=dataset_type,
         data_root=data_root,
@@ -151,8 +151,8 @@ lr_config = dict(
 
 
 # runtime settings
-runner = dict(type='IterBasedRunner', max_iters=4000)
-checkpoint_config = dict(by_epoch=False, interval=2000)
-evaluation = dict(interval=2000, metric='mIoU', pre_eval=True)
+runner = dict(type='IterBasedRunner', max_iters=400)
+checkpoint_config = dict(by_epoch=False, interval=400)
+evaluation = dict(interval=400, metric='mIoU', pre_eval=True)
 
 load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b1_8x1_1024x1024_160k_cityscapes_20211208_064213-655c7b3f.pth'

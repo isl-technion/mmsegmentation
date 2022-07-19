@@ -101,7 +101,7 @@ model = dict(
     ],
     # model training and testing settings
     train_cfg=dict(),
-    test_cfg=dict(mode='slide', crop_size=(1024, 2048), stride=(768, 1536)))
+    test_cfg=dict(mode='slide', crop_size=(1366, 2048), stride=(1141, 1712)))
 
 
 # dataset settings
@@ -171,8 +171,8 @@ IrYamim_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') f
 PilotPath_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in PilotPath_img]
 
 data = dict(
-    samples_per_gpu=3,  ###
-    workers_per_gpu=3,  ###
+    samples_per_gpu=2,  ###
+    workers_per_gpu=2,  ###
     train=dict(
         type=dataset_type,
         data_root=data_root,
@@ -203,8 +203,8 @@ lr_config = dict(warmup='linear', warmup_iters=1000)
 optimizer = dict(lr=0.05)
 
 # runtime settings
-runner = dict(type='IterBasedRunner', max_iters=4000)
-checkpoint_config = dict(by_epoch=False, interval=2000)
-evaluation = dict(interval=2000, metric='mIoU', pre_eval=True)
+runner = dict(type='IterBasedRunner', max_iters=400)
+checkpoint_config = dict(by_epoch=False, interval=400)
+evaluation = dict(interval=400, metric='mIoU', pre_eval=True)
 
 load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes_20210902_015551-bcf10f09.pth'

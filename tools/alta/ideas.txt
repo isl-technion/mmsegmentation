@@ -206,8 +206,8 @@ IrYamim could be the test set(?). Or maybe PilotPath? What about the descend sce
 * Compare to several datasets (UAVid, ISPRS, ICG SemanticDrone, Citscapes)
 * Train each net with a single height, or all heights? Same dilemma for testing - report separately and\or together?
 *
-* Rethink tiles size and stride !!!!! So it divedes nicely
-* Set hyper-parameters (esp. iterations number) using the PathC val set
+* Write an automatic test code
+* Set hyper-parameters (esp. iterations number) using the PathC val set, or use number of epochs (e.g. 20)
 * Mask the building areas from testing (and training?) to get reasonable results. Update class weights accordingly!!!
 * Report the results of 15 categories and also super-categories (e.g. veg+rough+soft, water+bicycle+person) to get reasonable results?
 * Report results of each height separately or everything together? Separately seems better. How to calculate the final result???
