@@ -206,15 +206,20 @@ IrYamim could be the test set(?). Or maybe PilotPath? What about the descend sce
 * Compare to several datasets (UAVid, ISPRS, ICG SemanticDrone, Citscapes)
 * Train each net with a single height, or all heights? Same dilemma for testing - report separately and\or together?
 *
-* Write an automatic test code
-* Set hyper-parameters (esp. iterations number) using the PathC val set, or use number of epochs (e.g. 20)
+* Write an automatic test code that also measures results
+* Update class histogram diagram
+* Set hyper-parameters (esp. iterations number) using the PathC val set (use tensorboard), or use number of epochs (e.g. 20)
 * Mask the building areas from testing (and training?) to get reasonable results. Update class weights accordingly!!!
 * Report the results of 15 categories and also super-categories (e.g. veg+rough+soft, water+bicycle+person) to get reasonable results?
 * Report results of each height separately or everything together? Separately seems better. How to calculate the final result???
 Onw part? Two parts? Five parts?
-* Why does it crash with batch=2 for segformer??? Sometimes it works fine...
 * Perform score calibration (??)
 
+* Automatic training script, including several trials per model
+* Automatic testing script, including averaging trials
+* Unexplained stability problems of the GPU
+* Setting number of iterations using the val set, not for all models, and without the Descent datasets
+* Expanded the paper
 
 UAVid:
 Dataset - 30 scenarios divided to train, val test as 15, 5, 10

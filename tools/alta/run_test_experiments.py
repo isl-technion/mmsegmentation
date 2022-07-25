@@ -4,17 +4,19 @@ import shutil
 import time
 from tools.alta.run_test_alta import main as mmseg_test
 
-dest_dir = '/media/omek/Alta/experiments/20220718_184306'
+dest_dir = '/media/omek/Alta/experiments/20220717_144803'
+# dest_dir = '/media/omek/Alta/experiments/20220718_184306'
 
-trials_per_config = 1
-iter_num = 2000
+trials_per_config = 2
+iter_num = 200
 
 cfg_options_list = ['data.test.separate_eval=1', 'data.test.separate_eval=0']
 
 train_val_spec_list = ['train_Agamim_ABC_val_IrYamim_Kikar']
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
-model_type_list = ['deeplabv3plus_r50-d8']  # ['segformer_mit-b2', 'segformer_mit-b1', 'segformer_mit-b0', 'deeplabv3plus_r50-d8', 'bisenetv2']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
-weighting_method_list = ['sqrt']  # 'equal' \ 'sqrt' \ ?
+# model_type_list = ['segformer_mit-b2', 'segformer_mit-b1', 'segformer_mit-b0', 'deeplabv3plus_r50-d8', 'bisenetv2']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
+model_type_list = ['segformer_mit-b2', 'segformer_mit-b1', 'segformer_mit-b0', 'bisenetv2']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
+weighting_method_list = ['equal']  # 'equal' \ 'sqrt' \ ?
 
 for train_val_spec in train_val_spec_list:
     for classes_type in classes_type_list:
