@@ -212,7 +212,8 @@ IrYamim could be the test set(?). Or maybe PilotPath? What about the descend sce
 * Mask the building areas from testing (and training?) to get reasonable results. Update class weights accordingly!!!
 * Report the results of 15 categories and also super-categories (e.g. veg+rough+soft, water+bicycle+person) to get reasonable results?
 * Report results of each height separately or everything together? Separately seems better. How to calculate the final result???
-Onw part? Two parts? Five parts?
+Onw part? Two parts? Five parts?  Keep it simple - don't split anything!!!
+* Can I take all datasets' annotations (without Descents) already?
 * Perform score calibration (??)
 
 * Automatic training script, including several trials per model
