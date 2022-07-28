@@ -164,4 +164,11 @@ runner = dict(type='IterBasedRunner', max_iters=400)
 checkpoint_config = dict(by_epoch=False, interval=400)
 evaluation = dict(interval=400, metric='mIoU', pre_eval=True)
 
+log_config = dict(
+    interval=50,
+    hooks=[
+        dict(type='TextLoggerHook'),
+        dict(type='TensorboardLoggerHook')
+    ])
+
 load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/deeplabv3plus_r18-d8_512x1024_80k_cityscapes_20201226_080942-cff257fe.pth'
