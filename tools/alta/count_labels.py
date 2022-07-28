@@ -15,7 +15,7 @@ dir_ir_yamim = '/media/isl12/Alta/V7_Exp_25_1_21_annot/Ir yamim/'
 dir_pilot = '/media/isl12/Alta/V7_Exp_25_1_21_annot/Pilot/'
 dir_list = [dir_agamim_path_A, dir_agamim_path_B, dir_agamim_path_C, dir_ir_yamim, dir_agamim_descend, dir_pilot]
 
-for dir_name in dir_list:
+for dir_name in dir_list[:3]:
     scenario_list = [scn for scn in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name, scn))]
     population_vect_per_dir = np.zeros(len(AltaDataset.CLASSES)+1, dtype=np.uint64)
     for scenario_name in scenario_list:
