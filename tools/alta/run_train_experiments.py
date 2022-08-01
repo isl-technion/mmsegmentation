@@ -15,9 +15,9 @@ trials_per_config = 1
 configs_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17'
 results_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17'
 
-train_val_spec_list = ['train_Agamim_ABC_val_IrYamim_Kikar']  # 'train_Agamim_ABC_val_IrYamim_Kikar' \ 'train_Agamim_AB_val_Agamim_C'
+train_val_spec_list = ['train_Agamim_AB_val_Agamim_C']  # 'train_Agamim_ABC_val_IrYamim_Kikar' \ 'train_Agamim_AB_val_Agamim_C'
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
-model_type_list = ['bisenetv1_r18-d32', 'bisenetv1_r50-d32', 'deeplabv3plus_r18-d8', 'deeplabv3plus_r50-d8', 'segformer_mit-b0', 'segformer_mit-b2']
+model_type_list = ['deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32', 'segformer_mit-b0', 'segformer_mit-b2']
 weighting_method_list = ['sqrt']  # 'equal' \ 'sqrt' \ ?
 
 for train_val_spec in train_val_spec_list:

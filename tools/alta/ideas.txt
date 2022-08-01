@@ -207,13 +207,13 @@ IrYamim could be the test set(?). Or maybe PilotPath? What about the descend sce
 * Train each net with a single height, or all heights? Same dilemma for testing - report separately and\or together?
 *
 * Write an automatic test code that also measures results
-* Update class histogram diagram
+* Take new annotations (except descents) and also update class histogram diagram (including descents)
+* Write in table inference time and memory usage and #params
 * Set hyper-parameters (esp. iterations number) using the PathC val set (use tensorboard), or use number of epochs (e.g. 20)
 * Mask the building areas from testing (and training?) to get reasonable results. Update class weights accordingly!!!
 * Report the results of 15 categories and also super-categories (e.g. veg+rough+soft, water+bicycle+person) to get reasonable results?
 * Report results of each height separately or everything together? Separately seems better. How to calculate the final result???
 Onw part? Two parts? Five parts?  Keep it simple - don't split anything!!!
-* Can I take all datasets' annotations (without Descents) already?
 * Perform score calibration (??)
 
 * Automatic training script, including several trials per model

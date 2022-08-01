@@ -161,7 +161,7 @@ data = dict(
 
 
 lr_config = dict(warmup='linear', warmup_iters=1000)
-optimizer = dict(lr=0.05)
+optimizer = dict(lr=0.025)
 
 # runtime settings
 runner = dict(type='IterBasedRunner', max_iters=400)
