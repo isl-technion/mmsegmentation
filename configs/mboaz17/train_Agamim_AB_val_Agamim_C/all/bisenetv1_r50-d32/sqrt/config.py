@@ -163,7 +163,7 @@ lr_config = dict(warmup='linear', warmup_iters=1000)
 optimizer = dict(lr=0.025)
 
 # runtime settings
-runner = dict(type='IterBasedRunner', max_iters=100000)
+runner = dict(type='IterBasedRunner', max_iters=80000)
 checkpoint_config = dict(by_epoch=False, interval=4000)
 evaluation = dict(interval=4000, metric='mIoU', pre_eval=True)
 
