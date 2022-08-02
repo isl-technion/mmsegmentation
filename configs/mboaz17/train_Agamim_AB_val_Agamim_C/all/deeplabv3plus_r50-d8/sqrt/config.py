@@ -1,8 +1,17 @@
+running_location = 'local'
+# running_location = 'remote'
+if running_location == 'local':
+    project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
+    data_root = '/media/isl12/Alta/'  # local
+elif running_location == 'remote':
+    project_dir = '/home/boaz/Projects/open-mmlab/mmsegmentation/'
+    data_root = '/home/boaz/Projects/open-mmlab/mmsegmentation/data/'  # remote
+
 _base_ = [
-    '/home/airsim/repos/open-mmlab/mmsegmentation/configs/_base_/models/deeplabv3plus_r50-d8.py',
-    '/home/airsim/repos/open-mmlab/mmsegmentation/configs/_base_/datasets/cityscapes.py',
-    '/home/airsim/repos/open-mmlab/mmsegmentation/configs/_base_/default_runtime.py',
-    '/home/airsim/repos/open-mmlab/mmsegmentation/configs/_base_/schedules/schedule_80k.py'
+    project_dir + 'configs/_base_/models/deeplabv3plus_r50-d8.py',
+    project_dir + 'configs/_base_/datasets/cityscapes.py',
+    project_dir + 'configs/_base_/default_runtime.py',
+    project_dir + 'configs/_base_/schedules/schedule_80k.py'
 ]
 
 num_classes=15
@@ -35,7 +44,6 @@ model = dict(
 
 # dataset settings
 dataset_type = 'AltaDataset'
-data_root = '/media/isl12/Alta/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -165,4 +173,4 @@ log_config = dict(
         dict(type='TensorboardLoggerHook')
     ])
 
-load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
+load_from = project_dir + 'pretrain/deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
