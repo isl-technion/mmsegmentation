@@ -1,8 +1,17 @@
-_base_ = [
-    '/home/airsim/repos/open-mmlab/mmsegmentation/configs/_base_/models/bisenetv1_r18-d32.py',
-    '/home/airsim/repos/open-mmlab/mmsegmentation/configs/_base_/datasets/cityscapes_1024x1024.py',
-    '/home/airsim/repos/open-mmlab/mmsegmentation/configs/_base_/default_runtime.py',
-    '/home/airsim/repos/open-mmlab/mmsegmentation/configs/_base_/schedules/schedule_160k.py'
+running_location = 'local'
+# running_location = 'remote'
+if running_location == 'local':
+    project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
+    data_root = '/media/isl12/Alta/'  # local
+elif running_location == 'remote':
+    project_dir = '/home/boaz/Projects/open-mmlab/mmsegmentation/'
+    data_root = '/home/boaz/Projects/open-mmlab/mmsegmentation/data/'  # remote
+
+_base_ = [  # remote
+    project_dir + 'configs/_base_/models/bisenetv1_r18-d32.py',
+    project_dir + 'configs/_base_/datasets/cityscapes_1024x1024.py',
+    project_dir + 'configs/_base_/default_runtime.py',
+    project_dir + 'configs/_base_/schedules/schedule_160k.py'
 ]
 
 num_classes=15
@@ -20,7 +29,7 @@ crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # model settings
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    # backbone=dict(init_cfg=dict(type='Pretrained', checkpoint='/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/mit_b0.pth')),
+    # backbone=dict(init_cfg=dict(type='Pretrained', checkpoint=project_dir + 'pretrain/mit_b0.pth')),
     decode_head=dict(num_classes=num_classes,
                      # ignore_index=1,
                      loss_decode=dict(
@@ -60,7 +69,6 @@ model = dict(
 
 # dataset settings
 dataset_type = 'AltaDataset'
-data_root = '/media/isl12/Alta/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -168,4 +176,4 @@ log_config = dict(
         dict(type='TensorboardLoggerHook')
     ])
 
-load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/bisenetv1_r18-d32_in1k-pre_4x4_1024x1024_160k_cityscapes_20210905_220251-8ba80eff.pth'
+load_from = project_dir + 'pretrain/bisenetv1_r18-d32_in1k-pre_4x4_1024x1024_160k_cityscapes_20210905_220251-8ba80eff.pth'

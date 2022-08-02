@@ -4,20 +4,31 @@ import shutil
 import time
 from tools.alta.run_train_alta import main as mmseg_train
 
+running_location = 'local'
+# running_location = 'remote'
+if running_location == 'local':
+    dest_dir0 = '/media/omek/Alta/experiments/'
+    project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
+elif running_location == 'remote':
+    dest_dir0 = '/home/boaz/Projects/open-mmlab/mmsegmentation/results/'
+    project_dir = '/home/boaz/Projects/open-mmlab/mmsegmentation/'
+
+
 timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
-dest_dir = os.path.join('/media/omek/Alta/experiments', timestamp)
+dest_dir = os.path.join(dest_dir0, timestamp)
 if not os.path.isdir(dest_dir):
     os.makedirs(dest_dir)
 
 shutil.copyfile(__file__, os.path.join(dest_dir, os.path.split(__file__)[1]))
 
 trials_per_config = 1
-configs_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17'
-results_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17'
+configs_dir = os.path.join(project_dir, 'configs/mboaz17')
+results_dir = os.path.join(project_dir, 'results/mboaz17')
 
 train_val_spec_list = ['train_Agamim_AB_val_Agamim_C']  # 'train_Agamim_ABC_val_IrYamim_Kikar' \ 'train_Agamim_AB_val_Agamim_C'
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
-model_type_list = ['deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32', 'segformer_mit-b0', 'segformer_mit-b2']
+# model_type_list = ['deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32', 'segformer_mit-b0', 'segformer_mit-b2']
+model_type_list = ['bisenetv1_r18-d32', 'deeplabv3plus_r18-d8', 'bisenetv1_r50-d32', 'segformer_mit-b0', 'segformer_mit-b2', 'deeplabv3plus_r50-d8']
 weighting_method_list = ['sqrt']  # 'equal' \ 'sqrt' \ ?
 
 for train_val_spec in train_val_spec_list:
