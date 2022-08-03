@@ -42,7 +42,7 @@ for train_val_spec in train_val_spec_list:
                     continue
 
                 for trial_ind in range(trials_per_config):
-                    work_dir = os.path.join(results_dir, 'curr_run')
+                    work_dir = os.path.join(results_dir, 'curr_run6')
                     if os.path.isdir(work_dir):
                         shutil.rmtree(work_dir)
                     os.makedirs(work_dir)
