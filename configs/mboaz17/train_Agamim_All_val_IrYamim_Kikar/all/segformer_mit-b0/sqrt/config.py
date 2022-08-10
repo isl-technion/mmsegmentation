@@ -11,7 +11,7 @@ _base_ = [
     project_dir + 'configs/_base_/models/segformer_mit-b0.py',
     project_dir + 'configs/_base_/datasets/cityscapes_1024x1024.py',
     project_dir + 'configs/_base_/default_runtime.py',
-    project_dir + 'configs/_base_/schedules/schedule_160k.py'
+    '../../../schedule_100_epochs.py'
 ]
 
 num_classes=15
@@ -89,8 +89,8 @@ pathC_scenarios_img = [
     'V7_Exp_25_1_21/Agamim/Path/C/100',
 ]
 Descend_scenarios_img = [
-    'V7_Exp_25_1_21_annot/Agamim/Descend/100_0003',
-    'V7_Exp_25_1_21_annot/Agamim/Descend/100_0006',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0003',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0006',
 ]
 IrYamim_scenarios_img = [
     'V7_Exp_25_1_21/Ir yamim/30',
@@ -161,11 +161,6 @@ lr_config = dict(
     min_lr=0.0,
     by_epoch=False)
 
-
-# runtime settings
-runner = dict(type='EpochBasedRunner', max_epochs=100)
-checkpoint_config = dict(by_epoch=True, interval=5)
-evaluation = dict(interval=5, metric='mIoU', pre_eval=True)
 
 log_config = dict(
     interval=50,
