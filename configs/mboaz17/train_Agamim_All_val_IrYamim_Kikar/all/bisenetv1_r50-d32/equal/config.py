@@ -24,45 +24,52 @@ Descend_hist = [1202109, 1052490144, 76249375, 69262271, 475907, 8300094, 313803
 class_weight = [3.80209692, 0.12585018, 0.36718078, 0.44939107, 3.75113637,
        1.09430135, 0.20913081, 0.35813518, 0.19227513, 1.46679826,
        0.08691613, 0.11027586, 0.34115176, 0.12523734, 2.52012283]
+class_weight = [1.0 for i in class_weight]
 crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
 
 # model settings
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    # backbone=dict(init_cfg=dict(type='Pretrained', checkpoint=project_dir + 'pretrain/mit_b0.pth')),
-    decode_head=dict(num_classes=num_classes,
-                     # ignore_index=1,
-                     loss_decode=dict(
-                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),  # , avg_non_ignore=True),
-                     ),
+    type='EncoderDecoder',
+    backbone=dict(
+        type='BiSeNetV1',
+        context_channels=(512, 1024, 2048),
+        spatial_channels=(256, 256, 256, 512),
+        out_channels=1024,
+        backbone_cfg=dict(type='ResNet', depth=50)),
+    decode_head=dict(
+        type='FCNHead', in_channels=1024, in_index=0, channels=1024,
+        num_classes=num_classes,
+        # ignore_index=1,
+        loss_decode=dict(
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),  # , avg_non_ignore=True),
+    ),
     auxiliary_head=[
         dict(
             type='FCNHead',
-            in_channels=128,
-            channels=64,
+            in_channels=512,
+            channels=256,
             num_convs=1,
             num_classes=num_classes,
             # ignore_index=1,
             in_index=1,
             norm_cfg=norm_cfg,
-            concat_input=False,
-            align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight)), # , avg_non_ignore=True),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight), # , avg_non_ignore=True),
+            concat_input=False),
         dict(
             type='FCNHead',
-            in_channels=128,
-            channels=64,
+            in_channels=512,
+            channels=256,
             num_convs=1,
             num_classes=num_classes,
             # ignore_index=1,
             in_index=2,
             norm_cfg=norm_cfg,
-            concat_input=False,
-            align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight)), # , avg_non_ignore=True),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight), # , avg_non_ignore=True),
+            concat_input=False),
     ],
     # test_cfg=dict(mode='whole', crop_size=crop_size))
     test_cfg=dict(mode='slide', crop_size=(1366, 2048), stride=(1141, 1712)))
@@ -119,8 +126,15 @@ pathC_scenarios_img = [
     'V7_Exp_25_1_21/Agamim/Path/C/100',
 ]
 Descend_scenarios_img = [
+    'V7_Exp_25_1_21/Agamim/Descend/100_0001',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0002',
     'V7_Exp_25_1_21/Agamim/Descend/100_0003',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0004',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0005',
     'V7_Exp_25_1_21/Agamim/Descend/100_0006',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0031',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0035',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0038',
 ]
 IrYamim_scenarios_img = [
     'V7_Exp_25_1_21/Ir yamim/30',
@@ -169,7 +183,7 @@ data = dict(
 
 # optimizer
 lr_config = dict(warmup='linear', warmup_iters=1000)
-optimizer = dict(lr=0.025)
+optimizer = dict(lr=0.05)
 
 log_config = dict(
     interval=50,
@@ -178,4 +192,4 @@ log_config = dict(
         dict(type='TensorboardLoggerHook')
     ])
 
-load_from = project_dir + 'pretrain/bisenetv1_r18-d32_in1k-pre_4x4_1024x1024_160k_cityscapes_20210905_220251-8ba80eff.pth'
+load_from = project_dir + 'pretrain/bisenetv1_r50-d32_in1k-pre_4x4_1024x1024_160k_cityscapes_20210917_234628-8b304447.pth'

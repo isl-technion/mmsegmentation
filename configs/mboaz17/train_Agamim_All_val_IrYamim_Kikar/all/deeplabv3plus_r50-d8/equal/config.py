@@ -8,8 +8,8 @@ elif running_location == 'remote':
     data_root = '/home/boaz/Projects/open-mmlab/mmsegmentation/data/'  # remote
 
 _base_ = [
-    project_dir + 'configs/_base_/models/segformer_mit-b0.py',
-    project_dir + 'configs/_base_/datasets/cityscapes_1024x1024.py',
+    project_dir + 'configs/_base_/models/deeplabv3plus_r50-d8.py',
+    project_dir + 'configs/_base_/datasets/cityscapes.py',
     project_dir + 'configs/_base_/default_runtime.py',
     '../../../schedule_100_epochs.py'
 ]
@@ -24,6 +24,7 @@ Descend_hist = [1202109, 1052490144, 76249375, 69262271, 475907, 8300094, 313803
 class_weight = [3.80209692, 0.12585018, 0.36718078, 0.44939107, 3.75113637,
        1.09430135, 0.20913081, 0.35813518, 0.19227513, 1.46679826,
        0.08691613, 0.11027586, 0.34115176, 0.12523734, 2.52012283]
+class_weight = [1.0 for i in class_weight]
 crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
 
@@ -33,6 +34,11 @@ model = dict(
                      # ignore_index=1,
                      loss_decode=dict(
                          type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),  # , avg_non_ignore=True),
+                     ),
+    auxiliary_head=dict(num_classes=num_classes,
+                     # ignore_index=1,
+                     loss_decode=dict(
+                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4, class_weight=class_weight),  # , avg_non_ignore=True),
                      ),
     # test_cfg=dict(mode='whole', crop_size=crop_size))
     test_cfg=dict(mode='slide', crop_size=(1366, 2048), stride=(1141, 1712)))
@@ -89,8 +95,15 @@ pathC_scenarios_img = [
     'V7_Exp_25_1_21/Agamim/Path/C/100',
 ]
 Descend_scenarios_img = [
+    'V7_Exp_25_1_21/Agamim/Descend/100_0001',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0002',
     'V7_Exp_25_1_21/Agamim/Descend/100_0003',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0004',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0005',
     'V7_Exp_25_1_21/Agamim/Descend/100_0006',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0031',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0035',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0038',
 ]
 IrYamim_scenarios_img = [
     'V7_Exp_25_1_21/Ir yamim/30',
@@ -161,7 +174,6 @@ lr_config = dict(
     min_lr=0.0,
     by_epoch=False)
 
-
 log_config = dict(
     interval=50,
     hooks=[
@@ -169,4 +181,4 @@ log_config = dict(
         dict(type='TensorboardLoggerHook')
     ])
 
-load_from = project_dir + 'pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
+load_from = project_dir + 'pretrain/deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
