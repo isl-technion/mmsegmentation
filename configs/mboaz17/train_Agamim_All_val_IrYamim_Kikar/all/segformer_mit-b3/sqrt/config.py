@@ -8,8 +8,8 @@ elif running_location == 'remote':
     data_root = '/home/boaz/Projects/open-mmlab/mmsegmentation/data/'  # remote
 
 _base_ = [
-    project_dir + 'configs/_base_/models/deeplabv3plus_r50-d8.py',
-    project_dir + 'configs/_base_/datasets/cityscapes.py',
+    project_dir + 'configs/_base_/models/segformer_mit-b0.py',
+    project_dir + 'configs/_base_/datasets/cityscapes_1024x1024.py',
     project_dir + 'configs/_base_/default_runtime.py',
     '../../../schedule_100_epochs.py'
 ]
@@ -24,21 +24,18 @@ Descend_hist = [3045908, 3413445921,  328159616,  271929254,    3979793, 5010866
 class_weight = [3.71538858, 0.1120853 , 0.33624011, 0.38952872, 3.06541433,
        0.88976835, 0.16131895, 0.3799728 , 0.14214395, 1.74654405,
        0.07581021, 0.10506713, 0.32229738, 0.10026994, 3.45815018]
-class_weight = [1.0 for i in class_weight]
+# class_weight = [1.0 for i in class_weight]
 crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
 
 model = dict(
     # backbone=dict(init_cfg=dict(type='Pretrained', checkpoint='/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/mit_b0.pth')),
+    backbone=dict(embed_dims=64, num_layers=[3, 4, 18, 3]),
     decode_head=dict(num_classes=num_classes,
                      # ignore_index=1,
+                     in_channels=[64, 128, 320, 512],
                      loss_decode=dict(
                          type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),  # , avg_non_ignore=True),
-                     ),
-    auxiliary_head=dict(num_classes=num_classes,
-                     # ignore_index=1,
-                     loss_decode=dict(
-                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4, class_weight=class_weight),  # , avg_non_ignore=True),
                      ),
     # test_cfg=dict(mode='whole', crop_size=crop_size))
     test_cfg=dict(mode='slide', crop_size=(1366, 2048), stride=(1141, 1712)))
@@ -174,6 +171,7 @@ lr_config = dict(
     min_lr=0.0,
     by_epoch=False)
 
+
 log_config = dict(
     interval=50,
     hooks=[
@@ -181,4 +179,4 @@ log_config = dict(
         dict(type='TensorboardLoggerHook')
     ])
 
-load_from = project_dir + 'pretrain/deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
+load_from = project_dir + 'pretrain/segformer_mit-b3_8x1_1024x1024_160k_cityscapes_20211206_224823-a8f8a177.pth'

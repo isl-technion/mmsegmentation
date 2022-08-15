@@ -24,19 +24,25 @@ Descend_hist = [3045908, 3413445921,  328159616,  271929254,    3979793, 5010866
 class_weight = [3.71538858, 0.1120853 , 0.33624011, 0.38952872, 3.06541433,
        0.88976835, 0.16131895, 0.3799728 , 0.14214395, 1.74654405,
        0.07581021, 0.10506713, 0.32229738, 0.10026994, 3.45815018]
-class_weight = [1.0 for i in class_weight]
+# class_weight = [1.0 for i in class_weight]
 crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
 
 model = dict(
     # backbone=dict(init_cfg=dict(type='Pretrained', checkpoint='/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/mit_b0.pth')),
+    backbone=dict(depth=18),
     decode_head=dict(num_classes=num_classes,
                      # ignore_index=1,
+                     c1_in_channels=64,
+                     c1_channels=12,
+                     in_channels=512,
+                     channels=128,
                      loss_decode=dict(
                          type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),  # , avg_non_ignore=True),
                      ),
     auxiliary_head=dict(num_classes=num_classes,
                      # ignore_index=1,
+                     in_channels=256, channels=64,
                      loss_decode=dict(
                          type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4, class_weight=class_weight),  # , avg_non_ignore=True),
                      ),
@@ -181,4 +187,4 @@ log_config = dict(
         dict(type='TensorboardLoggerHook')
     ])
 
-load_from = project_dir + 'pretrain/deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
+load_from = project_dir + 'pretrain/deeplabv3plus_r18-d8_512x1024_80k_cityscapes_20201226_080942-cff257fe.pth'

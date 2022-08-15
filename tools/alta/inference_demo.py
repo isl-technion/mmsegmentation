@@ -41,9 +41,18 @@ elif 0:  # for_paper - DeepLabV3+ reweighted, 2048x1024, trial experiment
 elif 0:  # for_paper - DeepLabV3+ reweighted, pathABC -> IrYamim+Pilot
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17/paper/deeplabv3_r50-d8_train_pathABC_val_IrYamim_Pilot_rew_sqrt.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/deeplabv3_r50-d8_train_pathABC_val_IrYamim_Pilot_rew_sqrt/iter_40000.pth'
-elif 1:  # for_paper - DeepLabV3+ reweighted, pathABC -> IrYamim+Pilot
+elif 0:  # for_paper - DeepLabV3+ reweighted, pathABC -> IrYamim+Pilot
     config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/segformer_mit-b0_train_pathABC_val_IrYamim_Pilot_rew_sqrt_noB/segformer_mit-b0_train_pathABC_val_IrYamim_Pilot_rew_sqrt_noB.py'
     checkpoint_file = '/home/airsim/repos/open-mmlab/mmsegmentation/results/mboaz17/paper/segformer_mit-b0_train_pathABC_val_IrYamim_Pilot_rew_sqrt_noB/iter_40000.pth'
+elif 1:  # for_paper -
+    if 0:
+        model_name = 'segformer_mit-b0'
+        config_file = '/media/omek/Alta/experiments/remote_test/20220812_133530/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/equal/trial_1/config.py'
+        checkpoint_file = '/media/omek/Alta/experiments/remote_test/20220812_133530/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/equal/trial_1/epoch_100.pth'
+    else:
+        model_name = 'segformer_mit-b3'
+        config_file = '/media/omek/Alta/experiments/remote_test/20220812_133759/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/equal/trial_1/config.py'
+        checkpoint_file = '/media/omek/Alta/experiments/remote_test/20220812_133759/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/equal/trial_1/epoch_100.pth'
 
 
 # build the model from a config file and a checkpoint file
@@ -55,8 +64,8 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0038'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/A/100'
 # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Path/B/100'
-# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Ir yamim/50'
-images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Pilot/Path'
+images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Ir yamim/100'
+# images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Pilot/Path'
 images_list = os.listdir(images_path)
 images_list.sort()
 

@@ -8,8 +8,8 @@ elif running_location == 'remote':
     data_root = '/home/boaz/Projects/open-mmlab/mmsegmentation/data/'  # remote
 
 _base_ = [
-    project_dir + 'configs/_base_/models/deeplabv3plus_r50-d8.py',
-    project_dir + 'configs/_base_/datasets/cityscapes.py',
+    project_dir + 'configs/_base_/models/bisenetv1_r18-d32.py',
+    project_dir + 'configs/_base_/datasets/cityscapes_1024x1024.py',
     project_dir + 'configs/_base_/default_runtime.py',
     '../../../schedule_100_epochs.py'
 ]
@@ -24,22 +24,53 @@ Descend_hist = [3045908, 3413445921,  328159616,  271929254,    3979793, 5010866
 class_weight = [3.71538858, 0.1120853 , 0.33624011, 0.38952872, 3.06541433,
        0.88976835, 0.16131895, 0.3799728 , 0.14214395, 1.74654405,
        0.07581021, 0.10506713, 0.32229738, 0.10026994, 3.45815018]
-class_weight = [1.0 for i in class_weight]
+# class_weight = [1.0 for i in class_weight]
 crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
 
+# model settings
+norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    # backbone=dict(init_cfg=dict(type='Pretrained', checkpoint='/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/mit_b0.pth')),
-    decode_head=dict(num_classes=num_classes,
-                     # ignore_index=1,
-                     loss_decode=dict(
-                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),  # , avg_non_ignore=True),
-                     ),
-    auxiliary_head=dict(num_classes=num_classes,
-                     # ignore_index=1,
-                     loss_decode=dict(
-                         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4, class_weight=class_weight),  # , avg_non_ignore=True),
-                     ),
+    type='EncoderDecoder',
+    backbone=dict(
+        type='BiSeNetV1',
+        context_channels=(512, 1024, 2048),
+        spatial_channels=(256, 256, 256, 512),
+        out_channels=1024,
+        backbone_cfg=dict(type='ResNet', depth=50)),
+    decode_head=dict(
+        type='FCNHead', in_channels=1024, in_index=0, channels=1024,
+        num_classes=num_classes,
+        # ignore_index=1,
+        loss_decode=dict(
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),  # , avg_non_ignore=True),
+    ),
+    auxiliary_head=[
+        dict(
+            type='FCNHead',
+            in_channels=512,
+            channels=256,
+            num_convs=1,
+            num_classes=num_classes,
+            # ignore_index=1,
+            in_index=1,
+            norm_cfg=norm_cfg,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight), # , avg_non_ignore=True),
+            concat_input=False),
+        dict(
+            type='FCNHead',
+            in_channels=512,
+            channels=256,
+            num_convs=1,
+            num_classes=num_classes,
+            # ignore_index=1,
+            in_index=2,
+            norm_cfg=norm_cfg,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight), # , avg_non_ignore=True),
+            concat_input=False),
+    ],
     # test_cfg=dict(mode='whole', crop_size=crop_size))
     test_cfg=dict(mode='slide', crop_size=(1366, 2048), stride=(1141, 1712)))
 
@@ -151,28 +182,8 @@ data = dict(
 
 
 # optimizer
-optimizer = dict(
-    _delete_=True,
-    type='AdamW',
-    lr=0.00006,
-    betas=(0.9, 0.999),
-    weight_decay=0.01,
-    paramwise_cfg=dict(
-        custom_keys={
-            'pos_block': dict(decay_mult=0.),
-            'norm': dict(decay_mult=0.),
-            'head': dict(lr_mult=10.)
-        }))
-
-lr_config = dict(
-    _delete_=True,
-    policy='poly',
-    warmup='linear',
-    warmup_iters=1500,
-    warmup_ratio=1e-6,
-    power=1.0,
-    min_lr=0.0,
-    by_epoch=False)
+lr_config = dict(warmup='linear', warmup_iters=1000)
+optimizer = dict(lr=0.05)
 
 log_config = dict(
     interval=50,
@@ -181,4 +192,4 @@ log_config = dict(
         dict(type='TensorboardLoggerHook')
     ])
 
-load_from = project_dir + 'pretrain/deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth'
+load_from = project_dir + 'pretrain/bisenetv1_r50-d32_in1k-pre_4x4_1024x1024_160k_cityscapes_20210917_234628-8b304447.pth'
