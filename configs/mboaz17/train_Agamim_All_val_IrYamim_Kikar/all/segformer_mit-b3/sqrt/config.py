@@ -11,7 +11,7 @@ _base_ = [
     project_dir + 'configs/_base_/models/segformer_mit-b0.py',
     project_dir + 'configs/_base_/datasets/cityscapes_1024x1024.py',
     project_dir + 'configs/_base_/default_runtime.py',
-    '../../../schedule_100_epochs.py'
+    '../../../schedule_320_epochs.py'
 ]
 
 num_classes=15
@@ -100,7 +100,13 @@ Descend_scenarios_img = [
     'V7_Exp_25_1_21/Agamim/Descend/100_0006',
     'V7_Exp_25_1_21/Agamim/Descend/100_0031',
     'V7_Exp_25_1_21/Agamim/Descend/100_0035',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0036',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0037',
     'V7_Exp_25_1_21/Agamim/Descend/100_0038',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0040',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0041',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0042',
+    'V7_Exp_25_1_21/Agamim/Descend/100_0043',
 ]
 IrYamim_scenarios_img = [
     'V7_Exp_25_1_21/Ir yamim/30',

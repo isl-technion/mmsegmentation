@@ -207,7 +207,6 @@ IrYamim could be the test set(?). Or maybe PilotPath? What about the descend sce
 * Train each net with a single height, or all heights? Same dilemma for testing - report separately and\or together?
 *
 * Set running_location as an envoroment variable?
-* Run segformer-m3?
 * Write an automatic test code that also measures results
 * Take new annotations (except descents) and also update class histogram diagram (including descents)
 * Write in table inference time and memory usage and #params
@@ -217,6 +216,8 @@ IrYamim could be the test set(?). Or maybe PilotPath? What about the descend sce
 * Report results of each height separately or everything together? Separately seems better. How to calculate the final result???
 Onw part? Two parts? Five parts?  Keep it simple - don't split anything!!!
 * Perform score calibration (??)
+* Rerun for 3 trials after all corrections made
+* Also, throw away similar Descend scenarios
 
 * Automatic training script, including several trials per model
 * Automatic testing script, including averaging trials
