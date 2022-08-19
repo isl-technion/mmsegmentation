@@ -120,14 +120,14 @@ pathC_scenarios_img = [
     'V7_Exp_25_1_21/Agamim/Path/C/100',
 ]
 Descend_scenarios_img = [
-    'V7_Exp_25_1_21/Agamim/Descend/100_0001',
+    # 'V7_Exp_25_1_21/Agamim/Descend/100_0001',
     'V7_Exp_25_1_21/Agamim/Descend/100_0002',
     'V7_Exp_25_1_21/Agamim/Descend/100_0003',
     'V7_Exp_25_1_21/Agamim/Descend/100_0004',
     'V7_Exp_25_1_21/Agamim/Descend/100_0005',
     'V7_Exp_25_1_21/Agamim/Descend/100_0006',
     'V7_Exp_25_1_21/Agamim/Descend/100_0031',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0035',
+    # 'V7_Exp_25_1_21/Agamim/Descend/100_0035',
     'V7_Exp_25_1_21/Agamim/Descend/100_0036',
     'V7_Exp_25_1_21/Agamim/Descend/100_0037',
     'V7_Exp_25_1_21/Agamim/Descend/100_0038',

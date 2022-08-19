@@ -96,6 +96,8 @@ class AltaDataset(CustomDataset):
             **kwargs)
         # self.label_map = {0: 0, 1: 4, 2: 2, 3: 4, 4: 4, 5: 4, 6: 4, 7: 7, 8: 4, 9: 9, 10: 4, 11: 11, 12: 12, 13: 13, 14: 14, 15: 4}
         assert osp.exists(self.img_dir)
+        if 'Descend' in self.img_dir:  # Reduce the number of Descend images
+            self.img_infos = self.img_infos[::5]
 
     # def prepare_test_img(self, idx):  # uncomment if LoadAnnotations is needed during testing...
     #     """Get testing data after pipeline.
