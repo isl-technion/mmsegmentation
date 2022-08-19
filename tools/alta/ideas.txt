@@ -217,7 +217,9 @@ IrYamim could be the test set(?). Or maybe PilotPath? What about the descend sce
 Onw part? Two parts? Five parts?  Keep it simple - don't split anything!!!
 * Perform score calibration (??)
 * Rerun for 3 trials after all corrections made
-* Also, throw away similar Descend scenarios
+** Also, throw away similar Descend scenarios (0001, 0035 discarded), and sample each scenario 1:5
+** Fix 0035 soft -> rough, fix PilotPath?
+
 
 * Automatic training script, including several trials per model
 * Automatic testing script, including averaging trials
