@@ -31,7 +31,7 @@ classes_type_list = ['all']  # 'all' \ 'noB' \ ?
 #                    'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # All
 model_type_list = ['segformer_mit-b0', 'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # First GPU
 # model_type_list = ['segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32']  # Second GPU
-weighting_method_list = ['noB']  # 'equal' \ 'sqrt' \ ?
+weighting_method_list = ['equal']  # 'equal' \ 'sqrt' \ ?
 
 for train_val_spec in train_val_spec_list:
     for classes_type in classes_type_list:
