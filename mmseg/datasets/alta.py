@@ -11,7 +11,7 @@ class AltaDataset(CustomDataset):
     """
 
     CLASSES = [
-        # 'background',  # 0
+        'background',  # 0
         'bicycle',  # 1
         'building',  # 2
         'fence',  # 3
@@ -29,7 +29,7 @@ class AltaDataset(CustomDataset):
         'water',  # 15
     ]
     PALETTE = [
-        # [0, 0, 0],  # 0
+        [0, 0, 0],  # 0
         [255, 50, 50],  # 1
         [255, 127, 50],  # 2
         [255, 204, 50],  # 3
@@ -48,7 +48,7 @@ class AltaDataset(CustomDataset):
     ]
 
     class_scores = [
-        # 0,  # 'background',  # 0
+        0,  # 'background',  # 0
         0,  # 'bicycle',  # 1
         0,  # 'building',  # 2
         0,  # 'fence',  # 3
@@ -91,8 +91,8 @@ class AltaDataset(CustomDataset):
             seg_map_suffix='.png',
             # reduce_zero_label=True,  # False  #remove the bkg class
             # ignore_index=1,
-            classes=self.CLASSES,
-            palette=self.PALETTE,
+            classes=self.CLASSES[kwargs['reduce_zero_label']:],
+            palette=self.PALETTE[kwargs['reduce_zero_label']:],
             **kwargs)
         # self.label_map = {0: 0, 1: 4, 2: 2, 3: 4, 4: 4, 5: 4, 6: 4, 7: 7, 8: 4, 9: 9, 10: 4, 11: 11, 12: 12, 13: 13, 14: 14, 15: 4}
         assert osp.exists(self.img_dir)
