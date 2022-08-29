@@ -49,10 +49,13 @@ elif 1:  # for_paper -
         model_name = 'segformer_mit-b0'
         config_file = '/media/omek/Alta/experiments/remote_test/20220812_133530/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/equal/trial_1/config.py'
         checkpoint_file = '/media/omek/Alta/experiments/remote_test/20220812_133530/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/equal/trial_1/epoch_100.pth'
-    else:
+    elif 0:
         model_name = 'segformer_mit-b3'
         config_file = '/media/omek/Alta/experiments/remote_test/20220812_133759/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/equal/trial_1/config.py'
         checkpoint_file = '/media/omek/Alta/experiments/remote_test/20220812_133759/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/equal/trial_1/epoch_100.pth'
+    else:
+        config_file = '/media/omek/Alta/experiments/arabella_test_post_sampling5/mboaz17/run_train_experiments6/config.py'
+        checkpoint_file = '/media/omek/Alta/experiments/arabella_test_post_sampling5/mboaz17/run_train_experiments6/epoch_280.pth'
 
 
 # build the model from a config file and a checkpoint file

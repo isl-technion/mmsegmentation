@@ -4,18 +4,19 @@ import shutil
 import time
 from tools.alta.run_test_alta import main as mmseg_test
 
-dest_dir = '/media/omek/Alta/experiments/20220717_144803'
-# dest_dir = '/media/omek/Alta/experiments/20220718_184306'
+# dest_dir = '/media/omek/Alta/experiments/20220717_144803'
+dest_dir = '/media/omek/Alta/experiments/arabella_test_post_sampling5/20220819_092331_equal'
 
-trials_per_config = 2
-iter_num = 200
+trials_per_config = 1
+epoch_num = 320
 
 cfg_options_list = ['data.test.separate_eval=1', 'data.test.separate_eval=0']
 
-train_val_spec_list = ['train_Agamim_ABC_val_IrYamim_Kikar']
+train_val_spec_list = ['train_Agamim_All_val_IrYamim_Kikar']
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
-# model_type_list = ['segformer_mit-b2', 'segformer_mit-b1', 'segformer_mit-b0', 'deeplabv3plus_r50-d8', 'bisenetv2']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
-model_type_list = ['segformer_mit-b2', 'segformer_mit-b1', 'segformer_mit-b0', 'bisenetv2']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
+# model_type_list = ['segformer_mit-b3', 'segformer_mit-b0', 'deeplabv3plus_r50-d8', 'bisenetv2']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
+model_type_list = ['segformer_mit-b0', 'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # First GPU
+# model_type_list = ['segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32']  # Second GPU
 weighting_method_list = ['equal']  # 'equal' \ 'sqrt' \ ?
 
 for train_val_spec in train_val_spec_list:
@@ -27,7 +28,7 @@ for train_val_spec in train_val_spec_list:
                     config_rel_path = os.path.join(train_val_spec, classes_type, model_type, weighting_method, trial_folder_name)
                     work_dir = os.path.join(dest_dir, config_rel_path)
                     config_file_path = os.path.join(work_dir, 'config.py')
-                    checkpoint_file_path = os.path.join(work_dir, 'iter_{}.pth'.format(iter_num))
+                    checkpoint_file_path = os.path.join(work_dir, 'iter_{}.pth'.format(epoch_num))
                     if not os.path.isfile(config_file_path):
                         print('Missing config file: ' + config_file_path)
                         continue
