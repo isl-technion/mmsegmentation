@@ -219,10 +219,9 @@ Onw part? Two parts? Five parts?  Keep it simple - don't split anything!!!
 ####################### Most urgent!!!!!
 * Rerun for 3 trials after all corrections made
 ** Also, throw away similar Descend scenarios (0001, 0035 discarded), and sample each scenario 1:5
+Will these two scenarios be a part of the official dataset? If not, correct the relevant paragraph and tables
 ** Fix 0035 soft -> rough, fix PilotPath errors (even after Barak's corrections)
 ** Run test with inverse weights???
-*** FIX noB access violation!!!
-*** Take the updated PilotPath annotation 28082022
 *** Recount labels (make new figure), including the 1:5 dilation of the Descend datasets!!!
 *** Eventually, rerun all experiments with 16 classes.
 *** try to make the training\testing scripts run on all computers without changes!!!

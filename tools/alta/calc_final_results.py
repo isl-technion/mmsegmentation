@@ -4,34 +4,32 @@ import shutil
 import time
 import mmcv
 import glob
-import xlsxwriter
+# import xlsxwriter
 import csv
 
-dest_dir = '/media/omek/Alta/experiments/20220717_144803'
-# dest_dir = '/media/omek/Alta/experiments/20220718_184306'
+# dest_dir = '/media/omek/Alta/experiments/arabella_test_post_sampling5/20220819_092331_equal'
+dest_dir = '/media/omek/Alta/experiments/arabella_test_post_sampling5/20220823_094529_sqrt'
 
-trials_per_config = 2
-iter_num = 200
+trials_per_config = 1
+epoch_num = 320
 
-test_ind = 0
+test_ind = 1
 
-train_val_spec_list = ['train_Agamim_ABC_val_IrYamim_Kikar']
+train_val_spec_list = ['train_Agamim_All_val_IrYamim_Kikar']
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
-# model_type_list = ['segformer_mit-b2', 'segformer_mit-b1', 'segformer_mit-b0', 'deeplabv3plus_r50-d8', 'bisenetv2']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
-model_type_list = ['segformer_mit-b2', 'segformer_mit-b1', 'segformer_mit-b0', 'bisenetv2']  #  'bisenetv2' \ 'segformer_mit-b0\1\2' \ ...
-weighting_method_list = ['equal']  # 'equal' \ 'sqrt' \ ?
+model_type_list = ['segformer_mit-b0', 'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8', 'segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32']  # Second GPU
+weighting_method_list = ['sqrt']  # 'equal' \ 'sqrt' \ ?
 
 for train_val_spec in train_val_spec_list:
     for classes_type in classes_type_list:
         for model_type in model_type_list:
             for weighting_method in weighting_method_list:
-
                 for trial_ind in range(trials_per_config):
                     trial_folder_name = 'trial_{}'.format(trial_ind+1)
                     config_rel_path = os.path.join(train_val_spec, classes_type, model_type, weighting_method, trial_folder_name)
                     work_dir = os.path.join(dest_dir, config_rel_path)
                     config_file_path = os.path.join(work_dir, 'config.py')
-                    checkpoint_file_path = os.path.join(work_dir, 'iter_{}.pth'.format(iter_num))
+                    checkpoint_file_path = os.path.join(work_dir, 'epoch_{}.pth'.format(epoch_num))
                     if not os.path.isfile(config_file_path):
                         print('Missing config file: ' + config_file_path)
                         break
