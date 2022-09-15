@@ -1,5 +1,5 @@
-running_location = 'local'
-# running_location = 'remote'
+# running_location = 'local'
+running_location = 'remote'
 if running_location == 'local':
     project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
     data_root = '/media/isl12/Alta/'  # local
@@ -100,7 +100,7 @@ Descend_scenarios_img = [
     'V7_Exp_25_1_21/Agamim/Descend/100_0006',
     'V7_Exp_25_1_21/Agamim/Descend/100_0031',
     # 'V7_Exp_25_1_21/Agamim/Descend/100_0035',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0036',
+    # 'V7_Exp_25_1_21/Agamim/Descend/100_0036',
     'V7_Exp_25_1_21/Agamim/Descend/100_0037',
     'V7_Exp_25_1_21/Agamim/Descend/100_0038',
     'V7_Exp_25_1_21/Agamim/Descend/100_0040',
