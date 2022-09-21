@@ -4,8 +4,8 @@ import shutil
 import time
 from tools.alta.run_train_alta import main as mmseg_train
 
-running_location = 'local'
-# running_location = 'remote'
+# running_location = 'local'
+running_location = 'remote'
 if running_location == 'local':
     dest_dir0 = '/media/omek/Alta/experiments/'
     project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
