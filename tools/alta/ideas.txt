@@ -231,6 +231,7 @@ The histogram and the table || should be corrected anyway.
 *** rerun all tests after PilotPath corrections
 *** remove from training scenarios 1. 35, 36 as well.
 *** scenarios 1, 2, 31, 35, 36 should be consistent!!!
+*** Put a few images and results in the paper
 
 
 * Automatic training script, including several trials per model
