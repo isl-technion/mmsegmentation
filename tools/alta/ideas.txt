@@ -224,14 +224,20 @@ Will these two scenarios be a part of the official dataset? If not, correct the 
 The histogram and the table || should be corrected anyway.
 ** Fix 0035 soft -> rough, fix PilotPath errors (even after Barak's corrections)
 ** Run test with inverse weights???
-*** Recount labels (make new figure), including all the Descend scenarios that will be included!!! Also, improve the historam figure resolution of the text
-*** Eventually, rerun all experiments with 16 classes.
-*** For the final version, calculate the correct weights of the sqrt version, for 16 classes!!!
-*** Show an image, its GT and the result
-*** rerun all tests after PilotPath corrections
-*** remove from training scenarios 1. 35, 36 as well.
+** remove from training scenarios 1, 35, 36 as well.
+** Eventually, rerun all experiments with 16 classes.
+** For the final version, calculate the correct weights of the sqrt version, for 16 classes!!!
+** rerun all tests after PilotPath corrections
+*** Recount labels (make new figure), including all the Descend scenarios that will be included!!!
+Also, improve the historam figure resolution of the text
 *** scenarios 1, 2, 31, 35, 36 should be consistent!!!
 *** Put a few images and results in the paper
+*** Create colors legend
+*** Emphasize best results inside the tables
+*** Create results table for all 16 categories
+*** Captions of figures and tables - bold or not?
+*** Update sequences table with descend scenarios and HaMedina Square!!!
+*** Show confusion matrix
 
 
 * Automatic training script, including several trials per model
