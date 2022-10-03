@@ -23,7 +23,7 @@ for dest_dir in dest_dirs:
     train_val_spec_list = ['train_Agamim_All_val_IrYamim_Kikar']
     classes_type_list = [dest_dir.split('_')[-2]]  # 'all' \ 'noB'
     model_type_list = ['segformer_mit-b0', 'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8', 'segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32']  # Second GPU
-    weighting_method_list = [dest_dir.split('_')[-1]]  # 'equal' \ 'sqrt' \ ?
+    weighting_method_list = [dest_dir.split('_')[-1]]  # 'equal' \ 'sqrt' \ 'prop'
 
     for train_val_spec in train_val_spec_list:
         for classes_type in classes_type_list:

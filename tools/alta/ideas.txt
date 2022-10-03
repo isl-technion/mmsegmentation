@@ -228,14 +228,15 @@ The histogram and the table || should be corrected anyway.
 ** Eventually, rerun all experiments with 16 classes.
 ** For the final version, calculate the correct weights of the sqrt version, for 16 classes!!!
 ** rerun all tests after PilotPath corrections
-*** Recount labels (make new figure), including all the Descend scenarios that will be included!!!
+** Create results table for all 16 categories
+
+*** Recount labels (make new figure), including all the Descend scenarios!!!
 Also, improve the historam figure resolution of the text
 *** scenarios 1, 2, 31, 35, 36 should be consistent!!!
 *** Put a few images and results in the paper
 *** Create colors legend
 *** Emphasize best results inside the tables
-*** Create results table for all 16 categories
-*** Captions of figures and tables - bold or not?
+*** Captions of figures and tables - capital or not?
 *** Update sequences table with descend scenarios and HaMedina Square!!!
 *** Show confusion matrix
 
