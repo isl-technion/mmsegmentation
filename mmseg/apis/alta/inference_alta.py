@@ -107,7 +107,7 @@ def inference_segmentor(model, img, return_scores=False, hist_model=None):
         if isinstance(model, EncoderDecoderEnhanced):
             result = model(return_loss=False, rescale=True, **data, return_scores=return_scores, hist_model=hist_model)
         else:
-            result = model(return_loss=False, rescale=True, **data)
+            result = model(return_loss=False, rescale=True, **data, return_scores=return_scores)
     return result
 
 

@@ -269,7 +269,7 @@ class EncoderDecoder(BaseSegmentor):
 
         return output
 
-    def simple_test(self, img, img_meta, rescale=True):
+    def simple_test(self, img, img_meta, rescale=True, return_scores=False):
         """Simple test with single image."""
         seg_logit = self.inference(img, img_meta, rescale)
         if self.out_channels == 1:
@@ -284,6 +284,10 @@ class EncoderDecoder(BaseSegmentor):
         seg_pred = seg_pred.cpu().numpy()
         # unravel batch dim
         seg_pred = list(seg_pred)
+        if return_scores:
+            seg_score = seg_logit
+            seg_score = list(seg_score)
+            return seg_pred, seg_score
         return seg_pred
 
     def simple_test_logits(self, img, img_metas, rescale=True):
