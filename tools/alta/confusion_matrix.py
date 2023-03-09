@@ -27,7 +27,7 @@ def parse_args():
         help='theme of the matrix color map')
     parser.add_argument(
         '--title',
-        default='Normalized Confusion Matrix',
+        default='Normalized Confusion Matrix (%)',
         help='title of the matrix color map')
     parser.add_argument(
         '--cfg-options',
@@ -81,7 +81,7 @@ def plot_confusion_matrix(confusion_matrix,
                           labels,
                           save_dir=None,
                           show=True,
-                          title='Normalized Confusion Matrix',
+                          title='Normalized Confusion Matrix (%)',
                           color_theme='winter'):
     """Draw confusion matrix with matplotlib.
 
@@ -105,11 +105,11 @@ def plot_confusion_matrix(confusion_matrix,
     cmap = plt.get_cmap(color_theme)
     im = ax.imshow(confusion_matrix, cmap=cmap)
     cbar = plt.colorbar(mappable=im, ax=ax)
-    cbar.ax.tick_params(labelsize=20)
+    cbar.ax.tick_params(labelsize=30)
 
-    title_font = {'weight': 'bold', 'size': 24}  # 12}
+    title_font = {'weight': 'bold', 'size': 35}  # 12}
     ax.set_title(title, fontdict=title_font)
-    label_font = {'weight': 'bold', 'size': 24}  # 10}
+    label_font = {'weight': 'bold', 'size': 35}  # 10}
     plt.ylabel('Ground Truth Label', fontdict=label_font)
     plt.xlabel('Prediction Label', fontdict=label_font)
 
@@ -133,11 +133,11 @@ def plot_confusion_matrix(confusion_matrix,
     ax.set_yticklabels(labels)
 
     ax.tick_params(
-        axis='x', bottom=False, top=True, labelbottom=False, labeltop=True, labelsize=20)
+        axis='x', bottom=False, top=True, labelbottom=False, labeltop=True, labelsize=28)
     plt.setp(
         ax.get_xticklabels(), rotation=45, ha='left', rotation_mode='anchor')
 
-    ax.tick_params(axis='y', labelsize=22)
+    ax.tick_params(axis='y', labelsize=28)
     plt.setp(ax.get_yticklabels())
 
     # draw confusion matrix value
@@ -146,13 +146,13 @@ def plot_confusion_matrix(confusion_matrix,
             ax.text(
                 j,
                 i,
-                '{}%'.format(
+                '{}'.format(
                     round(confusion_matrix[i, j], 2
                           ) if not np.isnan(confusion_matrix[i, j]) else -1),
                 ha='center',
                 va='center',
                 color='black',
-                size=18)
+                size=27)
 
     ax.set_ylim(len(confusion_matrix) - 0.5, -0.5)  # matplotlib>3.1.1
 
@@ -173,11 +173,20 @@ def main():
 
     results = mmcv.load(args.prediction_path)
 
-    results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_30_84_166.pkl')
-    results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_50.pkl')
-    results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_70.pkl')
-    results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_100.pkl')
-    results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_pilot.pkl')
+    main_path = '/media/omek/Alta/experiments/arabella_test_annot_17082022/20220924_093847_all_sqrt/' \
+                'train_Agamim_All_val_IrYamim_Kikar/all/segformer_mit-b3/sqrt/trial_1/'
+
+    results += mmcv.load(os.path.join(main_path, 'conf_matrix/result_30_84_166.pkl'))
+    results += mmcv.load(os.path.join(main_path, 'conf_matrix/result_50.pkl'))
+    results += mmcv.load(os.path.join(main_path, 'conf_matrix/result_70.pkl'))
+    results += mmcv.load(os.path.join(main_path, 'conf_matrix/result_100.pkl'))
+    results += mmcv.load(os.path.join(main_path, 'conf_matrix/result_pilot.pkl'))
+
+    # results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_30_84_166.pkl')
+    # results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_50.pkl')
+    # results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_70.pkl')
+    # results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_100.pkl')
+    # results += mmcv.load('/media/omek/Alta/experiments/arabella_test_post_sampling5/irrelevant/temp/result_pilot.pkl')
 
     assert isinstance(results, list)
     if isinstance(results[0], np.ndarray):
@@ -193,9 +202,11 @@ def main():
 
     dataset = build_dataset(cfg.data.test)
     confusion_matrix = calculate_confusion_matrix(dataset, results)
+    confusion_matrix = confusion_matrix[1:, 1:]  # remove the background class
+    labels = dataset.CLASSES[1:]  # remove the background class
     plot_confusion_matrix(
         confusion_matrix,
-        dataset.CLASSES,
+        labels,
         save_dir=args.save_dir,
         show=args.show,
         title=args.title,
