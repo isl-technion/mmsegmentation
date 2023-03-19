@@ -5,9 +5,10 @@ import os
 import numpy as np
 
 # Define the model
-model_name = 'segformer_mit-b3'
-config_file = '/media/omek/Alta/experiments/arabella_test_annot_17082022/20220924_093847_all_sqrt/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/sqrt/trial_1/config.py'
-checkpoint_file = '/media/omek/Alta/experiments/arabella_test_annot_17082022/20220924_093847_all_sqrt/train_Agamim_All_val_IrYamim_Kikar/all/' + model_name + '/sqrt/trial_1/epoch_320.pth'
+model_name = 'segformer_mit-b0'
+model_path = '/media/omek/Alta/experiments/for_barak/pathA/train_Agamim_A_val_IrYamim_Kikar/all/'
+config_file = model_path + model_name + '/sqrt/trial_1/config.py'
+checkpoint_file = model_path + model_name + '/sqrt/trial_1/epoch_320.pth'
 
 # Build the model from a config file and a checkpoint file
 model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
