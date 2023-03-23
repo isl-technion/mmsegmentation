@@ -133,6 +133,15 @@ class LoadAnnotations(object):
         gt_semantic_seg = mmcv.imfrombytes(
             img_bytes, flag='unchanged',
             backend=self.imdecode_backend).squeeze().astype(np.uint8)
+
+        # Convert colors to indices, if necessary
+        if len(gt_semantic_seg.shape) == 3:
+            from ..alta import AltaDataset
+            gt_semantic_seg_copy = gt_semantic_seg.copy()
+            gt_semantic_seg = gt_semantic_seg[:, :, 0]
+            for ind, color in enumerate(AltaDataset.PALETTE):
+                gt_semantic_seg[np.all(gt_semantic_seg_copy == color[::-1], axis=2)] = ind
+
         # modify if custom classes
         if results.get('label_map', None) is not None:
             # Add deep copy to solve bug of repeatedly

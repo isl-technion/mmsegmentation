@@ -25,9 +25,10 @@ trials_per_config = 1
 configs_dir = os.path.join(project_dir, 'configs/mboaz17')
 results_dir = os.path.join(project_dir, 'results/mboaz17')
 
-train_val_spec_list = ['train_Agamim_A_val_IrYamim_Kikar']
+# train_val_spec_list = ['train_Agamim_A_val_IrYamim_Kikar']
+train_val_spec_list = ['train_Agamim_A_resized_val_IrYamim_Kikar']
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
-model_type_list = ['segformer_mit-b0', 'segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32',
+model_type_list = ['segformer_mit-b3', 'segformer_mit-b0', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32',
                    'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # All
 # model_type_list = ['segformer_mit-b0', 'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # First GPU
 # model_type_list = ['segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32']  # Second GPU
