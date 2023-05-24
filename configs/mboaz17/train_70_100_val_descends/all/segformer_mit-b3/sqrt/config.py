@@ -11,7 +11,7 @@ _base_ = [
     project_dir + 'configs/_base_/models/segformer_mit-b0.py',
     project_dir + 'configs/_base_/datasets/cityscapes_1024x1024.py',
     project_dir + 'configs/_base_/default_runtime.py',
-    '../../../schedule_320_epochs.py'
+    '../../../schedule_160_epochs.py'
 ]
 
 num_classes=16
