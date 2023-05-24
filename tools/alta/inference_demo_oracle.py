@@ -20,17 +20,22 @@ dsecend_for_PathC = ["100_0005", "100_0006", "100_0040", "100_0041", "100_0004",
 flightPath = ["A", "B", "C"]
 
 for pind in range(len(flightPath)):
-    model_path = '/media/omek/Alta/experiments/for_barak/pathA/train_Agamim_A_val_IrYamim_Kikar/all/'
+    # model_path = '/media/omek/Alta/experiments/for_barak/full_res/pathA/train_Agamim_A_val_IrYamim_Kikar/all/'
+    model_path = '/media/omek/Alta/experiments/for_barak/resized_1440_960/pathA/train_Agamim_A_resized_val_IrYamim_Kikar/all/'
     dsecend_for_Path = dsecend_for_PathA
     if pind == 1:
-        model_path = '/media/omek/Alta/experiments/for_barak/pathB/train_Agamim_B_val_IrYamim_Kikar/all/'
+        # model_path = '/media/omek/Alta/experiments/for_barak/full_res/pathB/train_Agamim_B_val_IrYamim_Kikar/all/'
+        model_path = '/media/omek/Alta/experiments/for_barak/resized_1440_960/pathB/train_Agamim_B_resized_val_IrYamim_Kikar' \
+                     '/all/'
         dsecend_for_Path = dsecend_for_PathB
     if pind == 2:
-        model_path = '/media/omek/Alta/experiments/for_barak/pathC/train_Agamim_C_val_IrYamim_Kikar/all/'
+        # model_path = '/media/omek/Alta/experiments/for_barak/full_res/pathC/train_Agamim_C_val_IrYamim_Kikar/all/'
+        model_path = '/media/omek/Alta/experiments/for_barak/resized_1440_960/pathC/train_Agamim_C_resized_val_IrYamim_Kikar' \
+                     '/all/'
         dsecend_for_Path = dsecend_for_PathC
 
     # Define the model
-    model_name = 'segformer_mit-b0'
+    model_name = 'segformer_mit-b3'
 
     config_file = model_path + model_name + '/sqrt/trial_1/config.py'
     checkpoint_file = model_path + model_name + '/sqrt/trial_1/epoch_320.pth'
@@ -39,7 +44,8 @@ for pind in range(len(flightPath)):
     model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
     for img_ind in range(len(dsecend_for_Path)):
         # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/100_0001'
-        images_path = f'/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/{dsecend_for_Path[img_ind]}'
+        # images_path = f'/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/{dsecend_for_Path[img_ind]}'
+        images_path = f'/media/isl12/Alta/V7_Exp_25_1_21_resized/V7_Exp_25_1_21/Agamim/Descend/{dsecend_for_Path[img_ind]}'
         # Read images list
         images_list = os.listdir(images_path)
         images_list.sort()
@@ -48,7 +54,9 @@ for pind in range(len(flightPath)):
         # Define output folder
         # results_path = os.path.join('/home/airsim/repos/open-mmlab/mmsegmentation/results/barakp/Path',
         #                             flightPath[pind], '/', os.path.split(images_path)[-1])
-        results_path = f'/home/airsim/repos/open-mmlab/mmsegmentation/results/barakp/Path{flightPath[pind]}/{os.path.split(images_path)[-1]}'
+        # results_path = f'/home/airsim/repos/open-mmlab/mmsegmentation/results/barakp/Path{flightPath[pind]}/{os.path.split(images_path)[-1]}'
+        # results_path = f'/home/airsim/repos/open-mmlab/mmsegmentation/results/barakp/full_res/Path{flightPath[pind]}/{os.path.split(images_path)[-1]}'
+        results_path = f'/home/airsim/repos/open-mmlab/mmsegmentation/results/barakp/resized_1440_960/Path{flightPath[pind]}/{os.path.split(images_path)[-1]}'
         if not os.path.isdir(results_path):
             os.makedirs(results_path)
 
