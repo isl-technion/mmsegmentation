@@ -3,7 +3,21 @@ import os.path as osp
 
 from .builder import DATASETS
 from .custom import CustomDataset
+from .pipelines import LoadAnnotations
 
+import numpy as np
+import mmcv
+
+class LoadAnnotationsWithMask(LoadAnnotations):
+
+    def __call__(self, results):
+        results = super(LoadAnnotationsWithMask, self).__call__(results)
+        scenario_name = osp.split(results['seg_prefix'])[-1]
+        mask_name = results['ann_info']['seg_map'].replace('.png', '_mask.png')
+        mask_path = osp.join('/media/isl12/Alta/Agamim_Descend_masks', scenario_name, mask_name)
+        mask = mmcv.imread(mask_path)[..., 0]
+        results['gt_semantic_seg'][mask == 0] = 255  # Ignore index -> no calculation is made
+        return results
 
 @DATASETS.register_module()
 class AltaDataset(CustomDataset):
@@ -85,7 +99,7 @@ class AltaDataset(CustomDataset):
     #     [255, 50, 50],  # 1
     # ]
 
-    def __init__(self, **kwargs):
+    def __init__(self, use_mask=None, **kwargs):
         super(AltaDataset, self).__init__(
             img_suffix='.JPG',
             seg_map_suffix='.png',
@@ -97,7 +111,11 @@ class AltaDataset(CustomDataset):
         # self.label_map = {0: 0, 1: 4, 2: 2, 3: 4, 4: 4, 5: 4, 6: 4, 7: 7, 8: 4, 9: 9, 10: 4, 11: 11, 12: 12, 13: 13, 14: 14, 15: 4}
         assert osp.exists(self.img_dir)
         if 'Descend' in self.img_dir:  # Reduce the number of Descend images
-            self.img_infos = self.img_infos[::5]
+            # self.img_infos = self.img_infos[::5]
+            if use_mask is not None:  # Then use the mask to define the ignore region
+                self.gt_seg_map_loader = LoadAnnotationsWithMask()
+            else:  # Normal mode - use every fifth image to reduce time
+                self.img_infos = self.img_infos[::5]
 
     # def prepare_test_img(self, idx):  # uncomment if LoadAnnotations is needed during testing...
     #     """Get testing data after pipeline.
