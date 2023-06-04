@@ -69,18 +69,16 @@ for setup in setup_list:
 # Combined plot
 labels = []
 setup_relevant = setup_list
-# setup_relevant = ['train_50_70_100_val_descends', 'train_70_100_val_descends', 'train_100_val_descends', 'train_all_heights_val_descends']
+legend_list = ['Altitudes = {30, 50, 70, 100}', 'Altitudes = {50, 70, 100}', 'Altitudes = {70, 100}',
+               'Altitudes = {100}']
 legend_indices = []
-for plot_curr in plot_list[:4]:
-    setup = plot_curr[0]
-    # if setup not in setup_relevant:
-    #     continue
-    legend_indices.append(setup_relevant.index(setup))
+for ind, plot_curr in enumerate(plot_list[:4]):
     plt.plot(plot_curr[1], plot_curr[2], '.')
     plt.xlabel('Altitude')
     plt.ylabel('Accuracy')
+    plt.title('Influence of training altitudes on test accuracy')
     plt.ylim([0, 1])
-plt.legend([setup_relevant[i] for i in legend_indices])
+plt.legend(legend_list)
 plt.savefig(os.path.join(base_path, 'Accuracy.png'))
 plt.close()
 aaa=1
