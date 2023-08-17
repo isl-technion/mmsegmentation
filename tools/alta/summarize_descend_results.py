@@ -69,15 +69,18 @@ for setup in setup_list:
 # Combined plot
 labels = []
 setup_relevant = setup_list
-legend_list = ['Altitudes = {30, 50, 70, 100}', 'Altitudes = {50, 70, 100}', 'Altitudes = {70, 100}',
-               'Altitudes = {100}']
+legend_list = ['Horizontal trajectory training altitudes = {30, 50, 70, 100}',
+               'Horizontal trajectory training altitudes = {50, 70, 100}',
+               'Horizontal trajectory training altitudes = {70, 100}',
+               'Horizontal trajectory training altitudes = {100}']
 legend_indices = []
 for ind, plot_curr in enumerate(plot_list[:4]):
     plt.plot(plot_curr[1], plot_curr[2], '.')
-    plt.xlabel('Altitude')
+    plt.xlabel('Vertical trajectory test altitude[m]')
     plt.ylabel('Accuracy')
-    plt.title('Influence of training altitudes on test accuracy')
+    # plt.title('Influence of training altitude on accuracy based altitude test')
     plt.ylim([0, 1])
+plt.gca().invert_xaxis()
 plt.legend(legend_list)
 plt.savefig(os.path.join(base_path, 'Accuracy.png'))
 plt.close()
