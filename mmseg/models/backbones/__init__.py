@@ -3,6 +3,7 @@ from .beit import BEiT
 from .bisenetv1 import BiSeNetV1
 from .bisenetv2 import BiSeNetV2
 from .cgnet import CGNet
+from .ddrnet import DDRNet
 from .erfnet import ERFNet
 from .fast_scnn import FastSCNN
 from .hrnet import HRNet
@@ -11,6 +12,8 @@ from .mae import MAE
 from .mit import MixVisionTransformer
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
+from .mscan import MSCAN
+from .pidnet import PIDNet
 from .resnest import ResNeSt
 from .resnet import ResNet, ResNetV1c, ResNetV1d
 from .resnext import ResNeXt
@@ -20,23 +23,13 @@ from .timm_backbone import TIMMBackbone
 from .twins import PCPVT, SVT
 from .unet import UNet
 from .vit import VisionTransformer
-
-from .mboaz17.mit_histloss import MixVisionTransformerHistLoss  # <mboaz17>
-from .mboaz17.resnet_normless import (ResNetNormLess, ResNetV1cNormLess, ResNetV1dNormLess)  # <mboaz17>
-from .mboaz17.resnet_WN import (ResNetWeightNorm, ResNetV1cWeightNorm, ResNetV1dWeightNorm)  # <mboaz17>
+from .vpd import VPD
 
 __all__ = [
     'ResNet', 'ResNetV1c', 'ResNetV1d', 'ResNeXt', 'HRNet', 'FastSCNN',
     'ResNeSt', 'MobileNetV2', 'UNet', 'CGNet', 'MobileNetV3',
     'VisionTransformer', 'SwinTransformer', 'MixVisionTransformer',
     'BiSeNetV1', 'BiSeNetV2', 'ICNet', 'TIMMBackbone', 'ERFNet', 'PCPVT',
-    'SVT', 'STDCNet', 'STDCContextPathNet', 'BEiT', 'MAE'
+    'SVT', 'STDCNet', 'STDCContextPathNet', 'BEiT', 'MAE', 'PIDNet', 'MSCAN',
+    'DDRNet', 'VPD'
 ]
-
-__all__.append('MixVisionTransformerHistLoss')  # <mboaz17>
-__all__.append('ResNetNormLess')  # <mboaz17>
-__all__.append('ResNetV1cNormLess')  # <mboaz17>
-__all__.append('ResNetV1dNormLess')  # <mboaz17>
-__all__.append('ResNetWeightNorm')  # <mboaz17>
-__all__.append('ResNetV1cWeightNorm')  # <mboaz17>
-__all__.append('ResNetV1dWeightNorm')  # <mboaz17>
