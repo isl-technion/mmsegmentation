@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
-from .builder import DATASETS
-from .custom import CustomDataset
-from .pipelines import LoadAnnotations
+# Copyright (c) OpenMMLab. All rights reserved.
+from mmseg.registry import DATASETS
+from .basesegdataset import BaseSegDataset
 
-import numpy as np
+from .transforms import LoadAnnotations
 import mmcv
 
 class LoadAnnotationsWithMask(LoadAnnotations):
@@ -20,7 +20,7 @@ class LoadAnnotationsWithMask(LoadAnnotations):
         return results
 
 @DATASETS.register_module()
-class AltaDataset(CustomDataset):
+class AltaDataset(BaseSegDataset):
     """Alta dataset.
     """
 
@@ -103,19 +103,22 @@ class AltaDataset(CustomDataset):
         super(AltaDataset, self).__init__(
             img_suffix='.JPG',
             seg_map_suffix='.png',
+            serialize_data=False,
             # reduce_zero_label=True,  # False  #remove the bkg class
             # ignore_index=1,
-            classes=self.CLASSES[kwargs['reduce_zero_label']:],
-            palette=self.PALETTE[kwargs['reduce_zero_label']:],
+            metainfo=dict(classes=self.CLASSES[kwargs['reduce_zero_label']:]),
+            # palette=self.PALETTE[kwargs['reduce_zero_label']:],
             **kwargs)
+
         # self.label_map = {0: 0, 1: 4, 2: 2, 3: 4, 4: 4, 5: 4, 6: 4, 7: 7, 8: 4, 9: 9, 10: 4, 11: 11, 12: 12, 13: 13, 14: 14, 15: 4}
-        assert osp.exists(self.img_dir)
-        if 'Descend' in self.img_dir:  # Reduce the number of Descend images
+        img_dir = osp.join(kwargs['data_root'], kwargs['data_prefix']['img_path'])
+        assert osp.exists(img_dir)
+        if 'Descend' in img_dir:  # Reduce the number of Descend images
             # self.img_infos = self.img_infos[::5]
             if use_mask is not None:  # Then use the mask to define the ignore region
                 self.gt_seg_map_loader = LoadAnnotationsWithMask()
             else:  # Normal mode - use every fifth image to reduce time
-                self.img_infos = self.img_infos[::5]
+                self.data_list = self.data_list[::5]
 
     # def prepare_test_img(self, idx):  # uncomment if LoadAnnotations is needed during testing...
     #     """Get testing data after pipeline.

@@ -25,6 +25,9 @@ from .potsdam import PotsdamDataset
 from .refuge import REFUGEDataset
 from .stare import STAREDataset
 from .synapse import SynapseDataset
+
+from .alta import AltaDataset  # <mboaz17>
+
 # yapf: disable
 from .transforms import (CLAHE, AdjustGamma, Albu, BioMedical3DPad,
                          BioMedical3DRandomCrop, BioMedical3DRandomFlip,
@@ -62,3 +65,5 @@ __all__ = [
     'ConcatCDInput', 'BaseCDDataset', 'DSDLSegDataset', 'BDD100KDataset',
     'NYUDataset'
 ]
+
+__all__ += ['AltaDataset']  # <mboaz17>
