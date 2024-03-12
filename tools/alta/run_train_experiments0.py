@@ -2,7 +2,8 @@ import os
 import sys
 import shutil
 import time
-from tools.alta.run_train_alta import main as mmseg_train
+from tools.train import main as mmseg_train
+# from tools.alta.run_train_alta import main as mmseg_train
 
 # running_location = 'local'
 running_location = 'remote'
@@ -25,11 +26,12 @@ trials_per_config = 1
 configs_dir = os.path.join(project_dir, 'configs/mboaz17')
 results_dir = os.path.join(project_dir, 'results/mboaz17')
 
-train_val_spec_list = ['train_all_heights_val_descends']  # 'train_Agamim_ABC_val_IrYamim_Kikar' \ 'train_Agamim_AB_val_Agamim_C'
+train_val_spec_list = ['train_Agamim_All_val_IrYamim_Kikar']  # ['train_all_heights_val_descends']  # 'train_Agamim_ABC_val_IrYamim_Kikar' \ 'train_Agamim_AB_val_Agamim_C'
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
 # model_type_list = ['segformer_mit-b0', 'segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32',
 #                    'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # All
-model_type_list = ['segformer_mit-b3']
+# model_type_list = ['segformer_mit-b3']
+model_type_list = ['mask2former']
 weighting_method_list = ['sqrt']  # 'equal' \ 'sqrt' \ ?
 
 for train_val_spec in train_val_spec_list:
@@ -56,13 +58,13 @@ for train_val_spec in train_val_spec_list:
                     sys.argv.append('data.val.separate_eval=0')
 
                     with open(os.path.join(work_dir, 'experiment_log.txt'), 'w') as f:
-                        try:
-                            mmseg_train()
-                            f.write('Successfully trained ' + config_file_path + '\n')
-                        except Exception as inst:
-                            f.write(str(inst) + '\n')
-                            f.write('Error while training ' + config_file_path + '\n')
-                        f.close()
+                        # try:
+                        mmseg_train()
+                            # f.write('Successfully trained ' + config_file_path + '\n')
+                        # except Exception as inst:
+                        #     f.write(str(inst) + '\n')
+                        #     f.write('Error while training ' + config_file_path + '\n')
+                        # f.close()
 
                     # move experiment content to a server and delete original directory
                     if os.path.isfile(os.path.join(work_dir, 'latest.pth')):
