@@ -11,8 +11,8 @@ if running_location == 'local':
     dest_dir0 = '/media/omek/Alta/experiments/'
     project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
 elif running_location == 'remote':
-    dest_dir0 = '/home/boaz/Projects/open-mmlab/mmsegmentation/results/'
-    project_dir = '/home/boaz/Projects/open-mmlab/mmsegmentation/'
+    dest_dir0 = '/home/barakp/Projects/open-mmlab/mmsegmentation/results/'
+    project_dir = '/home/barakp/Projects/open-mmlab/mmsegmentation/'
 
 
 timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
