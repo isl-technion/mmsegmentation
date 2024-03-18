@@ -46,8 +46,8 @@ model = dict(
                      #     type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),
                      # , avg_non_ignore=True),
                      ),
-    # test_cfg=dict(mode='whole', crop_size=crop_size))
-    test_cfg=dict(mode='slide', crop_size=(1366, 2048), stride=(1141, 1712)))
+    test_cfg=dict(mode='whole'))
+    # test_cfg=dict(mode='slide', crop_size=(1366, 2048), stride=(1141, 1712)))
 
 # set all layers in backbone to lr_mult=0.1
 # set all norm layers, position_embeding,
@@ -89,11 +89,12 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', reduce_zero_label=False),
-    dict(
-        type='RandomChoiceResize',
-        scales=[int(1024 * x * 0.1) for x in range(5, 21)],
-        resize_type='ResizeShortestEdge',
-        max_size=4096),
+    # dict(type='Resize', scale=(4800, 4800), keep_ratio=True),
+    # dict(
+    #     type='RandomChoiceResize',
+    #     scales=[int(1024 * x * 0.1) for x in range(5, 21)],
+    #     resize_type='ResizeShortestEdge',
+    #     max_size=4096),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
@@ -102,7 +103,7 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    # dict(type='Resize', scale=(2560, 640), keep_ratio=True),
+    # dict(type='Resize', scale=(4800, 4800), keep_ratio=True),
     # add loading annotation after ``Resize`` because ground truth
     # does not need to do resize data transform
     dict(type='LoadAnnotations'),
@@ -279,7 +280,7 @@ PilotPath_test['data_prefix'] = dict(img_path=PilotPath, seg_map_path=PilotPath_
 # dataset_B_100_test['data_prefix'] = dict(img_path=pathB_100, seg_map_path=pathB_100_ann)
 
 train_dataloader = dict(
-    batch_size=2, num_workers=2,
+    batch_size=4, num_workers=4,
     dataset=dict(
         type='ConcatDataset',
         datasets=[dataset_A_30_train, dataset_A_50_train, dataset_A_70_train, dataset_A_100_train,
@@ -291,7 +292,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=2, num_workers=2,
+    batch_size=1, num_workers=4,
     dataset=dict(
         type='ConcatDataset',
         datasets=[IrYamim_30_test, IrYamim_50_test, IrYamim_70_test, IrYamim_100_test, PilotPath_test])
@@ -303,13 +304,13 @@ test_evaluator = val_evaluator
 
 # training schedule for 320k
 train_cfg = dict(
-    type='EpochBasedTrainLoop', max_epochs=5, val_interval=1)
+    type='EpochBasedTrainLoop', max_epochs=160, val_interval=20)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
-    logger=dict(type='LoggerHook', interval=1, log_metric_by_epoch=False),
+    logger=dict(type='LoggerHook', interval=50, log_metric_by_epoch=False),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', by_epoch=True, interval=1),
+    checkpoint=dict(type='CheckpointHook', by_epoch=True, interval=20),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='SegVisualizationHook'))
