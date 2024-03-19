@@ -89,12 +89,12 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', reduce_zero_label=False),
-    # dict(type='Resize', scale=(4800, 4800), keep_ratio=True),
-    # dict(
-    #     type='RandomChoiceResize',
-    #     scales=[int(1024 * x * 0.1) for x in range(5, 21)],
-    #     resize_type='ResizeShortestEdge',
-    #     max_size=4096),
+    # dict(type='RandomResize', keep_ratio=True, ratio_range=(0.85, 1.15), scale=None),
+    dict(
+        type='RandomChoiceResize',
+        scales=[int(3648 * x * 0.05) for x in range(17, 24)],
+        resize_type='ResizeShortestEdge',
+        max_size=10000),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
@@ -304,7 +304,7 @@ test_evaluator = val_evaluator
 
 # training schedule for 320k
 train_cfg = dict(
-    type='EpochBasedTrainLoop', max_epochs=160, val_interval=20)
+    type='EpochBasedTrainLoop', max_epochs=320, val_interval=20)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 default_hooks = dict(
