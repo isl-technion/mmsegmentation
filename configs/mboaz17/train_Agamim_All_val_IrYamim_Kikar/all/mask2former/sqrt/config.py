@@ -15,7 +15,7 @@ class_weight = [0., 4.86139222, 0.12775909, 0.29381101, 0.38981798, 2.55928649,
                 0.87541455, 0.16339358, 0.28703442, 0.1318935, 1.01571681, 0.09114451,
                 0.11215303, 0.33036596, 0.08321761, 3.67759923]
 
-crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
+crop_size = (1536, 1536)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
 ignore_index=2
 
@@ -92,9 +92,9 @@ train_pipeline = [
     # dict(type='RandomResize', keep_ratio=True, ratio_range=(0.85, 1.15), scale=None),
     dict(
         type='RandomChoiceResize',
-        scales=[int(3648 * x * 0.05) for x in range(17, 24)],
+        scales=[int(3648 * x * 0.1) for x in range(5, 21)],
         resize_type='ResizeShortestEdge',
-        max_size=10000),
+        max_size=12000),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
