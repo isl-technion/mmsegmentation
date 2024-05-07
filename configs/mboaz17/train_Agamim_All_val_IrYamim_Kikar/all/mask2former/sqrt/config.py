@@ -15,7 +15,7 @@ class_weight = [0., 4.86139222, 0.12775909, 0.29381101, 0.38981798, 2.55928649,
                 0.87541455, 0.16339358, 0.28703442, 0.1318935, 1.01571681, 0.09114451,
                 0.11215303, 0.33036596, 0.08321761, 3.67759923]
 
-crop_size = (1536, 1536)  # (5472, 3648)  # (1440, 1088)
+crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
 ignore_index=2
 
@@ -280,7 +280,7 @@ PilotPath_test['data_prefix'] = dict(img_path=PilotPath, seg_map_path=PilotPath_
 # dataset_B_100_test['data_prefix'] = dict(img_path=pathB_100, seg_map_path=pathB_100_ann)
 
 train_dataloader = dict(
-    batch_size=4, num_workers=4,
+    batch_size=2, num_workers=2,
     dataset=dict(
         type='ConcatDataset',
         datasets=[dataset_A_30_train, dataset_A_50_train, dataset_A_70_train, dataset_A_100_train,

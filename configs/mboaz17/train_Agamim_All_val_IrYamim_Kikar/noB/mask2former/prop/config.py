@@ -35,14 +35,16 @@ model = dict(
         init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
 
     decode_head=dict(num_classes=num_classes,
-                     # ignore_index=ignore_index,
+                     ignore_index=ignore_index,
                      in_channels=[128, 256, 512, 1024],
                      loss_cls=dict(
                          type='mmdet.CrossEntropyLoss',
                          use_sigmoid=False,
                          loss_weight=2.0,
                          reduction='mean',
-                         class_weight=class_weight),
+                         class_weight=class_weight,
+                         avg_non_ignore=True,
+                     ),
                      # loss_decode=dict(
                      #     type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),
                      # , avg_non_ignore=True),
@@ -188,7 +190,7 @@ dataset_train = dict(
     data_root=data_root,
     data_prefix=dict(img_path=pathA_30, seg_map_path=pathA_30_ann),
     reduce_zero_label=False,
-    # ignore_index=ignore_index,
+    ignore_index=ignore_index,
     pipeline=train_pipeline)
 dataset_A_30_train = dataset_train.copy()
 dataset_A_30_train['data_prefix'] = dict(img_path=pathA_30, seg_map_path=pathA_30_ann)
@@ -250,7 +252,7 @@ dataset_test = dict(
     data_root=data_root,
     data_prefix=dict(img_path=pathA_30, seg_map_path=pathA_30_ann),
     reduce_zero_label=False,
-    # ignore_index=ignore_index,
+    ignore_index=ignore_index,
     pipeline=test_pipeline)
 IrYamim_30_test = dataset_test.copy()
 IrYamim_30_test['data_prefix'] = dict(img_path=IrYamim_30, seg_map_path=IrYamim_30_ann)

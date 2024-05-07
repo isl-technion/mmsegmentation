@@ -27,12 +27,12 @@ configs_dir = os.path.join(project_dir, 'configs/mboaz17')
 results_dir = os.path.join(project_dir, 'results/mboaz17')
 
 train_val_spec_list = ['train_Agamim_All_val_IrYamim_Kikar']  # ['train_all_heights_val_descends']  # 'train_Agamim_ABC_val_IrYamim_Kikar' \ 'train_Agamim_AB_val_Agamim_C'
-classes_type_list = ['all']  # 'all' \ 'noB' \ ?
+classes_type_list = ['noB']  # 'all' \ 'noB' \ ?
 # model_type_list = ['segformer_mit-b0', 'segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32',
 #                    'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # All
 # model_type_list = ['segformer_mit-b3']
 model_type_list = ['mask2former']
-weighting_method_list = ['prop']  # 'equal' \ 'sqrt' \ ?
+weighting_method_list = ['sqrt', 'prop', 'equal']
 
 for train_val_spec in train_val_spec_list:
     for classes_type in classes_type_list:

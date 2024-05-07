@@ -11,10 +11,9 @@ _base_ = [
     '../mask2former_swin-b-in22k-384x384-pre_8xb2-90k_cityscapes-512x1024.py',
 ]
 num_classes=15  # 16
-class_weight = [0.00000000e+00, 7.70245676e+00, 5.31975439e-03, 2.81348163e-02,
-                4.95258197e-02, 2.13474376e+00, 2.49767237e-01, 8.70117583e-03,
-                2.68519546e-02, 5.66963042e-03, 3.36242978e-01, 2.70750336e-03,
-                4.09949139e-03, 3.55712021e-02, 2.25703558e-03, 4.40795088e+00]
+class_weight = [0., 4.86139222, 0.12775909, 0.29381101, 0.38981798, 2.55928649,
+                0.87541455, 0.16339358, 0.28703442, 0.1318935, 1.01571681, 0.09114451,
+                0.11215303, 0.33036596, 0.08321761, 3.67759923]
 
 crop_size = (1024, 1024)  # (5472, 3648)  # (1440, 1088)
 # stride_size = (768, 768)
@@ -35,14 +34,16 @@ model = dict(
         init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
 
     decode_head=dict(num_classes=num_classes,
-                     # ignore_index=ignore_index,
+                     ignore_index=ignore_index,
                      in_channels=[128, 256, 512, 1024],
                      loss_cls=dict(
                          type='mmdet.CrossEntropyLoss',
                          use_sigmoid=False,
                          loss_weight=2.0,
                          reduction='mean',
-                         class_weight=class_weight),
+                         class_weight=class_weight,
+                         avg_non_ignore=True,
+                     ),
                      # loss_decode=dict(
                      #     type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, class_weight=class_weight),
                      # , avg_non_ignore=True),
@@ -188,7 +189,7 @@ dataset_train = dict(
     data_root=data_root,
     data_prefix=dict(img_path=pathA_30, seg_map_path=pathA_30_ann),
     reduce_zero_label=False,
-    # ignore_index=ignore_index,
+    ignore_index=ignore_index,
     pipeline=train_pipeline)
 dataset_A_30_train = dataset_train.copy()
 dataset_A_30_train['data_prefix'] = dict(img_path=pathA_30, seg_map_path=pathA_30_ann)
@@ -250,7 +251,7 @@ dataset_test = dict(
     data_root=data_root,
     data_prefix=dict(img_path=pathA_30, seg_map_path=pathA_30_ann),
     reduce_zero_label=False,
-    # ignore_index=ignore_index,
+    ignore_index=ignore_index,
     pipeline=test_pipeline)
 IrYamim_30_test = dataset_test.copy()
 IrYamim_30_test['data_prefix'] = dict(img_path=IrYamim_30, seg_map_path=IrYamim_30_ann)

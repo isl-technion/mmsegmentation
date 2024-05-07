@@ -32,7 +32,7 @@ classes_type_list = ['all']  # 'all' \ 'noB' \ ?
 #                    'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # All
 # model_type_list = ['segformer_mit-b3']
 model_type_list = ['mask2former']
-weighting_method_list = ['sqrt']  # 'equal' \ 'sqrt' \ ?
+weighting_method_list = ['sqrt', 'prop', 'equal']
 
 for train_val_spec in train_val_spec_list:
     for classes_type in classes_type_list:
