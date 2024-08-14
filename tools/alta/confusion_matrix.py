@@ -108,7 +108,7 @@ def plot_confusion_matrix(confusion_matrix,
     cbar.ax.tick_params(labelsize=30)
 
     title_font = {'weight': 'bold', 'size': 35}  # 12}
-    ax.set_title(title, fontdict=title_font)
+    # ax.set_title(title, fontdict=title_font)
     label_font = {'weight': 'bold', 'size': 35}  # 10}
     plt.ylabel('Ground Truth Label', fontdict=label_font)
     plt.xlabel('Prediction Label', fontdict=label_font)
@@ -204,6 +204,10 @@ def main():
     confusion_matrix = calculate_confusion_matrix(dataset, results)
     confusion_matrix = confusion_matrix[1:, 1:]  # remove the background class
     labels = dataset.CLASSES[1:]  # remove the background class
+    labels[labels.index('transportation terrain')] = 'trans. terr.'
+    labels[labels.index('rough terrain')] = 'rough terr.'
+    labels[labels.index('soft terrain')] = 'soft terr.'
+    labels[labels.index('walking terrain')] = 'walking terr.'
     plot_confusion_matrix(
         confusion_matrix,
         labels,
