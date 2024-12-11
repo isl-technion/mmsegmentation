@@ -68,7 +68,7 @@ class LoadImage:
         return results
 
 
-def inference_segmentor(model, img, return_scores=False, hist_model=None):
+def inference_segmentor(model, img, return_scores=False, rescale=True, hist_model=None):
     """Inference image(s) with the segmentor.
 
     Args:
@@ -105,9 +105,9 @@ def inference_segmentor(model, img, return_scores=False, hist_model=None):
     # forward the model
     with torch.no_grad():
         if isinstance(model, EncoderDecoderEnhanced):
-            result = model(return_loss=False, rescale=True, **data, return_scores=return_scores, hist_model=hist_model)
+            result = model(return_loss=False, rescale=rescale, **data, return_scores=return_scores, hist_model=hist_model)
         else:
-            result = model(return_loss=False, rescale=True, **data)
+            result = model(return_loss=False, rescale=rescale, **data, return_scores=return_scores)
     return result
 
 

@@ -274,6 +274,9 @@ class BaseSegmentor(BaseModule, metaclass=ABCMeta):
         # convert to BGR
         color_seg = color_seg[..., ::-1]
 
+        if not np.all(img.shape == color_seg.shape):  # <mboaz17>
+            img = mmcv.imresize(img, (color_seg.shape[1], color_seg.shape[0]))
+
         img = img * (1 - opacity) + color_seg * opacity
         img = img.astype(np.uint8)
         # if out_file specified, do not show image in window
