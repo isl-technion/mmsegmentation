@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import interpolate
 
 base_path = '/media/omek/Alta/experiments/arabella_const_height'
-
+desecend_f = True
 # setup_list = os.listdir(base_path)
 setup_list = [
     'train_all_heights_val_descends',
@@ -17,6 +17,12 @@ setup_list = [
     'train_30_50_val_descends',
     'train_30_val_descends',
 ]
+if desecend_f:
+    setup_ind = [3, 2, 1, 0]
+    plot_name = 'Accuracy_ascend.png'
+else:
+    setup_ind = [7, 6, 4, 0]
+    plot_name = 'Accuracy_descend.png'
 
 plot_list = []
 for setup in setup_list:
@@ -61,7 +67,10 @@ for setup in setup_list:
     plt.ylabel('Accuracy')
     plt.title(setup)
     plt.ylim([0, 1])
-    plt.savefig(os.path.join(base_path, setup, 'Accuracy.png'))
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5, color='gray')
+    plt.yticks(np.arange(0, 1.05, 0.05))
+
+    plt.savefig(os.path.join(base_path, setup, plot_name))
     plt.close()
 
     plot_list.append([setup, altitudes_grid[altitudes_occupancy > 0], accuracy_cum[altitudes_occupancy > 0]])
@@ -69,19 +78,29 @@ for setup in setup_list:
 # Combined plot
 labels = []
 setup_relevant = setup_list
-legend_list = ['Horizontal trajectory training altitudes = {30, 50, 70, 100}',
-               'Horizontal trajectory training altitudes = {50, 70, 100}',
-               'Horizontal trajectory training altitudes = {70, 100}',
-               'Horizontal trajectory training altitudes = {100}']
+if desecend_f:
+    legend_list = ['Horizontal trajectory training altitudes = {100}',
+                   'Horizontal trajectory training altitudes = {70, 100}',
+                   'Horizontal trajectory training altitudes = {50, 70, 100}',
+                   'Horizontal trajectory training altitudes = {30, 50, 70, 100}']
+else:
+    legend_list = ['Horizontal trajectory training altitudes = {30}',
+                   'Horizontal trajectory training altitudes = {30, 50}',
+                   'Horizontal trajectory training altitudes = {30, 50, 70}',
+                   'Horizontal trajectory training altitudes = {30, 50, 70, 100}']
+
 legend_indices = []
-for ind, plot_curr in enumerate(plot_list[:4]):
+for ind, plot_curr in enumerate([plot_list[i] for i in setup_ind]):
     plt.plot(plot_curr[1], plot_curr[2], '.')
     plt.xlabel('Vertical trajectory test altitude[m]')
     plt.ylabel('Accuracy')
     # plt.title('Influence of training altitude on accuracy based altitude test')
     plt.ylim([0, 1])
+plt.grid(True, which='both', linestyle='--', linewidth=0.5, color='gray')
 plt.gca().invert_xaxis()
+plt.yticks(np.arange(0, 1.05, 0.05))
 plt.legend(legend_list)
-plt.savefig(os.path.join(base_path, 'Accuracy.png'))
+
+plt.savefig(os.path.join(base_path, plot_name))
 plt.close()
 aaa=1
