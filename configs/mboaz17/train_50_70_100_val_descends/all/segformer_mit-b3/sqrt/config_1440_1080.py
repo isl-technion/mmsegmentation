@@ -2,7 +2,7 @@ running_location = 'local'
 # running_location = 'remote'
 if running_location == 'local':
     project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
-    data_root = '/media/isl12/Alta/'  # local
+    data_root = '/home/airsim/projects/datasets/Alta/' #'/media/isl12/Alta/'  # local
 elif running_location == 'remote':
     project_dir = '/home/boaz/Projects/open-mmlab/mmsegmentation/'
     data_root = '/home/boaz/Projects/open-mmlab/mmsegmentation/data/'  # remote
