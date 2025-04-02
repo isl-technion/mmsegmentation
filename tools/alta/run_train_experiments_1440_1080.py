@@ -8,7 +8,7 @@ from tools.train import main as mmseg_train
 running_location = 'local'
 # running_location = 'remote'
 if running_location == 'local':
-    dest_dir0 = '/media/omek/Alta/experiments/'
+    dest_dir0 = '/home/airsim/projects/datasets/Alta/experiments/' #'/media/omek/Alta/experiments/'
     project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
 elif running_location == 'remote':
     dest_dir0 = '/home/barakp/Projects/open-mmlab/mmsegmentation/results/'
@@ -26,9 +26,11 @@ trials_per_config = 1
 configs_dir = os.path.join(project_dir, 'configs/mboaz17')
 results_dir = os.path.join(project_dir, 'results/mboaz17')
 
-train_val_spec_list = ['train_all_heights_val_descends', 'train_30_val_descends', 'train_30_50_val_descends',
-                       'train_30_50_70_val_descends', 'train_50_70_val_descends', 'train_50_70_100_val_descends',
-                       'train_70_100_val_descends', 'train_100_val_descends']
+# train_val_spec_list = ['train_all_heights_val_descends', 'train_30_val_descends', 'train_30_50_val_descends',
+#                        'train_30_50_70_val_descends',  'train_50_val_descends', 'train_50_70_val_descends', 'train_50_70_100_val_descends',
+#                         'train_70_val_descends','train_70_100_val_descends', 'train_100_val_descends']
+train_val_spec_list = ['train_50_70_100_val_descends',
+                        'train_70_val_descends','train_70_100_val_descends', 'train_100_val_descends']
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?
 # model_type_list = ['segformer_mit-b0', 'segformer_mit-b3', 'bisenetv1_r50-d32', 'bisenetv1_r18-d32',
 #                    'deeplabv3plus_r50-d8', 'deeplabv3plus_r18-d8']  # All
@@ -41,7 +43,8 @@ for train_val_spec in train_val_spec_list:
         for model_type in model_type_list:
             for weighting_method in weighting_method_list:
                 config_rel_path = os.path.join(train_val_spec, classes_type, model_type, weighting_method)
-                config_file_path = os.path.join(configs_dir, config_rel_path, 'config_1440_1080.py')
+                # config_file_path = os.path.join(configs_dir, config_rel_path, 'config_1440_1080.py')
+                config_file_path = os.path.join(configs_dir, config_rel_path, 'config_1280_720.py')
                 if not os.path.isfile(config_file_path):
                     print('Missing config file: ' + config_file_path)
                     continue
