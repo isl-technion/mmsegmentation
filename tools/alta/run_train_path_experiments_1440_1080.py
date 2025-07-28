@@ -37,8 +37,10 @@ results_dir = os.path.join(project_dir, 'results/mboaz17')
 # train_val_spec_list = ['train_A_B_C_HS_test_IrY_30','train_A_B_C_HS_test_IrY_50', 'train_A_B_C_HS_test_IrY_70',
 #                        'train_A_B_C_HS_test_IrY_100_70', 'train_A_B_C_HS_test_IrY_100_70_50', 'train_A_B_C_HS_test_IrY_50_30',
 #                        'train_A_B_C_HS_test_IrY_70_50_30']
-train_val_spec_list = ['train_A_B_C_HS_test_IrY_100_50','train_A_B_C_HS_test_IrY_100_30', 'train_A_B_C_HS_test_IrY_70_50',
-                       'train_A_B_C_HS_test_IrY_70_30']
+# train_val_spec_list = ['train_A_B_C_HS_test_IrY_100_50','train_A_B_C_HS_test_IrY_100_30', 'train_A_B_C_HS_test_IrY_70_50',
+#                        'train_A_B_C_HS_test_IrY_70_30']
+
+train_val_spec_list = ['train_A_B_C_HS_test_IrY_100_50_30', 'train_A_B_C_HS_test_IrY_100_70_30']
 
 ###################################################################################################################################################
 classes_type_list = ['all']  # 'all' \ 'noB' \ ?

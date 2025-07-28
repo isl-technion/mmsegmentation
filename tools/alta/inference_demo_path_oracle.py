@@ -38,21 +38,34 @@ import numpy as np
 #     'train_A_B_C_HS_test_IrY_100_70_50',
 # ]
 
-exp_names = ['train_A_B_C_HS_test_IrY_100_50',
-             'train_A_B_C_HS_test_IrY_100_30',
-             'train_A_B_C_HS_test_IrY_70_50',
-             'train_A_B_C_HS_test_IrY_70_30']
+# exp_names = ['train_A_B_C_HS_test_IrY_100_50',
+#              'train_A_B_C_HS_test_IrY_100_30',
+#              'train_A_B_C_HS_test_IrY_70_50',
+#              'train_A_B_C_HS_test_IrY_70_30']
 
+# scenarios_names = [
+#                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
+#                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
+#                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
+#                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
+#                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
+#                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
+#                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100']
+#                 ]
+
+# exp_names = ['train_A_B_C_HS_test_IrY_30']
+#
+# scenarios_names = [
+#                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100']
+#                 ]
+exp_names = ['train_A_B_C_HS_test_IrY_100_50_30',
+             'train_A_B_C_HS_test_IrY_100_70_30']
 
 scenarios_names = [
                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
-                    ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
-                    ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
-                    ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
-                    ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
-                    ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100'],
                     ['Ir yamim/30', 'Ir yamim/50', 'Ir yamim/70', 'Ir yamim/100']
                 ]
+
 #     'train_30_50_70_val_descends',
 #     'train_30_50_val_descends',
 #     'train_30_val_descends',
@@ -64,8 +77,8 @@ scenarios_names = [
 # ]
 
 for exp_name in exp_names:
-    config_file = '/home/airsim/projects/datasets/Alta/experiments/path_resized_1080_1440_3/' + exp_name + '/all/segformer_mit-b3/sqrt/trial_1/config_1440_1080.py'
-    checkpoint_file = '/home/airsim/projects/datasets/Alta/experiments/path_resized_1080_1440_3/' + exp_name + '/all/segformer_mit-b3/sqrt/trial_1/epoch_160.pth'
+    config_file = '/home/airsim/projects/datasets/Alta/experiments/path_resized_1080_1440_4/' + exp_name + '/all/segformer_mit-b3/sqrt/trial_1/config_1440_1080.py'
+    checkpoint_file = '/home/airsim/projects/datasets/Alta/experiments/path_resized_1080_1440_4/' + exp_name + '/all/segformer_mit-b3/sqrt/trial_1/epoch_160.pth'
     # config_file = '/media/omek/Alta/experiments/resized_720_1280/' + exp_name + '/all/segformer_mit-b3/sqrt/trial_1/config_1280_720.py'
     # checkpoint_file = '/media/omek/Alta/experiments/resized_720_1280/' + exp_name + '/all/segformer_mit-b3/sqrt/trial_1/epoch_160.pth'
 
@@ -95,7 +108,7 @@ for exp_name in exp_names:
 
         # images_path = '/media/isl12/Alta/V7_Exp_25_1_21/Agamim/Descend/' + scenario_name
         images_path = '/media/isl12/Alta/V7_Exp_25_1_21/' + scenario_name
-
+        gt_path  = '/media/isl12/Alta/V7_Exp_25_1_21_annot/'+ scenario_name
         images_list = os.listdir(images_path)
         images_list.sort()
 
@@ -112,12 +125,20 @@ for exp_name in exp_names:
             if not imgname.endswith('.JPG'):
                 continue
             imgname_full = os.path.join(images_path, imgname)
+            gt_name = imgname[:-3]
+            gtname_full = os.path.join(gt_path, gt_name+'png')
 
             img = mmcv.imread(imgname_full)
             resized_img = mmcv.imresize(img, (1440, 1080), interpolation='bilinear')
             # resized_img = mmcv.imresize(img, (1280, 720), interpolation='bilinear')
             out_file = os.path.join(results_path, 'Orig_resized', os.path.split(imgname_full)[-1])
             mmcv.imwrite(resized_img, out_file)
+
+            gt_img = mmcv.imread(gtname_full)
+            resized_gt_img = mmcv.imresize(gt_img, (1440, 1080), interpolation='nearest')
+            # resized_img = mmcv.imresize(img, (1280, 720), interpolation='bilinear')
+            out_file = os.path.join(results_path, 'GT_resized', os.path.split(gtname_full)[-1])
+            mmcv.imwrite(resized_gt_img, out_file)
 
             result = inference_segmentor(model, imgname_full, rescale=rescale, return_scores=True)
             out_file = os.path.join(results_path, 'Segmentation', os.path.split(imgname_full)[-1])
