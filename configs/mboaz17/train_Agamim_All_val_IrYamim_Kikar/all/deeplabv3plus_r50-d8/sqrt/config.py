@@ -1,11 +1,5 @@
-# running_location = 'local'
-running_location = 'remote'
-if running_location == 'local':
-    project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
-    data_root = '/media/isl12/Alta/'  # local
-elif running_location == 'remote':
-    project_dir = '/home/boaz/Projects/open-mmlab/mmsegmentation/'
-    data_root = '/home/boaz/Projects/open-mmlab/mmsegmentation/data/'  # remote
+project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
+data_root = '/media/isl12/Alta/'
 
 _base_ = [
     project_dir + 'configs/_base_/models/deeplabv3plus_r50-d8.py',
