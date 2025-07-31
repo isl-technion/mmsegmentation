@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 import time
-from tools.alta.run_test_alta import main as mmseg_test
+from tools.messi.run_test_alta import main as mmseg_test
 
 dest_dirs = []
 dest_dirs.append('/media/omek/Alta/experiments/arabella_test_annot_17082022/20220917_112724_all_equal')

@@ -129,4 +129,4 @@ load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/results/randomproj/seg
 custom_hooks = [
     dict(type='HistLossHook', num_classes=num_classes, features_num=256)
 ]
-custom_imports = dict(imports=['tools.alta.histloss_hook'], allow_failed_imports=False)
+custom_imports = dict(imports=['tools.messi.histloss_hook'], allow_failed_imports=False)

@@ -144,4 +144,4 @@ custom_hooks = [
     dict(type='HistLossHook', num_classes=num_classes, first_epoch=0, features_num=256,
          layer_validity=[0, 0, 0, 0, 1, 1, 0, 0, 1], save_interval=hist_save_interval)
 ]
-custom_imports = dict(imports=['tools.alta.histloss_hook'], allow_failed_imports=False)
+custom_imports = dict(imports=['tools.messi.histloss_hook'], allow_failed_imports=False)

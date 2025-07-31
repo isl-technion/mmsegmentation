@@ -138,10 +138,10 @@ evaluation = dict(interval=10, metric='mIoU', pre_eval=True)
 workflow = [('train', int(hist_save_interval)), ('val', int(1))]
 
 # load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/pretrain/segformer_mit-b0_8x1_1024x1024_160k_cityscapes_20211208_101857-e7f88502.pth'
-load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/results/alta/segformer_mit-b0_pathA_pathA_reweighted1_672_448/iter_20000.pth'
+load_from = '/home/airsim/repos/open-mmlab/mmsegmentation/results/messi/segformer_mit-b0_pathA_pathA_reweighted1_672_448/iter_20000.pth'
 
 custom_hooks = [
     dict(type='HistLossHook', num_classes=num_classes, first_epoch=0, features_num=256,
          layer_validity=[0, 0, 0, 0, 1, 1, 0, 0, 1], save_interval=hist_save_interval)
 ]
-custom_imports = dict(imports=['tools.alta.histloss_hook'], allow_failed_imports=False)
+custom_imports = dict(imports=['tools.messi.histloss_hook'], allow_failed_imports=False)
