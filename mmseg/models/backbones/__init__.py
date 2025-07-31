@@ -21,9 +21,9 @@ from .twins import PCPVT, SVT
 from .unet import UNet
 from .vit import VisionTransformer
 
-from .mboaz17.mit_histloss import MixVisionTransformerHistLoss  # <mboaz17>
-from .mboaz17.resnet_normless import (ResNetNormLess, ResNetV1cNormLess, ResNetV1dNormLess)  # <mboaz17>
-from .mboaz17.resnet_WN import (ResNetWeightNorm, ResNetV1cWeightNorm, ResNetV1dWeightNorm)  # <mboaz17>
+from .mboaz17.mit_histloss import MixVisionTransformerHistLoss  # <messi>
+from .mboaz17.resnet_normless import (ResNetNormLess, ResNetV1cNormLess, ResNetV1dNormLess)  # <messi>
+from .mboaz17.resnet_WN import (ResNetWeightNorm, ResNetV1cWeightNorm, ResNetV1dWeightNorm)  # <messi>
 
 __all__ = [
     'ResNet', 'ResNetV1c', 'ResNetV1d', 'ResNeXt', 'HRNet', 'FastSCNN',
@@ -33,10 +33,10 @@ __all__ = [
     'SVT', 'STDCNet', 'STDCContextPathNet', 'BEiT', 'MAE'
 ]
 
-__all__.append('MixVisionTransformerHistLoss')  # <mboaz17>
-__all__.append('ResNetNormLess')  # <mboaz17>
-__all__.append('ResNetV1cNormLess')  # <mboaz17>
-__all__.append('ResNetV1dNormLess')  # <mboaz17>
-__all__.append('ResNetWeightNorm')  # <mboaz17>
-__all__.append('ResNetV1cWeightNorm')  # <mboaz17>
-__all__.append('ResNetV1dWeightNorm')  # <mboaz17>
+__all__.append('MixVisionTransformerHistLoss')  # <messi>
+__all__.append('ResNetNormLess')  # <messi>
+__all__.append('ResNetV1cNormLess')  # <messi>
+__all__.append('ResNetV1dNormLess')  # <messi>
+__all__.append('ResNetWeightNorm')  # <messi>
+__all__.append('ResNetV1cWeightNorm')  # <messi>
+__all__.append('ResNetV1dWeightNorm')  # <messi>

@@ -99,7 +99,7 @@ def parse_args():
         help='Opacity of painted segmentation map. In (0, 1] range.')
     parser.add_argument('--local_rank', type=int, default=0)
 
-    parser.add_argument('--load_pkl', type=int, default=0)  # <mboaz17>
+    parser.add_argument('--load_pkl', type=int, default=0)  # <messi>
 
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
@@ -121,7 +121,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    if args.work_dir is None:  # <mboaz17>
+    if args.work_dir is None:  # <messi>
         args.work_dir = osp.join(osp.split(args.config)[0], 'test_results')
     if args.out is None:
         args.out = osp.join(osp.split(args.config)[0], 'test_results', 'results.pkl')
@@ -270,7 +270,7 @@ def main():
         tmpdir = None
 
     cfg.device = get_device()
-    if not args.load_pkl:  # <mboaz17>
+    if not args.load_pkl:  # <messi>
         if not distributed:
             warnings.warn(
                 'SyncBN is only supported with DDP. To be compatible with DP, '
@@ -309,7 +309,7 @@ def main():
 
     rank, _ = get_dist_info()
     if rank == 0:
-        if args.out:  # <mboaz17>
+        if args.out:  # <messi>
             if args.load_pkl:
                 results = mmcv.load(args.out)
             else:
@@ -325,7 +325,7 @@ def main():
             metric = dataset.evaluate(results, **eval_kwargs)
             metric_dict = dict(config=args.config, metric=metric)
             mmcv.dump(metric_dict, json_file, indent=4)
-            mmcv.dump(metric_dict, json_file.replace('.json', '.pkl'))  # <mboaz17>
+            mmcv.dump(metric_dict, json_file.replace('.json', '.pkl'))  # <messi>
             if tmpdir is not None and eval_on_format_results:
                 # remove tmp dir when cityscapes evaluation
                 shutil.rmtree(tmpdir)

@@ -39,13 +39,13 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                     kernel_size=1,
                     stride=1,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=None))  # <mboaz17>
+                    act_cfg=None))  # <messi>
 
         self.fusion_conv = ConvModule(
             in_channels=self.channels * num_inputs,
             out_channels=self.channels,
             kernel_size=1,
-            norm_cfg=self.norm_cfg, act_cfg=None)  # <mboaz17>
+            norm_cfg=self.norm_cfg, act_cfg=None)  # <messi>
 
         self.relu_operation = ConvModule(
                     in_channels=self.in_channels[i],
@@ -53,7 +53,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                     kernel_size=1,
                     stride=1,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg)  # <mboaz17>
+                    act_cfg=self.act_cfg)  # <messi>
 
     def forward(self, inputs, label=None, hist_model=None):
         # Receive 4 stage backbone feature map: 1/4, 1/8, 1/16, 1/32
@@ -81,7 +81,7 @@ class SegformerHeadHistLoss(BaseDecodeHead):
                     size=inputs[0].shape[2:],
                     mode=self.interpolate_mode,
                     align_corners=self.align_corners)
-            outs.append(self.relu_operation.activate(res))  # mboaz17
+            outs.append(self.relu_operation.activate(res))  # messi
 
         out = self.fusion_conv(torch.cat(outs, dim=1))
 

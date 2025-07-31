@@ -29,9 +29,9 @@ from .setr_up_head import SETRUPHead
 from .stdc_head import STDCHead
 from .uper_head import UPerHead
 
-from .mboaz17.segformer_head_histloss import SegformerHeadHistLoss  # <mboaz17>
-from .mboaz17.sep_aspp_head_histloss import DepthwiseSeparableASPPHeadHistLoss  # <mboaz17>
-from .mboaz17.aspp_head_histloss import ASPPHeadHistLoss  # <mboaz17>
+from .mboaz17.segformer_head_histloss import SegformerHeadHistLoss  # <messi>
+from .mboaz17.sep_aspp_head_histloss import DepthwiseSeparableASPPHeadHistLoss  # <messi>
+from .mboaz17.aspp_head_histloss import ASPPHeadHistLoss  # <messi>
 
 __all__ = [
     'FCNHead', 'PSPHead', 'ASPPHead', 'PSAHead', 'NLHead', 'GCHead', 'CCHead',
@@ -43,6 +43,6 @@ __all__ = [
     'KernelUpdateHead', 'KernelUpdator'
 ]
 
-__all__.append('SegformerHeadHistLoss')  # <mboaz17>
-__all__.append('DepthwiseSeparableASPPHeadHistLoss')  # <mboaz17>
-__all__.append('ASPPHeadHistLoss')  # <mboaz17>
+__all__.append('SegformerHeadHistLoss')  # <messi>
+__all__.append('DepthwiseSeparableASPPHeadHistLoss')  # <messi>
+__all__.append('ASPPHeadHistLoss')  # <messi>

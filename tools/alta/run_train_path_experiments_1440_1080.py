@@ -23,8 +23,8 @@ if not os.path.isdir(dest_dir):
 shutil.copyfile(__file__, os.path.join(dest_dir, os.path.split(__file__)[1]))
 
 trials_per_config = 1
-configs_dir = os.path.join(project_dir, 'configs/mboaz17')
-results_dir = os.path.join(project_dir, 'results/mboaz17')
+configs_dir = os.path.join(project_dir, 'configs/messi')
+results_dir = os.path.join(project_dir, 'results/messi')
 
 # train_val_spec_list = ['train_all_heights_val_descends', 'train_30_val_descends', 'train_30_50_val_descends',
 #                        'train_30_50_70_val_descends',  'train_50_val_descends', 'train_50_70_val_descends', 'train_50_70_100_val_descends',

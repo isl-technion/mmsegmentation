@@ -4,7 +4,7 @@ import mmcv
 import os
 import numpy as np
 
-config_file = '/home/airsim/repos/open-mmlab/mmsegmentation/configs/mboaz17/train_100_val_descends/all/segformer_mit-b3/sqrt/config_for_test.py'
+config_file = '/configs/messi/train_100_val_descends/all/segformer_mit-b3/sqrt/config_for_test.py'
 checkpoint_file = '/media/omek/Alta/experiments/arabella_const_height/train_100_val_descends/all/segformer_mit-b3/sqrt/trial_1/epoch_160.pth'
 
 # build the model from a config file and a checkpoint file

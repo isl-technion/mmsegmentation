@@ -78,7 +78,7 @@ class DepthwiseSeparableASPPHeadHistLoss(ASPPHeadHistLoss):
                 3,
                 padding=1,
                 norm_cfg=self.norm_cfg,
-                act_cfg=None))  # mboaz17
+                act_cfg=None))  # messi
                 # act_cfg=self.act_cfg))
 
         self.relu_operation = ConvModule(
@@ -87,7 +87,7 @@ class DepthwiseSeparableASPPHeadHistLoss(ASPPHeadHistLoss):
                     kernel_size=1,
                     stride=1,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg)  # <mboaz17>
+                    act_cfg=self.act_cfg)  # <messi>
 
     def forward(self, inputs, label=None, hist_model=None):
         """Forward function."""

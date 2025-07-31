@@ -8,7 +8,7 @@ from .lovasz_loss import LovaszLoss
 from .tversky_loss import TverskyLoss
 from .utils import reduce_loss, weight_reduce_loss, weighted_loss
 
-from .mboaz17.histogram_loss import HistogramLoss  # <mboaz17>
+from .mboaz17.histogram_loss import HistogramLoss  # <messi>
 
 __all__ = [
     'accuracy', 'Accuracy', 'cross_entropy', 'binary_cross_entropy',
@@ -17,4 +17,4 @@ __all__ = [
     'FocalLoss', 'TverskyLoss'
 ]
 
-__all__.append('HistogramLoss')  # <mboaz17>
+__all__.append('HistogramLoss')  # <messi>

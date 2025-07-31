@@ -11,7 +11,7 @@ from ..utils import get_class_weight, weight_reduce_loss
 
 @LOSSES.register_module()
 class HistogramLoss(nn.Module):
-    """HistogramLoss.  <mboaz17>
+    """HistogramLoss.  <messi>
 
     Args:
         num_classes (int): Number of GT classes
