@@ -20,8 +20,8 @@ class LoadAnnotationsWithMask(LoadAnnotations):
         return results
 
 @DATASETS.register_module()
-class AltaDataset(CustomDataset):
-    """Alta dataset.
+class MessiDataset(CustomDataset):
+    """Messi dataset.
     """
 
     CLASSES = [
@@ -80,27 +80,8 @@ class AltaDataset(CustomDataset):
         0,  # 'water',  # 15
     ]
 
-    # PALETTE = [
-    #     [0, 0, 0],  # 0
-    #     [255, 127, 50],  # 2
-    #     [50, 101, 255],  # 11
-    #     [50, 255, 101],  # 7
-    #     [50, 255, 255],  # 9
-    #     [76, 50, 255],  # 12
-    #     [229, 50, 255],  # 14
-    #     [153, 50, 255],  # 13
-    #     [255, 204, 50],  # 3
-    #     [229, 255, 50],  # 4
-    #     [153, 255, 50],  # 5
-    #     [76, 255, 50],  # 6
-    #     [50, 255, 178],  # 8
-    #     [50, 178, 255],  # 10
-    #     [255, 50, 204],  # 15
-    #     [255, 50, 50],  # 1
-    # ]
-
     def __init__(self, use_mask=None, **kwargs):
-        super(AltaDataset, self).__init__(
+        super(MessiDataset, self).__init__(
             img_suffix='.JPG',
             seg_map_suffix='.png',
             # reduce_zero_label=True,  # False  #remove the bkg class
@@ -116,28 +97,3 @@ class AltaDataset(CustomDataset):
                 self.gt_seg_map_loader = LoadAnnotationsWithMask()
             else:  # Normal mode - use every fifth image to reduce time
                 self.img_infos = self.img_infos[::5]
-
-    # def prepare_test_img(self, idx):  # uncomment if LoadAnnotations is needed during testing...
-    #     """Get testing data after pipeline.
-    #
-    #     Args:
-    #         idx (int): Index of data.
-    #
-    #     Returns:
-    #         dict: Testing data after pipeline with new keys introduced by
-    #             pipeline.
-    #     """
-    #
-    #     img_info = self.img_infos[idx]
-    #
-    #     # results = dict(img_info=img_info)
-    #     ann_info = self.get_ann_info(idx)
-    #     results = dict(img_info=img_info, ann_info=ann_info)
-    #
-    #     self.pre_pipeline(results)
-    #     return self.pipeline(results)
-
-# Implement sub-sampling per class
-# Implement merging of several classes
-# Train and test Segformer
-# How are the segmentation numbers (during loading) set? Is it consistent for all images, even when some categories are missing?

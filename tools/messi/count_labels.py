@@ -3,7 +3,7 @@ import glob
 import shutil
 import numpy as np
 import cv2
-from mmseg.datasets.alta import AltaDataset
+from mmseg.datasets.alta import MessiDataset
 
 datasets_list_file = open("./datasets_list.txt", "w+")
 
@@ -17,10 +17,10 @@ dir_list = [dir_agamim_path_A, dir_agamim_path_B, dir_agamim_path_C, dir_ir_yami
 
 for dir_name in dir_list:
     scenario_list = [scn for scn in os.listdir(dir_name) if os.path.isdir(os.path.join(dir_name, scn))]
-    population_vect_per_dir = np.zeros(len(AltaDataset.CLASSES)+1, dtype=np.uint64)
+    population_vect_per_dir = np.zeros(len(MessiDataset.CLASSES)+1, dtype=np.uint64)
     for scenario_name in scenario_list:
         print(scenario_name)
-        population_vect = np.zeros(len(AltaDataset.CLASSES)+1, dtype=np.uint64)
+        population_vect = np.zeros(len(MessiDataset.CLASSES)+1, dtype=np.uint64)
 
         if dir_name == dir_agamim_path_A:
             dataset_name = 'AgamimPathA_' + scenario_name
@@ -48,7 +48,7 @@ for dir_name in dir_list:
         for img_name in img_names[::interval]:
             print(img_name)
             img = cv2.imread(img_name)
-            for ind, color in enumerate(AltaDataset.PALETTE + [[0, 0, 0]]):
+            for ind, color in enumerate(MessiDataset.PALETTE + [[0, 0, 0]]):
                 population_vect[ind] += np.sum(np.all(img == color[::-1], axis=2))
 
         datasets_list_file.write(dataset_name + '\n')
