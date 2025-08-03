@@ -61,7 +61,7 @@ model = dict(
 
 # dataset settings
 dataset_type = 'MessiDataset'
-data_root = '/media/isl12/Alta/'
+data_root = '/media/isl12/Alta/MESSI dataset/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
@@ -93,31 +93,31 @@ test_pipeline = [
 ]
 
 pathA_scenarios_img = [
-    'V7_Exp_25_1_21/Agamim/Path/A/30',
-    'V7_Exp_25_1_21/Agamim/Path/A/50',
-    'V7_Exp_25_1_21/Agamim/Path/A/70',
-    'V7_Exp_25_1_21/Agamim/Path/A/100',
+    'Train and Val/images/Agamim/Path/A/30',
+    'Train and Val/images/Agamim/Path/A/50',
+    'Train and Val/images/Agamim/Path/A/70',
+    'Train and Val/images/Agamim/Path/A/100',
 ]
 pathB_scenarios_img = [
-    'V7_Exp_25_1_21/Agamim/Path/B/30',
-    'V7_Exp_25_1_21/Agamim/Path/B/50',
-    'V7_Exp_25_1_21/Agamim/Path/B/70',
-    'V7_Exp_25_1_21/Agamim/Path/B/100',
+    'Train and Val/images/Agamim/Path/B/30',
+    'Train and Val/images/Agamim/Path/B/50',
+    'Train and Val/images/Agamim/Path/B/70',
+    'Train and Val/images/Agamim/Path/B/100',
 ]
 pathC_scenarios_img = [
-    'V7_Exp_25_1_21/Agamim/Path/C/30',
-    'V7_Exp_25_1_21/Agamim/Path/C/50',
-    'V7_Exp_25_1_21/Agamim/Path/C/70',
-    'V7_Exp_25_1_21/Agamim/Path/C/100',
+    'Train and Val/images/Agamim/Path/C/30',
+    'Train and Val/images/Agamim/Path/C/50',
+    'Train and Val/images/Agamim/Path/C/70',
+    'Train and Val/images/Agamim/Path/C/100',
 ]
 IrYamim_scenarios_img = [
-    'V7_Exp_25_1_21/Ir yamim/30',
-    'V7_Exp_25_1_21/Ir yamim/50',
-    'V7_Exp_25_1_21/Ir yamim/70',
-    'V7_Exp_25_1_21/Ir yamim/100',
+    'Test/images/IrYamim/30',
+    'Test/images/IrYamim/50',
+    'Test/images/IrYamim/70',
+    'Test/images/IrYamim/100',
 ]
 PilotPath_img = [
-    'V7_Exp_25_1_21/Pilot/Path',
+    'Test/images/Ha-Medinah Square/Path',
 ]
 pathA_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathA_scenarios_img]
 pathB_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathB_scenarios_img]

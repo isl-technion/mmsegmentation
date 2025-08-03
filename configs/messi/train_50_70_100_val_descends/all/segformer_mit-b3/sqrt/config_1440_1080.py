@@ -1,11 +1,5 @@
-running_location = 'local'
-# running_location = 'remote'
-if running_location == 'local':
-    project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
-    data_root = '/home/airsim/projects/datasets/Alta/' #'/media/isl12/Alta/'  # local
-elif running_location == 'remote':
-    project_dir = '/home/boaz/Projects/open-mmlab/mmsegmentation/'
-    data_root = '/home/boaz/Projects/open-mmlab/mmsegmentation/data/'  # remote
+project_dir = '/home/airsim/repos/open-mmlab/mmsegmentation/'
+data_root = '/media/isl12/Alta/MESSI dataset/'
 
 _base_ = [
     project_dir + 'configs/_base_/models/segformer_mit-b0.py',
@@ -72,48 +66,48 @@ test_pipeline = [
 ]
 
 pathA_scenarios_img = [
-    # 'V7_Exp_25_1_21/Agamim/Path/A/30',
-    'V7_Exp_25_1_21/Agamim/Path/A/50',
-    'V7_Exp_25_1_21/Agamim/Path/A/70',
-    'V7_Exp_25_1_21/Agamim/Path/A/100',
+    # 'Train and Val/images/Agamim/Path/A/30',
+    'Train and Val/images/Agamim/Path/A/50',
+    'Train and Val/images/Agamim/Path/A/70',
+    'Train and Val/images/Agamim/Path/A/100',
 ]
 pathB_scenarios_img = [
-    # 'V7_Exp_25_1_21/Agamim/Path/B/30',
-    'V7_Exp_25_1_21/Agamim/Path/B/50',
-    'V7_Exp_25_1_21/Agamim/Path/B/70',
-    'V7_Exp_25_1_21/Agamim/Path/B/100',
+    # 'Train and Val/images/Agamim/Path/B/30',
+    'Train and Val/images/Agamim/Path/B/50',
+    'Train and Val/images/Agamim/Path/B/70',
+    'Train and Val/images/Agamim/Path/B/100',
 ]
 pathC_scenarios_img = [
-    # 'V7_Exp_25_1_21/Agamim/Path/C/30',
-    'V7_Exp_25_1_21/Agamim/Path/C/50',
-    'V7_Exp_25_1_21/Agamim/Path/C/70',
-    'V7_Exp_25_1_21/Agamim/Path/C/100',
+    # 'Train and Val/images/Agamim/Path/C/30',
+    'Train and Val/images/Agamim/Path/C/50',
+    'Train and Val/images/Agamim/Path/C/70',
+    'Train and Val/images/Agamim/Path/C/100',
 ]
 Descend_scenarios_img = [
-    # 'V7_Exp_25_1_21/Agamim/Descend/100_0001',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0002',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0003',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0004',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0005',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0006',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0031',
-    # 'V7_Exp_25_1_21/Agamim/Descend/100_0035',
-    # 'V7_Exp_25_1_21/Agamim/Descend/100_0036',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0037',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0038',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0040',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0041',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0042',
-    'V7_Exp_25_1_21/Agamim/Descend/100_0043',
+    # 'Train and Val/images/Agamim/Descend/100_0001',
+    'Train and Val/images/Agamim/Descend/100_0002',
+    'Train and Val/images/Agamim/Descend/100_0003',
+    'Train and Val/images/Agamim/Descend/100_0004',
+    'Train and Val/images/Agamim/Descend/100_0005',
+    'Train and Val/images/Agamim/Descend/100_0006',
+    'Train and Val/images/Agamim/Descend/100_0031',
+    # 'Train and Val/images/Agamim/Descend/100_0035',
+    # 'Train and Val/images/Agamim/Descend/100_0036',
+    'Train and Val/images/Agamim/Descend/100_0037',
+    'Train and Val/images/Agamim/Descend/100_0038',
+    'Train and Val/images/Agamim/Descend/100_0040',
+    'Train and Val/images/Agamim/Descend/100_0041',
+    'Train and Val/images/Agamim/Descend/100_0042',
+    'Train and Val/images/Agamim/Descend/100_0043',
 ]
 IrYamim_scenarios_img = [
-    # 'V7_Exp_25_1_21/Ir yamim/30',
-    'V7_Exp_25_1_21/Ir yamim/50',
-    'V7_Exp_25_1_21/Ir yamim/70',
-    'V7_Exp_25_1_21/Ir yamim/100',
+    # 'Test/images/IrYamim/30',
+    'Test/images/IrYamim/50',
+    'Test/images/IrYamim/70',
+    'Test/images/IrYamim/100',
 ]
 PilotPath_img = [
-    'V7_Exp_25_1_21/Pilot/Path',
+    'Test/images/Ha-Medinah Square/Path',
 ]
 pathA_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathA_scenarios_img]
 pathB_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathB_scenarios_img]
