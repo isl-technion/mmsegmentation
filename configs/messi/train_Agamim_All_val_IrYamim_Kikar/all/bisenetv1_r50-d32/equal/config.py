@@ -147,12 +147,12 @@ IrYamim_scenarios_img = [
 PilotPath_img = [
     'Test/images/Ha-Medinah Square/Path',
 ]
-pathA_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathA_scenarios_img]
-pathB_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathB_scenarios_img]
-pathC_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in pathC_scenarios_img]
-Descend_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in Descend_scenarios_img]
-IrYamim_scenarios_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in IrYamim_scenarios_img]
-PilotPath_ann = [scn.replace('V7_Exp_25_1_21', 'V7_Exp_25_1_21_annot') for scn in PilotPath_img]
+pathA_scenarios_ann = [scn.replace('images', 'annotations') for scn in pathA_scenarios_img]
+pathB_scenarios_ann = [scn.replace('images', 'annotations') for scn in pathB_scenarios_img]
+pathC_scenarios_ann = [scn.replace('images', 'annotations') for scn in pathC_scenarios_img]
+Descend_scenarios_ann = [scn.replace('images', 'annotations') for scn in Descend_scenarios_img]
+IrYamim_scenarios_ann = [scn.replace('images', 'annotations') for scn in IrYamim_scenarios_img]
+PilotPath_ann = [scn.replace('images', 'annotations') for scn in PilotPath_img]
 
 data = dict(
     samples_per_gpu=2,  ###
