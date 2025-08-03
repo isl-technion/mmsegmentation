@@ -45,7 +45,7 @@ English | [简体中文](README_zh-CN.md)
 
 ## Introduction - MESSI
 
-This repo is forked from MMSegmentation, which is used as platform to run experiments on the new MESSI dataset, which is described
+This repo is forked from MMSegmentation, which is used as platform to run experiments on the MESSI dataset, which is described
 in the following paper: ...
 
 In order to train on MESSI dataset, you may run tools/messi/run_train_experiments.py.
@@ -56,10 +56,12 @@ However, notice that:
 * The paths in the training script and in the config files should be changes according to the paths in your computer or server.
 * The validation set in the config files is actually the unpublished test set. Hence, it has to be changed as well (use another dataset for validation, if needed)
 
+* In order to run testing on the test-set, you may run tools/messi/run_test_experiments.py. As before, change the paths accordingly.
+
 The config files for mask2former are also located in configs/messi/train_Agamim_All_val_IrYamim_Kikar. However, they only work with a newer version of
 MMSegmentation. 
 The appropriate environment for the mask2former code should be installed using the instruction of version v1.2.2 (revision c685fe6767c4cadf6b051983ca6208f1b9d1ccb8).
-The appropriate environment for the other configuration is described hereafter.
+The appropriate environment for the other models is described hereafter.
 
 ## Introduction
 

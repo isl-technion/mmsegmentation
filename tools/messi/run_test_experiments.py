@@ -72,6 +72,3 @@ for dest_dir in dest_dirs:
                                 f.close()
 
                             time.sleep(3)
-
-
-####### /media/omek/Alta/experiments/20220718_184306/train_Agamim_ABC_val_IrYamim_Kikar/all/deeplabv3plus_r50-d8/sqrt/trial_1/config2.py /media/omek/Alta/experiments/20220718_184306/train_Agamim_ABC_val_IrYamim_Kikar/all/deeplabv3plus_r50-d8/sqrt/trial_1/iter_2000.pth --out /media/omek/Alta/experiments/20220718_184306/train_Agamim_ABC_val_IrYamim_Kikar/all/deeplabv3plus_r50-d8/sqrt/trial_1/res.pkl --cfg-options data.test.separate_eval=0
