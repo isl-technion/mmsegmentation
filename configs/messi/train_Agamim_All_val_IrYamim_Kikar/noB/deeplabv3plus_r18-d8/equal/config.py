@@ -114,10 +114,10 @@ Descend_scenarios_img = [
     'Train and Val/images/Agamim/Descend/100_0043',
 ]
 IrYamim_scenarios_img = [
-    'Test/images/IrYamim/30',
-    'Test/images/IrYamim/50',
-    'Test/images/IrYamim/70',
-    'Test/images/IrYamim/100',
+    'Test/images/IrYamim/Path/30',
+    'Test/images/IrYamim/Path/50',
+    'Test/images/IrYamim/Path/70',
+    'Test/images/IrYamim/Path/100',
 ]
 PilotPath_img = [
     'Test/images/Ha-Medinah Square/Path',

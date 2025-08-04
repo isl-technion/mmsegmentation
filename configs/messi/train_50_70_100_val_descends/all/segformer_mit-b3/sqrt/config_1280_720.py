@@ -102,10 +102,10 @@ Descend_scenarios_img = [
     'Train and Val/images/Agamim/Descend/100_0043',
 ]
 IrYamim_scenarios_img = [
-    # 'Test/images/IrYamim/30',
-    'Test/images/IrYamim/50',
-    'Test/images/IrYamim/70',
-    'Test/images/IrYamim/100',
+    # 'Test/images/IrYamim/Path/30',
+    'Test/images/IrYamim/Path/50',
+    'Test/images/IrYamim/Path/70',
+    'Test/images/IrYamim/Path/100',
 ]
 PilotPath_img = [
     'Test/images/Ha-Medinah Square/Path',
@@ -178,4 +178,4 @@ log_config = dict(
     ])
 
 load_from = project_dir + 'pretrain/segformer_mit-b3_8x1_1024x1024_160k_cityscapes_20211206_224823-a8f8a177.pth'
-'/media/isl12/Alta/Test/images/IrYamim/30/DJI_0022.JPG'
+'/media/isl12/Alta/Test/images/IrYamim/Path/30/DJI_0022.JPG'
